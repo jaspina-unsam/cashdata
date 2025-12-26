@@ -1,0 +1,2 @@
+from cashdata.domain.repositories.imonthly_income_repository import IMonthlyIncomeRepository
+from cashdata.domain.repositories.iuser_repository import IUserRepository

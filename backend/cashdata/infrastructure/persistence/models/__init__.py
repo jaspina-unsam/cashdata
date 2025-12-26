@@ -1,0 +1,4 @@
+from sqlalchemy.orm import declarative_base
+from cashdata.infrastructure.persistence.models.base import Base
+from cashdata.infrastructure.persistence.models.user_model import UserModel
+from cashdata.infrastructure.persistence.models.monthly_income_model import MonthlyIncomeModel

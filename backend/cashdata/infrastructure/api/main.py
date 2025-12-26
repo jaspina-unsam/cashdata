@@ -1,0 +1,32 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(
+    title="CashData API",
+    version="3.0.0",
+    description="API de gestión financiera personal"
+)
+
+# CORS para desarrollo (permitir frontend en localhost:5173)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "app": "CashData",
+        "version": "3.0.0"
+    }
+
+@app.get("/")
+def root():
+    return {
+        "message": "CashData API - Backend Running",
+        "docs": "/docs"
+    }
