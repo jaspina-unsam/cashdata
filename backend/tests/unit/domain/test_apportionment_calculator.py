@@ -42,12 +42,12 @@ class TestApportionmentCalculatorProportionalSplit:
         self, calculator, make_user, period_dec_2025
     ):
         """
-        Given: Javier earns 2540 USD and Ailen earns 1800 USD in December 2025
+        Given: Test User 1 earns 2540 USD and Test User 2 earns 1800 USD in December 2025
         When: Calculating apportionment percentages
-        Then: Javier should contribute 58.52% and Ailen 41.47%
+        Then: Test User 1 should contribute 58.52% and Test User 2 41.47%
         """
-        user_javier = make_user(1, "Javier", "j@example.com", 2540)
-        user_ailen = make_user(2, "Ailén", "a@example.com", 1800)
+        user_test1 = make_user(1, "Test User 1", "j@example.com", 2540)
+        user_test2 = make_user(2, "Test User 2", "a@example.com", 1800)
 
         incomes = [
             MonthlyIncome(1, 1, period_dec_2025, Money("2540", Currency.USD)),
@@ -55,15 +55,15 @@ class TestApportionmentCalculatorProportionalSplit:
         ]
 
         result = calculator.calculate_percentages(
-            [user_javier, user_ailen], incomes, period_dec_2025
+            [user_test1, user_test2], incomes, period_dec_2025
         )
 
         total = Decimal("2540") + Decimal("1800")
-        expected_javier = Percentage((Decimal("2540") / total) * 100)
-        expected_ailen = Percentage((Decimal("1800") / total) * 100)
+        expected_test1 = Percentage((Decimal("2540") / total) * 100)
+        expected_test2 = Percentage((Decimal("1800") / total) * 100)
 
-        assert result[1].is_close_to(expected_javier)
-        assert result[2].is_close_to(expected_ailen)
+        assert result[1].is_close_to(expected_test1)
+        assert result[2].is_close_to(expected_test2)
         assert (result[1] + result[2]).is_close_to(Percentage("100"))
 
     def test_should_calculate_proportional_split_for_three_users(
@@ -300,9 +300,9 @@ class TestApportionmentCalculatorPartialIncomes:
         self, calculator, make_user, period_dec_2025
     ):
         """
-        Given: Only Javier has income, Ailen has none
+        Given: Only Test User 1 has income, Test User 2 has none
         When: Calculating apportionment percentages
-        Then: Javier should have 100%, Ailen 0%
+        Then: Test User 1 should have 100%, Test User 2 0%
         """
         # Arrange
         users = [
@@ -328,9 +328,9 @@ class TestApportionmentCalculatorPartialIncomes:
         self, calculator, make_user, period_dec_2025
     ):
         """
-        Given: Javier has 2540 income, Ailen has 0 income explicitly set
+        Given: Test User 1 has 2540 income, Test User 2 has 0 income explicitly set
         When: Calculating apportionment percentages
-        Then: Javier 100%, Ailen 0%
+        Then: Test User 1 100%, Test User 2 0%
         """
         # Arrange
         users = [
@@ -432,16 +432,16 @@ class TestApportionmentCalculatorCurrencyValidation:
         self, calculator, make_user, period_dec_2025
     ):
         """
-        Given: Javier has income in USD, Ailen in ARS
+        Given: Test User 1 has income in USD, Test User 2 in ARS
         When: Calculating apportionment percentages
         Then: Should raise InvalidCalculation exception
         """
-        user_javier = make_user(1, "Javier", "j@example.com", 1000)
-        user_ailen = make_user(2, "Ailén", "a@example.com", 1000000, Currency.ARS)
+        user_test1 = make_user(1, "Test User 1", "j@example.com", 1000)
+        user_test2 = make_user(2, "Test User 2", "a@example.com", 1000000, Currency.ARS)
 
         with pytest.raises(InvalidCalculation) as exc_info:
             calculator.calculate_percentages(
-                [user_javier, user_ailen],
+                [user_test1, user_test2],
                 [
                     MonthlyIncome(1, 1, period_dec_2025, Money("1000", Currency.USD)),
                     MonthlyIncome(2, 2, period_dec_2025, Money("1000", Currency.ARS)),
