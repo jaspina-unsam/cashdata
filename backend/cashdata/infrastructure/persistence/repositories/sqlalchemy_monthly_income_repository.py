@@ -59,7 +59,7 @@ class SQLAlchemyMonthlyIncomeRepository(IMonthlyIncomeRepository):
         """Insert or update monthly income"""
         model = MonthlyIncomeMapper.to_model(monthly_income)
         merged_model = self.session.merge(model)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(merged_model)
         return MonthlyIncomeMapper.to_entity(merged_model)
 
@@ -70,5 +70,5 @@ class SQLAlchemyMonthlyIncomeRepository(IMonthlyIncomeRepository):
             return False
 
         self.session.delete(income)
-        self.session.commit()
+        self.session.flush()
         return True

@@ -287,7 +287,9 @@ class TestSQLAlchemyMonthlyIncomeRepositoryDelete:
 
 
 class TestFindByPeriod:
-    def test_should_find_all_incomes_for_period(self, monthly_income_repository, make_monthly_income):
+    def test_should_find_all_incomes_for_period(
+        self, monthly_income_repository, make_monthly_income
+    ):
         """
         Given: 3 users with incomes in Dec 2025, 2 users in Nov 2025
         When: I search for Dec 2025
@@ -297,13 +299,33 @@ class TestFindByPeriod:
         period_nov = Period(2025, 11)
 
         # Dec incomes
-        monthly_income_repository.save(make_monthly_income(None, 1, period_dec, Money(Decimal("2540"), Currency.USD)))
-        monthly_income_repository.save(make_monthly_income(None, 2, period_dec, Money(Decimal("1800"), Currency.USD)))
-        monthly_income_repository.save(make_monthly_income(None, 3, period_dec, Money(Decimal("3000"), Currency.USD)))
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 1, period_dec, Money(Decimal("2540"), Currency.USD)
+            )
+        )
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 2, period_dec, Money(Decimal("1800"), Currency.USD)
+            )
+        )
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 3, period_dec, Money(Decimal("3000"), Currency.USD)
+            )
+        )
 
         # Nov incomes
-        monthly_income_repository.save(make_monthly_income(None, 1, period_nov, Money(Decimal("2500"), Currency.USD)))
-        monthly_income_repository.save(make_monthly_income(None, 2, period_nov, Money(Decimal("1700"), Currency.USD)))
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 1, period_nov, Money(Decimal("2500"), Currency.USD)
+            )
+        )
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 2, period_nov, Money(Decimal("1700"), Currency.USD)
+            )
+        )
 
         # Act
         result = monthly_income_repository.find_by_period(period_dec)
@@ -325,9 +347,21 @@ class TestFindByUserAndPeriod:
         period_dec = Period(2025, 12)
         period_nov = Period(2025, 11)
 
-        monthly_income_repository.save(make_monthly_income(None, 1, period_dec, Money(Decimal("2540"), Currency.USD)))
-        monthly_income_repository.save(make_monthly_income(None, 1, period_nov, Money(Decimal("2500"), Currency.USD)))
-        monthly_income_repository.save(make_monthly_income(None, 2, period_dec, Money(Decimal("1800"), Currency.USD)))
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 1, period_dec, Money(Decimal("2540"), Currency.USD)
+            )
+        )
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 1, period_nov, Money(Decimal("2500"), Currency.USD)
+            )
+        )
+        monthly_income_repository.save(
+            make_monthly_income(
+                None, 2, period_dec, Money(Decimal("1800"), Currency.USD)
+            )
+        )
 
         # Act
         result = monthly_income_repository.find_by_user_and_period(1, period_dec)
@@ -338,11 +372,15 @@ class TestFindByUserAndPeriod:
         assert result.period == period_dec
         assert result.amount.amount == Decimal("2540")
 
-    def test_should_return_none_when_no_income_for_user_period(self, monthly_income_repository):
+    def test_should_return_none_when_no_income_for_user_period(
+        self, monthly_income_repository
+    ):
         """
         Given: No incomes exist
         When: I search for user 999 in any period
         Then: Should return None
         """
-        result = monthly_income_repository.find_by_user_and_period(999, Period(2025, 12))
+        result = monthly_income_repository.find_by_user_and_period(
+            999, Period(2025, 12)
+        )
         assert result is None

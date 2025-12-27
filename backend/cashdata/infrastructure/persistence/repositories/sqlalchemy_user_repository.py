@@ -26,7 +26,7 @@ class SQLAlchemyUserRepository(IUserRepository):
         """Insert or update user"""
         model = UserMapper.to_model(user)
         merged_model = self.session.merge(model)
-        self.session.commit()
+        self.session.flush()
         self.session.refresh(merged_model)
         return UserMapper.to_entity(merged_model)
 
@@ -37,5 +37,5 @@ class SQLAlchemyUserRepository(IUserRepository):
             return False
 
         self.session.delete(user)
-        self.session.commit()
+        self.session.flush()
         return True
