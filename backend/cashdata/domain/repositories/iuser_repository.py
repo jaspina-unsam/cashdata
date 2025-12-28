@@ -23,3 +23,7 @@ class IUserRepository(ABC):
     def delete(self, user_id: int) -> bool:
         """Delete user by ID"""
         pass
+
+    @abstractmethod
+    def exists_by_email(self, email: str) -> bool:
+        """Checks if a given email is registered and active"""
