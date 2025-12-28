@@ -209,3 +209,32 @@ class TestSQLAlchemyUserRepositoryDelete:
         """
         result = user_repository.delete(999)
         assert result is False
+
+
+class TestSQLAlchemyUserRepositoryExistsByEmail:
+    def test_should_find_existing_user(self, make_user, user_repository):
+        user = make_user(None, "John", "john@example.com", 5000)
+        user_repository.save(user)
+
+        # Search
+        result = user_repository.exists_by_email("john@example.com")
+
+        assert result is True
+
+    def test_should_not_find_non_existing_user(self, user_repository):
+        result = user_repository.exists_by_email("thepresident@whitehouse.com")
+
+        assert result is False
+
+    def test_should_find_existing_user_case_insensitive(self, make_user, user_repository):
+        user_upper = make_user(1, "John", "JOHN@EXAMPLE.COM", 5000)
+        user_lower = make_user(2, "Anna", "anna@mail.com", 5000)
+        user_repository.save(user_upper)
+        user_repository.save(user_lower)
+
+        # Search
+        result_lower = user_repository.exists_by_email("john@example.com")
+        result_upper = user_repository.exists_by_email("ANNA@MAIL.COM")
+
+        assert result_lower is True
+        assert result_upper is True

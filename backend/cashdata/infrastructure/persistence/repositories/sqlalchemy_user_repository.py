@@ -1,6 +1,6 @@
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, exists
 
 from cashdata.domain.entities import User
 from cashdata.domain.repositories import IUserRepository
@@ -39,3 +39,9 @@ class SQLAlchemyUserRepository(IUserRepository):
         self.session.delete(user)
         self.session.flush()
         return True
+
+    def exists_by_email(self, email: str) -> bool:
+        """Checks if a given email is registered and active"""
+        exists_stmt = select(exists(select(UserModel).where(UserModel.email.ilike(email))))
+        result = self.session.scalar(exists_stmt)
+        return result
