@@ -29,7 +29,7 @@ class IMonthlyIncomeRepository(ABC):
 
     @abstractmethod
     def find_by_period(self, period: Period) -> List[MonthlyIncome]:
-        """Buscar TODOS los incomes de un periodo (crítico para ApportionmentCalculator)"""
+        """Buscar los incomes de un periodo (crítico para ApportionmentCalculator)"""
         pass
 
     @abstractmethod
