@@ -1,4 +1,3 @@
-from uuid import UUID
 from decimal import Decimal
 from pydantic import (
     BaseModel,
@@ -6,6 +5,7 @@ from pydantic import (
     EmailStr,
     field_validator,
     ConfigDict,
+    model_validator,
 )
 from cashdata.domain.value_objects.money import Currency
 
@@ -62,3 +62,42 @@ class UserResponseDTO(BaseModel):
             }
         },
     )
+
+
+class UpdateUserInputDTO(BaseModel):
+    id: int
+    name: str | None = Field(
+        min_length=1, max_length=100, description="User's full name"
+    )
+    email: EmailStr | None
+    wage_amount: Decimal | None = Field(
+        default=None, gt=0, description="Monthly wage amount (must be positive)"
+    )
+    email: str | None
+    wage_amount: Decimal | None
+    wage_currency: Currency | None
+
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_only_whitespace(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not v.strip():
+            raise ValueError("Name cannot be only whitespace")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def at_least_one_field_to_update(self):
+        if not any(
+            [
+                field is not None
+                for field in [
+                    self.name,
+                    self.email,
+                    self.wage_amount,
+                    self.wage_currency,
+                ]
+            ]
+        ):
+            raise ValueError("Update has no fields to set.")
+        return self
