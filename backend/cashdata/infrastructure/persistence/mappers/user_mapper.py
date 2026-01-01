@@ -13,6 +13,8 @@ class UserMapper:
             name=model.name,
             email=model.email,
             wage=Money(Decimal(str(model.wage_amount)), Currency(model.wage_currency)),
+            is_deleted=model.is_deleted,
+            deleted_at=model.deleted_at,
         )
 
     @staticmethod
@@ -24,4 +26,6 @@ class UserMapper:
             email=entity.email,
             wage_amount=float(entity.wage.amount),  # ← Decimal to float
             wage_currency=entity.wage.currency.value,
+            is_deleted=entity.is_deleted,
+            deleted_at=entity.deleted_at,
         )

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Optional
 
 from cashdata.domain.exceptions.domain_exceptions import InvalidEntity
@@ -21,6 +22,8 @@ class User:
     name: str
     email: str
     wage: Money
+    is_deleted: bool = False
+    deleted_at: datetime | None = None
 
     def __post_init__(self):
         if not self.name or not self.name.strip():
@@ -68,3 +71,8 @@ class User:
             raise InvalidEntity("Invalid email format")
 
         self.email = new_email
+
+    def mark_as_deleted(self) -> None:
+        """Soft delete"""
+        self.is_deleted = True
+        self.deleted_at = datetime.now(timezone.utc)
