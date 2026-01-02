@@ -95,26 +95,27 @@ export function useCreatePurchase() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Omit<Purchase, 'id'>) => purchaseRepository.create(data),
+    mutationFn: ({ userId, data }: { userId: number; data: Omit<Purchase, 'id' | 'user_id'> }) => 
+      purchaseRepository.create(userId, data),
     onSuccess: (_, variables) => {
       // Invalidate all relevant purchase queries
       queryClient.invalidateQueries({
-        queryKey: queryKeys.purchases.all(variables.user_id, undefined),
+        queryKey: queryKeys.purchases.all(variables.userId, undefined),
       });
-      if (variables.credit_card_id) {
+      if (variables.data.credit_card_id) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.purchases.byCard(variables.credit_card_id, variables.user_id),
+          queryKey: queryKeys.purchases.byCard(variables.data.credit_card_id, variables.userId),
         });
       }
-      if (variables.category_id) {
+      if (variables.data.category_id) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.purchases.byCategory(variables.category_id, variables.user_id),
+          queryKey: queryKeys.purchases.byCategory(variables.data.category_id, variables.userId),
         });
       }
       // Invalidate credit card summary to reflect new purchase
-      if (variables.credit_card_id) {
+      if (variables.data.credit_card_id) {
         queryClient.invalidateQueries({
-          queryKey: ['creditCards', variables.credit_card_id, 'summary'],
+          queryKey: ['creditCards', variables.data.credit_card_id, 'summary'],
         });
       }
     },

@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
-import { CategoriesPage, CreditCardsPage } from './presentation';
+import { CategoriesPage, CreditCardsPage, PurchasesPage } from './presentation';
 
 function HomePage() {
   return (
@@ -13,7 +13,9 @@ function HomePage() {
       <Link to="/credit-cards">
         <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
       </Link>
-      <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
+      <Link to="/purchases">
+        <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
+      </Link>
     </div>
   );
 }
@@ -38,11 +40,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function Card({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow border border-gray-100">
+    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 cursor-pointer">
       <h2 className="text-2xl font-semibold mb-2">{title}</h2>
       <p className="text-gray-600">{subtitle}</p>
       <div className="mt-4 pt-4 border-t border-gray-100">
-        <span className="text-sm text-blue-600 font-medium">Próximamente →</span>
+        <span className="text-sm text-blue-600 font-medium">Ver más →</span>
       </div>
     </div>
   );
@@ -57,6 +59,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/credit-cards" element={<CreditCardsPage />} />
+            <Route path="/purchases" element={<PurchasesPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>
