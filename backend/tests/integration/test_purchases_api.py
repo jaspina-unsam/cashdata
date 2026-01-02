@@ -1,0 +1,349 @@
+"""
+API integration tests for purchases endpoints.
+
+Tests all purchase-related API endpoints with real database and FastAPI test client.
+"""
+
+import pytest
+from datetime import date
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from cashdata.infrastructure.api.main import app
+from cashdata.infrastructure.persistence.models.user_model import Base
+from cashdata.infrastructure.api.dependencies import get_session
+from cashdata.domain.entities.user import User
+from cashdata.domain.value_objects.money import Money, Currency
+from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper
+from cashdata.infrastructure.persistence.models.user_model import UserModel
+
+
+@pytest.fixture
+def db_engine():
+    """Create in-memory SQLite engine for tests"""
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    return engine
+
+
+@pytest.fixture
+def db_session(db_engine):
+    """Create database session for tests"""
+    Session = sessionmaker(bind=db_engine)
+    session = Session()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def client(db_session):
+    """Create FastAPI test client with test database"""
+
+    def override_get_session():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_session] = override_get_session
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_user(db_session):
+    """Create a test user directly in database"""
+    user = User(
+        id=None,
+        name="Test User",
+        email="test@example.com",
+        wage=Money(50000, Currency.ARS),
+    )
+    user_model = UserMapper.to_model(user)
+    db_session.add(user_model)
+    db_session.commit()
+    db_session.refresh(user_model)
+    return {"id": user_model.id, "name": user_model.name, "email": user_model.email}
+
+
+@pytest.fixture
+def test_category(client):
+    """Create a test category"""
+    category_data = {"name": "Test Category", "color": "#FF5733"}
+    response = client.post("/api/v1/categories", json=category_data)
+    assert response.status_code == 201
+    return response.json()
+
+
+@pytest.fixture
+def test_credit_card(client, test_user):
+    """Create a test credit card"""
+    card_data = {
+        "name": "Test Card",
+        "bank": "Test Bank",
+        "last_four_digits": "1234",
+        "billing_close_day": 15,
+        "payment_due_day": 10,
+        "credit_limit_amount": 10000.00,
+        "credit_limit_currency": "ARS",
+    }
+    response = client.post(
+        "/api/v1/credit-cards", json=card_data, params={"user_id": test_user["id"]}
+    )
+    assert response.status_code == 201
+    return response.json()
+
+
+class TestCreatePurchase:
+    """Test POST /api/v1/purchases"""
+
+    def test_should_create_purchase_with_installments(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should create purchase and generate installments"""
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 3000.00,
+            "total_currency": "ARS",
+            "installments_count": 3,
+        }
+
+        response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert data["description"] == "Test Purchase"
+        assert data["total_amount"] == 3000.00
+        assert data["installments_count"] == 3
+        assert data["credit_card_id"] == test_credit_card["id"]
+        assert data["category_id"] == test_category["id"]
+
+    def test_should_return_400_for_invalid_data(self, client, test_user):
+        """Should return 400 for invalid purchase data"""
+        invalid_data = {
+            "credit_card_id": 999,  # Non-existent card
+            "category_id": 999,  # Non-existent category
+            "purchase_date": "2025-01-15",
+            "description": "Test",
+            "total_amount": 1000.00,
+            "total_currency": "ARS",
+            "installments_count": 3,
+        }
+
+        response = client.post(
+            "/api/v1/purchases", json=invalid_data, params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code in [400, 404]
+
+
+class TestGetPurchaseById:
+    """Test GET /api/v1/purchases/{purchase_id}"""
+
+    def test_should_return_purchase_by_id(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should retrieve purchase by ID"""
+        # Create purchase
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 1000.00,
+            "total_currency": "ARS",
+            "installments_count": 1,
+        }
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        purchase_id = create_response.json()["id"]
+
+        # Get purchase
+        response = client.get(
+            f"/api/v1/purchases/{purchase_id}", params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == purchase_id
+        assert data["description"] == "Test Purchase"
+
+    def test_should_return_404_for_nonexistent_purchase(self, client, test_user):
+        """Should return 404 for non-existent purchase"""
+        response = client.get(
+            "/api/v1/purchases/999", params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 404
+
+
+class TestListPurchases:
+    """Test GET /api/v1/purchases"""
+
+    def test_should_list_all_purchases_for_user(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should list all purchases for user"""
+        # Create multiple purchases
+        for i in range(3):
+            purchase_data = {
+                "credit_card_id": test_credit_card["id"],
+                "category_id": test_category["id"],
+                "purchase_date": f"2025-01-{15+i}",
+                "description": f"Purchase {i+1}",
+                "total_amount": 1000.00 * (i + 1),
+                "total_currency": "ARS",
+                "installments_count": 1,
+            }
+            client.post(
+                "/api/v1/purchases",
+                json=purchase_data,
+                params={"user_id": test_user["id"]},
+            )
+
+        # List purchases
+        response = client.get("/api/v1/purchases", params={"user_id": test_user["id"]})
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 3
+        # Should be sorted by date (most recent first)
+        assert data[0]["description"] == "Purchase 3"
+        assert data[1]["description"] == "Purchase 2"
+        assert data[2]["description"] == "Purchase 1"
+
+    def test_should_filter_by_date_range(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should filter purchases by date range"""
+        # Create purchases on different dates
+        dates = ["2025-01-10", "2025-01-15", "2025-01-20"]
+        for i, purchase_date in enumerate(dates):
+            purchase_data = {
+                "credit_card_id": test_credit_card["id"],
+                "category_id": test_category["id"],
+                "purchase_date": purchase_date,
+                "description": f"Purchase {i+1}",
+                "total_amount": 1000.00,
+                "total_currency": "ARS",
+                "installments_count": 1,
+            }
+            client.post(
+                "/api/v1/purchases",
+                json=purchase_data,
+                params={"user_id": test_user["id"]},
+            )
+
+        # Filter by date range
+        response = client.get(
+            "/api/v1/purchases",
+            params={
+                "user_id": test_user["id"],
+                "start_date": "2025-01-12",
+                "end_date": "2025-01-18",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 1
+        assert data[0]["description"] == "Purchase 2"
+
+    def test_should_return_400_for_invalid_date_range(self, client, test_user):
+        """Should return 400 when start_date > end_date"""
+        response = client.get(
+            "/api/v1/purchases",
+            params={
+                "user_id": test_user["id"],
+                "start_date": "2025-01-20",
+                "end_date": "2025-01-10",
+            },
+        )
+
+        assert response.status_code == 400
+
+    def test_should_support_pagination(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should support pagination with skip and limit"""
+        # Create 10 purchases
+        for i in range(10):
+            purchase_data = {
+                "credit_card_id": test_credit_card["id"],
+                "category_id": test_category["id"],
+                "purchase_date": f"2025-01-{10+i:02d}",
+                "description": f"Purchase {i+1}",
+                "total_amount": 1000.00,
+                "total_currency": "ARS",
+                "installments_count": 1,
+            }
+            client.post(
+                "/api/v1/purchases",
+                json=purchase_data,
+                params={"user_id": test_user["id"]},
+            )
+
+        # Test pagination
+        response = client.get(
+            "/api/v1/purchases",
+            params={"user_id": test_user["id"], "skip": 2, "limit": 3},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 3
+
+
+class TestListInstallmentsByPurchase:
+    """Test GET /api/v1/purchases/{purchase_id}/installments"""
+
+    def test_should_list_installments_for_purchase(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should list all installments for a purchase"""
+        # Create purchase with 3 installments
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 3000.00,
+            "total_currency": "ARS",
+            "installments_count": 3,
+        }
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        purchase_id = create_response.json()["id"]
+
+        # Get installments
+        response = client.get(
+            f"/api/v1/purchases/{purchase_id}/installments",
+            params={"user_id": test_user["id"]},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 3
+        # Should be sorted by installment_number
+        assert data[0]["installment_number"] == 1
+        assert data[1]["installment_number"] == 2
+        assert data[2]["installment_number"] == 3
+        # First installment should have the remainder
+        assert data[0]["amount"] == 1000.00
+
+    def test_should_return_404_for_nonexistent_purchase(self, client, test_user):
+        """Should return 404 for non-existent purchase"""
+        response = client.get(
+            "/api/v1/purchases/999/installments", params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 404
