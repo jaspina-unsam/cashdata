@@ -86,3 +86,49 @@ export interface CreditCardSummary {
   total_currency: string;
   installments: Installment[];
 }
+
+/**
+ * Domain Entity: Monthly Statement
+ * 
+ * Represents a monthly statement for a credit card.
+ * Each statement has specific billing close and payment due dates.
+ */
+export interface MonthlyStatement {
+  id: number;
+  credit_card_id: number;
+  credit_card_name: string;
+  billing_close_date: string; // ISO date format (YYYY-MM-DD)
+  payment_due_date: string; // ISO date format (YYYY-MM-DD)
+}
+
+/**
+ * Domain Entity: Purchase in Statement
+ * 
+ * Represents a purchase or installment within a statement period.
+ */
+export interface PurchaseInStatement {
+  id: number;
+  description: string;
+  purchase_date: string; // ISO date format (YYYY-MM-DD)
+  amount: number;
+  currency: string;
+  installments: number;
+  installment_number: number | null; // null for full purchases, 1-N for installments
+  category_name: string;
+}
+
+/**
+ * Domain Entity: Statement Detail
+ * 
+ * Represents the full detail of a monthly statement including all purchases.
+ */
+export interface StatementDetail {
+  id: number;
+  credit_card_id: number;
+  credit_card_name: string;
+  billing_close_date: string; // ISO date format (YYYY-MM-DD)
+  payment_due_date: string; // ISO date format (YYYY-MM-DD)
+  period_start_date: string; // ISO date format (YYYY-MM-DD)
+  period_end_date: string; // ISO date format (YYYY-MM-DD)
+  purchases: PurchaseInStatement[];
+}

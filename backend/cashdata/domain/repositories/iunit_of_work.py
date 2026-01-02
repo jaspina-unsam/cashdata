@@ -6,8 +6,12 @@ from cashdata.domain.repositories import (
     ICategoryRepository,
     ICreditCardRepository,
     IPurchaseRepository,
-    IInstallmentRepository
+    IInstallmentRepository,
 )
+from cashdata.domain.repositories.imonthly_statement_repository import (
+    IMonthlyStatementRepository,
+)
+
 
 class IUnitOfWork(ABC):
     users: IUserRepository
@@ -16,6 +20,7 @@ class IUnitOfWork(ABC):
     credit_cards: ICreditCardRepository
     purchases: IPurchaseRepository
     installments: IInstallmentRepository
+    monthly_statements: IMonthlyStatementRepository
 
     @abstractmethod
     def __enter__(self):

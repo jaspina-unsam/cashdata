@@ -1,11 +1,26 @@
 # backend/cashdata/infrastructure/persistence/repositories/sqlalchemy_unit_of_work.py
 from cashdata.domain.repositories import IUnitOfWork
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_user_repository import SQLAlchemyUserRepository
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import SQLAlchemyMonthlyIncomeRepository
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_category_repository import SQLAlchemyCategoryRepository
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import SQLAlchemyCreditCardRepository
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import SQLAlchemyPurchaseRepository
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_installment_repository import SQLAlchemyInstallmentRepository
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_user_repository import (
+    SQLAlchemyUserRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import (
+    SQLAlchemyMonthlyIncomeRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_category_repository import (
+    SQLAlchemyCategoryRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import (
+    SQLAlchemyCreditCardRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
+    SQLAlchemyPurchaseRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_installment_repository import (
+    SQLAlchemyInstallmentRepository,
+)
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_monthly_statement_repository import (
+    SQLAlchemyMonthlyStatementRepository,
+)
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -21,6 +36,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.credit_cards = SQLAlchemyCreditCardRepository(self.session)
         self.purchases = SQLAlchemyPurchaseRepository(self.session)
         self.installments = SQLAlchemyInstallmentRepository(self.session)
+        self.monthly_statements = SQLAlchemyMonthlyStatementRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

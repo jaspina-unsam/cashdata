@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from cashdata.infrastructure.api.routers import purchases, credit_cards, categories, users
+from cashdata.infrastructure.api.routers import (
+    purchases,
+    credit_cards,
+    categories,
+    users,
+    monthly_statements,
+)
 
 app = FastAPI(
     title="CashData API",
@@ -23,6 +29,7 @@ app.include_router(users.router)
 app.include_router(purchases.router)
 app.include_router(credit_cards.router)
 app.include_router(categories.router)
+app.include_router(monthly_statements.router)
 
 @app.get("/health")
 def health():
