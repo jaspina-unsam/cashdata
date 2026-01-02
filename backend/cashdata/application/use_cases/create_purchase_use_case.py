@@ -7,7 +7,7 @@ from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.domain.services.installment_generator import InstallmentGenerator
 from cashdata.domain.repositories import IUnitOfWork
 from cashdata.application.helpers.statement_helper import (
-    get_or_create_statement_for_date,
+    get_or_create_statement_for_period,
 )
 
 
@@ -104,12 +104,13 @@ class CreatePurchaseUseCase:
             # Save all installments
             uow.installments.save_all(installments)
 
-            # Automatically create statement for this purchase if it doesn't exist
-            get_or_create_statement_for_date(
-                credit_card=credit_card,
-                purchase_date=saved_purchase.purchase_date,
-                statement_repository=uow.monthly_statements,
-            )
+            # Automatically create statements for all installment billing periods
+            for installment in installments:
+                get_or_create_statement_for_period(
+                    credit_card=credit_card,
+                    billing_period=installment.billing_period,
+                    statement_repository=uow.monthly_statements,
+                )
 
             # Commit transaction
             uow.commit()

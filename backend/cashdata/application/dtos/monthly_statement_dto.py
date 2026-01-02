@@ -58,3 +58,5 @@ class StatementDetailDTO:
     period_start_date: date
     period_end_date: date
     purchases: list[PurchaseInStatementDTO]
+    total_amount: float
+    currency: str

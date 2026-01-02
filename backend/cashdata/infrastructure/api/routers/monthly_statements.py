@@ -84,6 +84,7 @@ def get_statement_detail(
             uow.credit_cards,
             uow.purchases,
             uow.categories,
+            uow.installments,
         )
         result = use_case.execute(statement_id, user_id)
 

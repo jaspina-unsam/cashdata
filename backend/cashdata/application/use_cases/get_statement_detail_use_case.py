@@ -9,6 +9,7 @@ from cashdata.application.dtos.monthly_statement_dto import (
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.repositories.icategory_repository import ICategoryRepository
 from cashdata.domain.repositories.icredit_card_repository import ICreditCardRepository
+from cashdata.domain.repositories.iinstallment_repository import IInstallmentRepository
 from cashdata.domain.repositories.imonthly_statement_repository import (
     IMonthlyStatementRepository,
 )
@@ -24,6 +25,7 @@ class GetStatementDetailUseCase:
         credit_card_repository: ICreditCardRepository,
         purchase_repository: IPurchaseRepository,
         category_repository: ICategoryRepository,
+        installment_repository: IInstallmentRepository,
     ):
         """Initialize the use case.
 
@@ -32,21 +34,23 @@ class GetStatementDetailUseCase:
             credit_card_repository: Repository for credit cards
             purchase_repository: Repository for purchases
             category_repository: Repository for categories
+            installment_repository: Repository for installments
         """
         self._statement_repository = statement_repository
         self._credit_card_repository = credit_card_repository
         self._purchase_repository = purchase_repository
         self._category_repository = category_repository
+        self._installment_repository = installment_repository
 
     def execute(self, statement_id: int, user_id: int) -> StatementDetailDTO | None:
-        """Get statement detail with all purchases.
+        """Get statement detail with all installments that fall in this period.
 
         Args:
             statement_id: The statement's ID
             user_id: The user's ID (for authorization)
 
         Returns:
-            Statement detail with purchases, or None if not found or not authorized
+            Statement detail with purchases/installments, or None if not found or not authorized
         """
         statement = self._statement_repository.find_by_id(statement_id)
         if not statement:
@@ -66,34 +70,36 @@ class GetStatementDetailUseCase:
             previous_statement.billing_close_date if previous_statement else None
         )
 
-        # Get all purchases for this user and card
+        # Get all installments for this card that belong to this billing period
+        # We query all user purchases to get the ones for this card
         all_purchases = self._purchase_repository.find_by_user_id(user_id)
         card_purchases = [
             p for p in all_purchases if p.credit_card_id == statement.credit_card_id
         ]
 
-        # Filter purchases that belong to this statement period
+        # Calculate the billing period for this statement (format: YYYYMM)
+        statement_period = statement.billing_close_date.strftime("%Y%m")
+
+        # Now get installments for each purchase and filter by billing_period
         statement_purchases = []
         for purchase in card_purchases:
-            if statement.includes_purchase_date(
-                purchase.purchase_date,
-                previous_statement.billing_close_date if previous_statement else None,
-            ):
-                # Add full purchase or installments depending on installments_count
-                if purchase.installments_count == 1:
-                    # Single payment
+            # Get installments for this purchase
+            installments = self._installment_repository.find_by_purchase_id(purchase.id)
+            
+            # Filter installments whose billing_period matches this statement's period
+            for installment in installments:
+                if installment.billing_period == statement_period:
                     statement_purchases.append(
-                        self._create_purchase_dto(purchase, None)
-                    )
-                else:
-                    # Multiple installments - include the one that falls in this period
-                    installment_number = self._get_installment_number_for_period(
-                        purchase, period_start, statement.billing_close_date
-                    )
-                    if installment_number:
-                        statement_purchases.append(
-                            self._create_purchase_dto(purchase, installment_number)
+                        self._create_purchase_dto(
+                            purchase, 
+                            installment.installment_number,
+                            installment.amount.amount
                         )
+                    )
+
+        # Calculate total amount
+        total_amount = sum(p.amount for p in statement_purchases)
+        currency = statement_purchases[0].currency if statement_purchases else credit_card.credit_limit.currency if credit_card.credit_limit else "ARS"
 
         return StatementDetailDTO(
             id=statement.id,
@@ -104,63 +110,33 @@ class GetStatementDetailUseCase:
             period_start_date=period_start,
             period_end_date=statement.billing_close_date,
             purchases=statement_purchases,
+            total_amount=total_amount,
+            currency=currency,
         )
 
     def _create_purchase_dto(
-        self, purchase: Purchase, installment_number: int | None
+        self, purchase: Purchase, installment_number: int | None, installment_amount: float | None = None
     ) -> PurchaseInStatementDTO:
-        """Create a purchase DTO with category name."""
+        """Create a purchase DTO with category name.
+        
+        Args:
+            purchase: The purchase entity
+            installment_number: The installment number if this is an installment
+            installment_amount: The installment amount (if different from total)
+        """
         category = self._category_repository.find_by_id(purchase.category_id)
         category_name = category.name if category else "Unknown"
+
+        # Use installment amount if provided, otherwise use total amount
+        amount = installment_amount if installment_amount is not None else purchase.total_amount.amount
 
         return PurchaseInStatementDTO(
             id=purchase.id,
             description=purchase.description,
             purchase_date=purchase.purchase_date,
-            amount=purchase.total_amount.amount,
+            amount=amount,
             currency=purchase.total_amount.currency,
             installments=purchase.installments_count,
             installment_number=installment_number,
             category_name=category_name,
         )
-
-    def _get_installment_number_for_period(
-        self, purchase: Purchase, period_start: date, period_end: date
-    ) -> int | None:
-        """Determine which installment number falls in the given period.
-
-        Installments are distributed consecutively starting from purchase month.
-        For example: Purchase on Jan 15 with 3 installments:
-        - Installment 1: Jan statement (closes in Jan)
-        - Installment 2: Feb statement (closes in Feb)
-        - Installment 3: Mar statement (closes in Mar)
-
-        Args:
-            purchase: The purchase with multiple installments
-            period_start: Statement period start date
-            period_end: Statement period end date (billing close date)
-
-        Returns:
-            The installment number (1-N) if one falls in this period, None otherwise
-        """
-        # Calculate which month the purchase was made
-        purchase_year = purchase.purchase_date.year
-        purchase_month = purchase.purchase_date.month
-
-        # Calculate which month this period ends
-        period_year = period_end.year
-        period_month = period_end.month
-
-        # Calculate month difference
-        month_diff = (period_year - purchase_year) * 12 + (
-            period_month - purchase_month
-        )
-
-        # Installment number is month_diff + 1 (first installment is month 0)
-        installment_number = month_diff + 1
-
-        # Check if this installment exists (must be between 1 and installments_count)
-        if 1 <= installment_number <= purchase.installments_count:
-            return installment_number
-
-        return None

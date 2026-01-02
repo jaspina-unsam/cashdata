@@ -131,4 +131,6 @@ export interface StatementDetail {
   period_start_date: string; // ISO date format (YYYY-MM-DD)
   period_end_date: string; // ISO date format (YYYY-MM-DD)
   purchases: PurchaseInStatement[];
+  total_amount: number;
+  currency: string;
 }
