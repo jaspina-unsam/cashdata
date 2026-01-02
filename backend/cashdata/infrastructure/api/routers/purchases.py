@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from datetime import date
 
@@ -14,11 +14,23 @@ from cashdata.application.use_cases.list_purchases_by_user_use_case import (
     ListPurchasesByUserUseCase,
     ListPurchasesByUserQuery,
 )
+from cashdata.application.use_cases.list_purchases_by_date_range_use_case import (
+    ListPurchasesByDateRangeUseCase,
+    ListPurchasesByDateRangeQuery,
+)
+from cashdata.application.use_cases.list_installments_by_purchase_use_case import (
+    ListInstallmentsByPurchaseUseCase,
+    ListInstallmentsByPurchaseQuery,
+)
 from cashdata.application.dtos.purchase_dto import (
     CreatePurchaseInputDTO,
     PurchaseResponseDTO,
+    InstallmentResponseDTO,
 )
-from cashdata.application.mappers.purchase_dto_mapper import PurchaseDTOMapper
+from cashdata.application.mappers.purchase_dto_mapper import (
+    PurchaseDTOMapper,
+    InstallmentDTOMapper,
+)
 from cashdata.domain.repositories import IUnitOfWork
 from cashdata.infrastructure.api.dependencies import get_unit_of_work
 
@@ -125,22 +137,82 @@ def get_purchase(
 @router.get(
     "",
     response_model=List[PurchaseResponseDTO],
-    summary="List all purchases for user",
+    summary="List purchases for user",
     responses={
         200: {"description": "List of purchases (may be empty)"},
+        400: {"description": "Invalid date range"},
     }
 )
 def list_purchases(
     user_id: int = Query(..., description="User ID (from auth context)"),
+    start_date: Optional[date] = Query(None, description="Filter by start date (inclusive)"),
+    end_date: Optional[date] = Query(None, description="Filter by end date (inclusive)"),
+    skip: int = Query(0, ge=0, description="Number of records to skip for pagination"),
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of records to return"),
     uow: IUnitOfWork = Depends(get_unit_of_work)
 ):
     """
-    List all purchases for the authenticated user.
+    List purchases for the authenticated user.
+    
+    Supports:
+    - Date range filtering (start_date and end_date)
+    - Pagination (skip and limit)
     
     Returns purchases sorted by date (most recent first).
     """
-    query = ListPurchasesByUserQuery(user_id=user_id)
-    use_case = ListPurchasesByUserUseCase(uow)
-    purchases = use_case.execute(query)
+    try:
+        # Use date range filter if provided
+        if start_date and end_date:
+            query = ListPurchasesByDateRangeQuery(
+                user_id=user_id,
+                start_date=start_date,
+                end_date=end_date
+            )
+            use_case = ListPurchasesByDateRangeUseCase(uow)
+            purchases = use_case.execute(query)
+        else:
+            query = ListPurchasesByUserQuery(user_id=user_id)
+            use_case = ListPurchasesByUserUseCase(uow)
+            purchases = use_case.execute(query)
+        
+        # Apply pagination
+        paginated_purchases = purchases[skip:skip + limit]
+        
+        return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+        
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/{purchase_id}/installments",
+    response_model=List[InstallmentResponseDTO],
+    summary="List installments for purchase",
+    responses={
+        200: {"description": "List of installments"},
+        400: {"description": "Purchase doesn't belong to user"},
+        404: {"description": "Purchase not found"},
+    }
+)
+def list_installments_by_purchase(
+    purchase_id: int,
+    user_id: int = Query(..., description="User ID (from auth context)"),
+    uow: IUnitOfWork = Depends(get_unit_of_work)
+):
+    """
+    List all installments for a specific purchase.
     
-    return [PurchaseDTOMapper.to_response_dto(p) for p in purchases]
+    Returns installments sorted by installment number (1, 2, 3, ...).
+    Only returns installments if purchase belongs to the authenticated user.
+    """
+    try:
+        query = ListInstallmentsByPurchaseQuery(purchase_id=purchase_id, user_id=user_id)
+        use_case = ListInstallmentsByPurchaseUseCase(uow)
+        installments = use_case.execute(query)
+        
+        return [InstallmentDTOMapper.to_response_dto(inst) for inst in installments]
+        
+    except ValueError as e:
+        if "not found" in str(e):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
