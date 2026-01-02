@@ -9,6 +9,10 @@ from cashdata.infrastructure.persistence.models import (
     Base,
     UserModel,
     MonthlyIncomeModel,
+    CategoryModel,
+    CreditCardModel,
+    PurchaseModel,
+    InstallmentModel,
 )
 
 # this is the Alembic Config object, which provides
