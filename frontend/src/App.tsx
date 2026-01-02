@@ -1,20 +1,34 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { queryClient } from './application';
+import { CategoriesPage } from './presentation';
 
-function Layout() {
+function HomePage() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Link to="/categories">
+        <Card title="🏷️ Categorías" subtitle="Organizá tus gastos" />
+      </Link>
+      <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
+      <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
+    </div>
+  );
+}
+
+function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <h1 className="text-3xl font-bold text-white">💰 CashData</h1>
-          <p className="text-blue-100 text-sm mt-1">Tu finanzas bajo control</p>
+          <Link to="/">
+            <h1 className="text-3xl font-bold text-white">💰 CashData</h1>
+            <p className="text-blue-100 text-sm mt-1">Tu finanzas bajo control</p>
+          </Link>
         </div>
       </nav>
       <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card title="💳 Gastos" subtitle="Registrá tus gastos diarios" />
-          <Card title="📊 Ciclos" subtitle="Seguimiento de tarjetas" />
-          <Card title="🎯 Planificación" subtitle="Metas de ahorro" />
-        </div>
+        {children}
       </main>
     </div>
   );
@@ -34,10 +48,16 @@ function Card({ title, subtitle }: { title: string; subtitle: string }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+    </QueryClientProvider>
   );
 }

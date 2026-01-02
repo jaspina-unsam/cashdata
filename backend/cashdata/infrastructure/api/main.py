@@ -9,10 +9,10 @@ app = FastAPI(
     description="API de gestión financiera personal"
 )
 
-# CORS para desarrollo (permitir frontend en localhost:5173)
+# CORS para desarrollo (permitir frontend en localhost:5173 y 5174)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
