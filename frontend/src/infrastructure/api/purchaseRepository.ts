@@ -80,6 +80,12 @@ export class PurchaseApiRepository implements IPurchaseRepository {
       user_id: userId,
     });
   }
+
+  async delete(id: number, userId: number): Promise<void> {
+    await httpClient.delete(`${this.basePath}/${id}`, {
+      user_id: userId,
+    });
+  }
 }
 
 export const purchaseRepository = new PurchaseApiRepository();

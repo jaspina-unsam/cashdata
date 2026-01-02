@@ -5,8 +5,8 @@
  */
 
 import { useState } from 'react';
-import { Plus, ShoppingCart, ChevronDown, ChevronUp } from 'lucide-react';
-import { usePurchases, useCreatePurchase } from '../../application/hooks/usePurchases';
+import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { usePurchases, useCreatePurchase, useDeletePurchase } from '../../application/hooks/usePurchases';
 import { useCreditCards } from '../../application/hooks/useCreditCards';
 import { useCategories } from '../../application/hooks/useCategories';
 import type { Purchase } from '../../domain/entities';
@@ -42,6 +42,24 @@ export function PurchasesPage() {
   const { data: creditCards } = useCreditCards(CURRENT_USER_ID);
   const { data: categories } = useCategories();
   const createPurchase = useCreatePurchase();
+  const deletePurchase = useDeletePurchase();
+
+  const handleDelete = async (purchaseId: number, description: string) => {
+    if (!confirm(`¿Estás seguro que querés eliminar la compra "${description}"? Esta acción eliminará también todas sus cuotas y no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      await deletePurchase.mutateAsync({ id: purchaseId, userId: CURRENT_USER_ID });
+      // Close expanded view if this purchase was expanded
+      if (expandedPurchase === purchaseId) {
+        setExpandedPurchase(null);
+      }
+    } catch (err: any) {
+      console.error('Failed to delete purchase:', err);
+      alert(`Error al eliminar compra: ${err.message || 'Error desconocido'}`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,6 +364,17 @@ export function PurchasesPage() {
                           ? 'Pago único' 
                           : `${purchase.installments_count} cuotas`}
                       </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(purchase.id, purchase.description);
+                        }}
+                        disabled={deletePurchase.isPending}
+                        className="mt-2 flex items-center gap-1 text-red-600 hover:text-red-700 text-sm disabled:opacity-50"
+                      >
+                        <Trash2 size={14} />
+                        {deletePurchase.isPending ? 'Eliminando...' : 'Eliminar'}
+                      </button>
                     </div>
                   </div>
                   <div className="ml-4">

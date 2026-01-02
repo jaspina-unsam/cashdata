@@ -71,3 +71,21 @@ export function useCreateCreditCard() {
     },
   });
 }
+
+/**
+ * Hook to delete a credit card
+ */
+export function useDeleteCreditCard() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, userId }: { id: number; userId: number }) => 
+      creditCardRepository.delete(id, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate credit cards list for this user
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.creditCards.all(variables.userId),
+      });
+    },
+  });
+}

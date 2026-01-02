@@ -2,11 +2,14 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
-import { CategoriesPage, CreditCardsPage, PurchasesPage } from './presentation';
+import { UsersPage, CategoriesPage, CreditCardsPage, PurchasesPage } from './presentation';
 
 function HomePage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Link to="/users">
+        <Card title="👥 Usuarios" subtitle="Gestioná usuarios" />
+      </Link>
       <Link to="/categories">
         <Card title="🏷️ Categorías" subtitle="Organizá tus gastos" />
       </Link>
@@ -57,6 +60,7 @@ export default function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/users" element={<UsersPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/credit-cards" element={<CreditCardsPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />

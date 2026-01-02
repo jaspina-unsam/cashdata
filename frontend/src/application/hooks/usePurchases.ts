@@ -121,3 +121,25 @@ export function useCreatePurchase() {
     },
   });
 }
+
+/**
+ * Hook to delete a purchase
+ */
+export function useDeletePurchase() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, userId }: { id: number; userId: number }) => 
+      purchaseRepository.delete(id, userId),
+    onSuccess: (_, variables) => {
+      // Invalidate all relevant purchase queries
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.purchases.all(variables.userId, undefined),
+      });
+      // Invalidate all credit card queries to reflect changes
+      queryClient.invalidateQueries({
+        queryKey: ['creditCards'],
+      });
+    },
+  });
+}

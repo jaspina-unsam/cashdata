@@ -24,6 +24,7 @@ export interface ICreditCardRepository {
   findById(id: number, userId: number): Promise<CreditCard | null>;
   getSummary(id: number, userId: number, billingPeriod: string): Promise<CreditCardSummary>;
   create(userId: number, data: Omit<CreditCard, 'id' | 'user_id'>): Promise<CreditCard>;
+  delete(id: number, userId: number): Promise<void>;
 }
 
 /**
@@ -41,5 +42,6 @@ export interface IPurchaseRepository {
   create(
     userId: number,
     data: Omit<Purchase, 'id' | 'user_id'>
+  delete(id: number, userId: number): Promise<void>;
   ): Promise<Purchase>;
 }

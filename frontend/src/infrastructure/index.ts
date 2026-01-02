@@ -5,6 +5,7 @@
  */
 
 export * from './http/httpClient';
+export * from './api/userRepository';
 export * from './api/categoryRepository';
 export * from './api/creditCardRepository';
 export * from './api/purchaseRepository';

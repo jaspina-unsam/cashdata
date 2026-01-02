@@ -109,8 +109,9 @@ export class HttpClient {
     });
   }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, {
+  async delete<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+    const url = params ? `${endpoint}?${new URLSearchParams(params).toString()}` : endpoint;
+    return this.request<T>(url, {
       method: 'DELETE',
     });
   }
