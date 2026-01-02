@@ -5,14 +5,24 @@ from cashdata.application.use_cases.get_credit_card_summary_use_case import (
     GetCreditCardSummaryUseCase,
     GetCreditCardSummaryQuery,
 )
+from cashdata.application.use_cases.list_credit_cards_by_user_use_case import (
+    ListCreditCardsByUserUseCase,
+    ListCreditCardsByUserQuery,
+)
+from cashdata.application.use_cases.list_purchases_by_credit_card_use_case import (
+    ListPurchasesByCreditCardUseCase,
+    ListPurchasesByCreditCardQuery,
+)
 from cashdata.application.dtos.purchase_dto import (
     CreateCreditCardInputDTO,
     CreditCardResponseDTO,
     CreditCardSummaryResponseDTO,
+    PurchaseResponseDTO,
 )
 from cashdata.application.mappers.purchase_dto_mapper import (
     CreditCardDTOMapper,
     CreditCardSummaryDTOMapper,
+    PurchaseDTOMapper,
 )
 from cashdata.domain.entities.tarjeta_credito import CreditCard
 from cashdata.domain.value_objects.money import Money
@@ -93,15 +103,23 @@ def create_credit_card(
 )
 def list_credit_cards(
     user_id: int = Query(..., description="User ID (from auth context)"),
+    skip: int = Query(0, ge=0, description="Number of records to skip for pagination"),
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of records to return"),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
     List all credit cards for the authenticated user.
+    
+    Supports pagination (skip and limit).
     """
-    with uow:
-        credit_cards = uow.credit_cards.find_by_user_id(user_id)
-
-    return [CreditCardDTOMapper.to_response_dto(card) for card in credit_cards]
+    query = ListCreditCardsByUserQuery(user_id=user_id)
+    use_case = ListCreditCardsByUserUseCase(uow)
+    credit_cards = use_case.execute(query)
+    
+    # Apply pagination
+    paginated_cards = credit_cards[skip:skip + limit]
+    
+    return [CreditCardDTOMapper.to_response_dto(card) for card in paginated_cards]
 
 
 @router.get(
@@ -176,4 +194,44 @@ def get_credit_card_summary(
         return CreditCardSummaryDTOMapper.to_response_dto(summary)
 
     except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/{card_id}/purchases",
+    response_model=List[PurchaseResponseDTO],
+    summary="List purchases for a credit card",
+    responses={
+        200: {"description": "List of purchases (may be empty)"},
+        400: {"description": "Card doesn't belong to user"},
+        404: {"description": "Credit card not found"},
+    },
+)
+def list_purchases_by_card(
+    card_id: int,
+    user_id: int = Query(..., description="User ID (from auth context)"),
+    skip: int = Query(0, ge=0, description="Number of records to skip for pagination"),
+    limit: int = Query(100, ge=1, le=1000, description="Maximum number of records to return"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    List all purchases made with a specific credit card.
+    
+    Returns purchases sorted by date (most recent first).
+    Supports pagination (skip and limit).
+    Only returns purchases if card belongs to the authenticated user.
+    """
+    try:
+        query = ListPurchasesByCreditCardQuery(credit_card_id=card_id, user_id=user_id)
+        use_case = ListPurchasesByCreditCardUseCase(uow)
+        purchases = use_case.execute(query)
+        
+        # Apply pagination
+        paginated_purchases = purchases[skip:skip + limit]
+        
+        return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+        
+    except ValueError as e:
+        if "not found" in str(e):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
