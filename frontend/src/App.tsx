@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
-import { CategoriesPage } from './presentation';
+import { CategoriesPage, CreditCardsPage } from './presentation';
 
 function HomePage() {
   return (
@@ -10,7 +10,9 @@ function HomePage() {
       <Link to="/categories">
         <Card title="🏷️ Categorías" subtitle="Organizá tus gastos" />
       </Link>
-      <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
+      <Link to="/credit-cards">
+        <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
+      </Link>
       <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
     </div>
   );
@@ -54,6 +56,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/credit-cards" element={<CreditCardsPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

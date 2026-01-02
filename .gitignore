@@ -1,6 +1,7 @@
 # Project
 .support
 .support/*
+*.db
 
 # Python
 __pycache__/

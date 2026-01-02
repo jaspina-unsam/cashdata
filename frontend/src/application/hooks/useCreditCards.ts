@@ -61,11 +61,12 @@ export function useCreateCreditCard() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Omit<CreditCard, 'id'>) => creditCardRepository.create(data),
+    mutationFn: ({ userId, data }: { userId: number; data: Omit<CreditCard, 'id' | 'user_id'> }) => 
+      creditCardRepository.create(userId, data),
     onSuccess: (_, variables) => {
       // Invalidate credit cards list for this user
       queryClient.invalidateQueries({
-        queryKey: queryKeys.creditCards.all(variables.user_id),
+        queryKey: queryKeys.creditCards.all(variables.userId),
       });
     },
   });
