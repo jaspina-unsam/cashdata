@@ -1,15 +1,24 @@
 from decimal import Decimal
 import pytest
+from datetime import date
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from cashdata.domain.entities.monthly_income import IncomeSource, MonthlyIncome
 from cashdata.domain.entities.user import User
+from cashdata.domain.entities.category import Category
+from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.purchase import Purchase
+from cashdata.domain.entities.installment import Installment
 from cashdata.domain.value_objects.money import Currency, Money
 from cashdata.domain.value_objects.period import Period
 from cashdata.infrastructure.persistence.models.user_model import UserModel
 from cashdata.infrastructure.persistence.models.monthly_income_model import (
     MonthlyIncomeModel,
 )
+from cashdata.infrastructure.persistence.models.category_model import CategoryModel
+from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from cashdata.infrastructure.persistence.models.purchase_model import PurchaseModel
+from cashdata.infrastructure.persistence.models.installment_model import InstallmentModel
 from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
@@ -20,6 +29,10 @@ def session_factory():
     engine = create_engine("sqlite:///:memory:")
     UserModel.metadata.create_all(engine)
     MonthlyIncomeModel.metadata.create_all(engine)
+    CategoryModel.metadata.create_all(engine)
+    CreditCardModel.metadata.create_all(engine)
+    PurchaseModel.metadata.create_all(engine)
+    InstallmentModel.metadata.create_all(engine)
     SessionFactory = sessionmaker(bind=engine)
 
     yield SessionFactory
@@ -134,3 +147,94 @@ class TestSQLAlchemyUnitOfWork:
 
         assert saved_user_name == "Olga"
         assert saved_user is None
+
+    def test_new_repositories_available(self, session_factory):
+        """
+        GIVEN: UnitOfWork inicializado
+        WHEN: Se accede a los nuevos repositories
+        THEN: Están disponibles y funcionan correctamente
+        """
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            assert uow.categories is not None
+            assert uow.credit_cards is not None
+            assert uow.purchases is not None
+            assert uow.installments is not None
+
+    def test_commit_persists_purchase_with_all_dependencies(self, session_factory, make_user):
+        """
+        GIVEN: Purchase completa con todas sus dependencias
+        WHEN: Se hace commit
+        THEN: Todos los datos relacionados se persisten correctamente
+        """
+        user = make_user(1, "Juan", "juan@mail.com", 100000)
+        category = Category(id=None, name="Electronics", color="#FF5733", icon="laptop")
+        credit_card = CreditCard(
+            id=None, user_id=1, name="Visa", bank="HSBC",
+            last_four_digits="1234", billing_close_day=10,
+            payment_due_day=20, credit_limit=None
+        )
+        
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            saved_user = uow.users.save(user)
+            saved_category = uow.categories.save(category)
+            saved_card = uow.credit_cards.save(credit_card)
+            uow.commit()
+            
+            purchase = Purchase(
+                id=None, user_id=saved_user.id, credit_card_id=saved_card.id,
+                category_id=saved_category.id, purchase_date=date(2025, 1, 15),
+                description="Laptop", total_amount=Money(Decimal("120000.00"), Currency.ARS),
+                installments_count=12
+            )
+            saved_purchase = uow.purchases.save(purchase)
+            uow.commit()
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            retrieved_purchase = uow.purchases.find_by_id(saved_purchase.id)
+            
+        assert retrieved_purchase is not None
+        assert retrieved_purchase.description == "Laptop"
+        assert retrieved_purchase.total_amount.amount == Decimal("120000.00")
+        assert retrieved_purchase.installments_count == 12
+
+    def test_rollback_reverts_all_repositories_changes(self, session_factory, make_user):
+        """
+        GIVEN: Cambios en múltiples repositories
+        WHEN: Se hace rollback
+        THEN: Ningún cambio se persiste
+        """
+        user = make_user(1, "Ana", "ana@mail.com", 80000)
+        category = Category(id=None, name="Food", color="#00FF00", icon="utensils")
+        
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            uow.users.save(user)
+            uow.categories.save(category)
+            uow.rollback()
+
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            saved_user = uow.users.find_by_id(1)
+            all_categories = uow.categories.find_all()
+            
+        assert saved_user is None
+        assert len(all_categories) == 0
+
+    def test_all_repositories_share_same_session(self, session_factory, make_user):
+        """
+        GIVEN: Múltiples repositories en el mismo UoW
+        WHEN: Se guardan entidades sin commit
+        THEN: Todos comparten la misma sesión y ven los cambios
+        """
+        user = make_user(1, "Carlos", "carlos@mail.com", 90000)
+        category = Category(id=None, name="Travel", color="#0000FF", icon="plane")
+        
+        with SQLAlchemyUnitOfWork(session_factory) as uow:
+            uow.users.save(user)
+            uow.categories.save(category)
+            # Sin commit, pero en la misma session deberían verse
+            found_user = uow.users.find_by_id(1)
+            all_categories = uow.categories.find_all()
+            
+            assert found_user is not None
+            assert found_user.name == "Carlos"
+            assert len(all_categories) == 1
+            assert all_categories[0].name == "Travel"

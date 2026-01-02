@@ -1,3 +1,7 @@
 from cashdata.domain.repositories.imonthly_income_repository import IMonthlyIncomeRepository
 from cashdata.domain.repositories.iuser_repository import IUserRepository
+from cashdata.domain.repositories.icategory_repository import ICategoryRepository
+from cashdata.domain.repositories.icredit_card_repository import ICreditCardRepository
+from cashdata.domain.repositories.ipurchase_repository import IPurchaseRepository
+from cashdata.domain.repositories.iinstallment_repository import IInstallmentRepository
 from cashdata.domain.repositories.iunit_of_work import IUnitOfWork

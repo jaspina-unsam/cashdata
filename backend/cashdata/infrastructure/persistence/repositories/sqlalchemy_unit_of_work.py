@@ -2,6 +2,10 @@
 from cashdata.domain.repositories import IUnitOfWork
 from cashdata.infrastructure.persistence.repositories.sqlalchemy_user_repository import SQLAlchemyUserRepository
 from cashdata.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import SQLAlchemyMonthlyIncomeRepository
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_category_repository import SQLAlchemyCategoryRepository
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import SQLAlchemyCreditCardRepository
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import SQLAlchemyPurchaseRepository
+from cashdata.infrastructure.persistence.repositories.sqlalchemy_installment_repository import SQLAlchemyInstallmentRepository
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -13,6 +17,10 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.session = self.session_factory()
         self.users = SQLAlchemyUserRepository(self.session)
         self.monthly_incomes = SQLAlchemyMonthlyIncomeRepository(self.session)
+        self.categories = SQLAlchemyCategoryRepository(self.session)
+        self.credit_cards = SQLAlchemyCreditCardRepository(self.session)
+        self.purchases = SQLAlchemyPurchaseRepository(self.session)
+        self.installments = SQLAlchemyInstallmentRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

@@ -2,12 +2,20 @@ from abc import ABC, abstractmethod
 
 from cashdata.domain.repositories import (
     IUserRepository,
-    IMonthlyIncomeRepository
+    IMonthlyIncomeRepository,
+    ICategoryRepository,
+    ICreditCardRepository,
+    IPurchaseRepository,
+    IInstallmentRepository
 )
 
 class IUnitOfWork(ABC):
     users: IUserRepository
     monthly_incomes: IMonthlyIncomeRepository
+    categories: ICategoryRepository
+    credit_cards: ICreditCardRepository
+    purchases: IPurchaseRepository
+    installments: IInstallmentRepository
 
     @abstractmethod
     def __enter__(self):
