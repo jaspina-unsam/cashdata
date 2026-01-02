@@ -1,3 +1,7 @@
+# Project
+.support
+.support/*
+
 # Python
 __pycache__/
 *.pyc
