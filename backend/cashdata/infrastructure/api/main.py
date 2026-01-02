@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from cashdata.infrastructure.api.routers import purchases, credit_cards, categories
+from cashdata.infrastructure.api.routers import purchases, credit_cards, categories, users
 
 app = FastAPI(
     title="CashData API",
@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(users.router)
 app.include_router(purchases.router)
 app.include_router(credit_cards.router)
 app.include_router(categories.router)

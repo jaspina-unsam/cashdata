@@ -5,16 +5,17 @@
  */
 
 import { useState } from 'react';
-import { Plus, CreditCard as CreditCardIcon } from 'lucide-react';
-import { useCreditCards, useCreateCreditCard } from '../../application';
+import { Plus, CreditCard as CreditCardIcon, User, Trash2 } from 'lucide-react';
+import { useCreditCards, useCreateCreditCard, useUsers, useDeleteCreditCard } from '../../application';
 import type { CreditCard } from '../../domain/entities';
 
-// Hardcoded user ID for MVP (will be replaced with auth context)
-const CURRENT_USER_ID = 1;
+// Default user ID for listing cards (will be replaced with auth context)
+const DEFAULT_USER_ID = 1;
 
 export function CreditCardsPage() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
+    user_id: '',
     name: '',
     bank: '',
     last_four_digits: '',
@@ -24,14 +25,29 @@ export function CreditCardsPage() {
     credit_limit_currency: 'ARS',
   });
 
-  const { data: creditCards, isLoading, error } = useCreditCards(CURRENT_USER_ID);
+  const { data: users } = useUsers();
+  const { data: creditCards, isLoading, error } = useCreditCards(DEFAULT_USER_ID);
   const createCreditCard = useCreateCreditCard();
+  const deleteCreditCard = useDeleteCreditCard();
+
+  const handleDelete = async (cardId: number, cardName: string) => {
+    if (!confirm(`¿Estás seguro que querés eliminar la tarjeta "${cardName}"? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    try {
+      await deleteCreditCard.mutateAsync({ id: cardId, userId: DEFAULT_USER_ID });
+    } catch (err: any) {
+      console.error('Failed to delete credit card:', err);
+      alert(`Error al eliminar tarjeta: ${err.message || 'Error desconocido'}`);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.name.trim() || !formData.bank.trim() || 
+    if (!formData.user_id || !formData.name.trim() || !formData.bank.trim() || 
         !formData.last_four_digits.trim() || !formData.billing_close_day || 
         !formData.payment_due_day) {
       alert('Por favor completá todos los campos obligatorios');
@@ -67,10 +83,11 @@ export function CreditCardsPage() {
         cardData.credit_limit_currency = formData.credit_limit_currency;
       }
 
-      await createCreditCard.mutateAsync({ userId: CURRENT_USER_ID, data: cardData });
+      await createCreditCard.mutateAsync({ userId: parseInt(formData.user_id), data: cardData });
       
       // Reset form
       setFormData({
+        user_id: '',
         name: '',
         bank: '',
         last_four_digits: '',
@@ -88,6 +105,7 @@ export function CreditCardsPage() {
 
   const handleCancel = () => {
     setFormData({
+      user_id: '',
       name: '',
       bank: '',
       last_four_digits: '',
@@ -144,6 +162,27 @@ export function CreditCardsPage() {
             <h2 className="text-xl font-semibold mb-4">Nueva Tarjeta</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* User Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <User className="inline w-4 h-4 mr-1" />
+                    Titular *
+                  </label>
+                  <select
+                    value={formData.user_id}
+                    onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Seleccioná un titular</option>
+                    {users?.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -315,6 +354,17 @@ export function CreditCardsPage() {
                       </p>
                     </div>
                   )}
+                </div>
+
+                <div className="mt-4">
+                  <button
+                    onClick={() => handleDelete(card.id, card.name)}
+                    disabled={deleteCreditCard.isPending}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 size={16} />
+                    {deleteCreditCard.isPending ? 'Eliminando...' : 'Eliminar'}
+                  </button>
                 </div>
               </div>
             ))}
