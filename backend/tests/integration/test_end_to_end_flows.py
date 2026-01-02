@@ -6,49 +6,10 @@ Tests complete user workflows from start to finish.
 
 import pytest
 from datetime import date
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from cashdata.infrastructure.api.main import app
-from cashdata.infrastructure.persistence.models.user_model import Base
-from cashdata.infrastructure.api.dependencies import get_session
 from cashdata.domain.entities.user import User
 from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper
-
-
-@pytest.fixture
-def db_engine():
-    """Create in-memory SQLite engine for tests"""
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    return engine
-
-
-@pytest.fixture
-def db_session(db_engine):
-    """Create database session for tests"""
-    Session = sessionmaker(bind=db_engine)
-    session = Session()
-    yield session
-    session.close()
-
-
-@pytest.fixture
-def client(db_session):
-    """Create FastAPI test client with test database"""
-
-    def override_get_session():
-        try:
-            yield db_session
-        finally:
-            pass
-
-    app.dependency_overrides[get_session] = override_get_session
-    client = TestClient(app)
-    yield client
-    app.dependency_overrides.clear()
 
 
 def create_user_in_db(db_session, name, email):
@@ -122,7 +83,7 @@ class TestCompletePurchaseFlow:
 
         # Verify purchase details
         assert purchase["description"] == "New Laptop"
-        assert purchase["total_amount"] == 60000.00
+        assert purchase["total_amount"] == "60000.00"
         assert purchase["installments_count"] == 6
 
         # 5. Get purchase details
@@ -147,8 +108,8 @@ class TestCompletePurchaseFlow:
         assert installments[5]["installment_number"] == 6
 
         # Verify installment amounts (60000 / 6 = 10000 each)
-        assert installments[0]["amount"] == 10000.00
-        assert installments[1]["amount"] == 10000.00
+        assert installments[0]["amount"] == "10000.00"
+        assert installments[1]["amount"] == "10000.00"
 
         # 7. Get credit card summary for February 2025
         summary_response = client.get(
@@ -162,7 +123,7 @@ class TestCompletePurchaseFlow:
         assert summary["credit_card_id"] == card_id
         assert summary["billing_period"] == "202502"
         assert len(summary["installments"]) > 0
-        assert summary["total_amount"] > 0
+        assert float(summary["total_amount"]) > 0
 
 
 class TestMultiplePurchasesFlow:
@@ -325,7 +286,7 @@ class TestInstallmentGenerationFlow:
 
         # Verify each installment amount (120000 / 12 = 10000)
         for inst in installments:
-            assert inst["amount"] == 10000.00
+            assert inst["amount"] == "10000.00"
 
         # Check different billing periods have installments
         billing_periods = set(inst["billing_period"] for inst in installments)

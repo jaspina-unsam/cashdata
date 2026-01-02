@@ -35,7 +35,8 @@ class CreditCardMapper:
         credit_limit_currency = None
         if entity.credit_limit is not None:
             credit_limit_amount = float(entity.credit_limit.amount)
-            credit_limit_currency = entity.credit_limit.currency.value
+            # Currency is StrEnum, so it can be used directly as a string
+            credit_limit_currency = entity.credit_limit.currency
 
         return CreditCardModel(
             id=entity.id,
