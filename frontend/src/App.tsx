@@ -2,11 +2,18 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
-import { UsersPage, CategoriesPage, CreditCardsPage, PurchasesPage } from './presentation';
+import { 
+  UsersPage, 
+  CategoriesPage, 
+  CreditCardsPage, 
+  PurchasesPage 
+} from './presentation';
+import { StatementsPage } from './presentation/pages/StatementsPage';
+import { StatementDetailPage } from './presentation/pages/StatementDetailPage';
 
 function HomePage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <Link to="/users">
         <Card title="👥 Usuarios" subtitle="Gestioná usuarios" />
       </Link>
@@ -18,6 +25,9 @@ function HomePage() {
       </Link>
       <Link to="/purchases">
         <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
+      </Link>
+      <Link to="/statements">
+        <Card title="📄 Resumenes" subtitle="Ver resumenes mensuales" />
       </Link>
     </div>
   );
@@ -64,6 +74,8 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/credit-cards" element={<CreditCardsPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />
+            <Route path="/statements" element={<StatementsPage />} />
+            <Route path="/statements/:id" element={<StatementDetailPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

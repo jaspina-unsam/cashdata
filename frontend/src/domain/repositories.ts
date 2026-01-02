@@ -5,7 +5,15 @@
  * These interfaces ensure the domain layer is independent of infrastructure.
  */
 
-import type { Category, CreditCard, Purchase, Installment, CreditCardSummary } from './entities';
+import type { 
+  Category, 
+  CreditCard, 
+  Purchase, 
+  Installment, 
+  CreditCardSummary,
+  MonthlyStatement,
+  StatementDetail
+} from './entities';
 
 /**
  * Repository interface for Category operations
@@ -42,6 +50,23 @@ export interface IPurchaseRepository {
   create(
     userId: number,
     data: Omit<Purchase, 'id' | 'user_id'>
-  delete(id: number, userId: number): Promise<void>;
   ): Promise<Purchase>;
+  delete(id: number, userId: number): Promise<void>;
+}
+
+/**
+ * Repository interface for Monthly Statement operations
+ */
+export interface IMonthlyStatementRepository {
+  findByUserId(userId: number, includeFuture?: boolean): Promise<MonthlyStatement[]>;
+  findById(statementId: number, userId: number): Promise<StatementDetail | null>;
+  create(userId: number, data: {
+    credit_card_id: number;
+    billing_close_date: string;
+    payment_due_date: string;
+  }): Promise<MonthlyStatement>;
+  updateDates(statementId: number, userId: number, data: {
+    billing_close_date: string;
+    payment_due_date: string;
+  }): Promise<MonthlyStatement>;
 }

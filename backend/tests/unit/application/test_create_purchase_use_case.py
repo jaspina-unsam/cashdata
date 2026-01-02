@@ -23,6 +23,10 @@ def mock_unit_of_work():
     uow.credit_cards = Mock()
     uow.purchases = Mock()
     uow.installments = Mock()
+    uow.monthly_statements = Mock()
+    
+    # Mock monthly_statements to return empty list (no existing statements)
+    uow.monthly_statements.find_by_credit_card_id.return_value = []
 
     # Make context manager work
     uow.__enter__ = Mock(return_value=uow)

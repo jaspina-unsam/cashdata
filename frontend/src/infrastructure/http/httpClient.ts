@@ -102,8 +102,19 @@ export class HttpClient {
     });
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+  async put<T>(endpoint: string, data?: any, params?: Record<string, any>): Promise<T> {
+    const queryString = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== undefined && value !== null) {
+              acc[key] = String(value);
+            }
+            return acc;
+          }, {} as Record<string, string>)
+        ).toString()
+      : '';
+
+    return this.request<T>(`${endpoint}${queryString}`, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
