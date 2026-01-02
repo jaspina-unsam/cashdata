@@ -1,0 +1,7 @@
+/**
+ * Presentation Layer
+ * 
+ * Central export point for all UI components and pages.
+ */
+
+export * from './pages/CategoriesPage';
