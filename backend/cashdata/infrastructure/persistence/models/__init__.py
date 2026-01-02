@@ -8,3 +8,13 @@ from cashdata.infrastructure.persistence.models.category_model import CategoryMo
 from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from cashdata.infrastructure.persistence.models.purchase_model import PurchaseModel
 from cashdata.infrastructure.persistence.models.installment_model import InstallmentModel
+
+__all__ = [
+    "Base",
+    "UserModel",
+    "MonthlyIncomeModel",
+    "CategoryModel",
+    "CreditCardModel",
+    "PurchaseModel",
+    "InstallmentModel",
+]
