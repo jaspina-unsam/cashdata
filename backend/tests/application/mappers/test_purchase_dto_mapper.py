@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.entities.category import Category
 from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.application.use_cases.get_credit_card_summary_use_case import (

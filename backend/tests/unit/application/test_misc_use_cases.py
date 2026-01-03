@@ -21,7 +21,7 @@ from cashdata.application.use_cases.list_credit_cards_by_user_use_case import (
 )
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money, Currency
 
 

@@ -3,7 +3,7 @@ from datetime import date
 from decimal import Decimal
 
 from cashdata.domain.services.installment_generator import InstallmentGenerator
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.domain.exceptions.domain_exceptions import InvalidCalculation
 

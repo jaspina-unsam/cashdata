@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.repositories import IUnitOfWork
 
 

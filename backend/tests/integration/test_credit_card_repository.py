@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
 
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from cashdata.infrastructure.persistence.models.user_model import UserModel

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from cashdata.domain.entities.monthly_income import IncomeSource, MonthlyIncome
 from cashdata.domain.entities.user import User
 from cashdata.domain.entities.category import Category
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.entities.installment import Installment
 from cashdata.domain.value_objects.money import Currency, Money

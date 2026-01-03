@@ -4,7 +4,7 @@ from datetime import date
 from calendar import monthrange
 from dateutil.relativedelta import relativedelta
 
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.entities.monthly_statement import MonthlyStatement
 from cashdata.domain.repositories.imonthly_statement_repository import (
     IMonthlyStatementRepository,
@@ -43,7 +43,7 @@ def get_or_create_statement_for_date(
     # (e.g., close_day=30 but February has only 28 days)
     _, last_day_of_month = monthrange(statement_month.year, statement_month.month)
     actual_close_day = min(credit_card.billing_close_day, last_day_of_month)
-    
+
     billing_close_date = date(
         statement_month.year, statement_month.month, actual_close_day
     )
@@ -52,7 +52,9 @@ def get_or_create_statement_for_date(
     # (or next month if due day < close day)
     if credit_card.payment_due_day >= credit_card.billing_close_day:
         # Due date is in the same month as close date
-        _, last_day_of_due_month = monthrange(statement_month.year, statement_month.month)
+        _, last_day_of_due_month = monthrange(
+            statement_month.year, statement_month.month
+        )
         actual_due_day = min(credit_card.payment_due_day, last_day_of_due_month)
         payment_due_date = date(
             statement_month.year, statement_month.month, actual_due_day
@@ -60,7 +62,9 @@ def get_or_create_statement_for_date(
     else:
         # Due day is before close day -> due date is next month
         payment_month = statement_month + relativedelta(months=1)
-        _, last_day_of_payment_month = monthrange(payment_month.year, payment_month.month)
+        _, last_day_of_payment_month = monthrange(
+            payment_month.year, payment_month.month
+        )
         actual_payment_day = min(credit_card.payment_due_day, last_day_of_payment_month)
         payment_due_date = date(
             payment_month.year, payment_month.month, actual_payment_day
@@ -108,11 +112,11 @@ def get_or_create_statement_for_period(
     # Parse the billing period
     year = int(billing_period[:4])
     month = int(billing_period[4:6])
-    
+
     # Calculate the exact dates for this statement
     _, last_day_of_month = monthrange(year, month)
     actual_close_day = min(credit_card.billing_close_day, last_day_of_month)
-    
+
     billing_close_date = date(year, month, actual_close_day)
 
     # Payment due date calculation

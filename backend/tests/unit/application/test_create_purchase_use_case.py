@@ -10,7 +10,7 @@ from cashdata.application.use_cases.create_purchase_use_case import (
 )
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.entities.category import Category
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.entities.installment import Installment
 from cashdata.domain.value_objects.money import Money, Currency
 
@@ -24,7 +24,7 @@ def mock_unit_of_work():
     uow.purchases = Mock()
     uow.installments = Mock()
     uow.monthly_statements = Mock()
-    
+
     # Mock monthly_statements to return empty list (no existing statements)
     uow.monthly_statements.find_by_credit_card_id.return_value = []
 

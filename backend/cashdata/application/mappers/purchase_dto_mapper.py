@@ -1,6 +1,6 @@
 from cashdata.domain.entities.purchase import Purchase
 from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.entities.category import Category
 from cashdata.application.dtos.purchase_dto import (
     PurchaseResponseDTO,

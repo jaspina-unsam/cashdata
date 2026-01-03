@@ -27,7 +27,7 @@ from cashdata.application.mappers.purchase_dto_mapper import (
     CreditCardSummaryDTOMapper,
     PurchaseDTOMapper,
 )
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money
 from cashdata.domain.repositories import IUnitOfWork
 from cashdata.infrastructure.api.dependencies import get_unit_of_work

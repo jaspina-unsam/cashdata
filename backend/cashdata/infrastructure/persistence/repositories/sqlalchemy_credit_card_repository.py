@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.repositories.icredit_card_repository import ICreditCardRepository
 from cashdata.infrastructure.persistence.mappers.credit_card_mapper import (
     CreditCardMapper,

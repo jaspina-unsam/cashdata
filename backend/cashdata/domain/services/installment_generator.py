@@ -3,7 +3,7 @@ from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money
 from cashdata.domain.exceptions.domain_exceptions import InvalidCalculation
 
@@ -58,15 +58,15 @@ class InstallmentGenerator:
         # Calculate base amount per installment using proper Decimal division
         # to preserve cents precision
         base_amount = (total_amount.amount / Decimal(installments_count)).quantize(
-            Decimal('0.01')
+            Decimal("0.01")
         )
-        
+
         # Calculate remainder after distributing base amounts
         total_distributed = base_amount * Decimal(installments_count)
         remainder = total_amount.amount - total_distributed
 
         installments = []
-        
+
         # Calculate initial statement close and due dates based on purchase date
         # We'll use the old calculate_billing_period to determine which statement this falls into
         initial_statement_month = credit_card.calculate_billing_period(purchase_date)
@@ -81,18 +81,18 @@ class InstallmentGenerator:
 
             # Calculate due date for this installment (i-1 months after initial)
             due_date = initial_due_date + relativedelta(months=(i - 1))
-            
+
             # Calculate billing_period from due_date minus 1 month
             # This ensures the period represents when charges were made
             due_year = due_date.year
             due_month = due_date.month
-            
+
             period_month = due_month - 1
             period_year = due_year
             if period_month < 1:
                 period_month = 12
                 period_year -= 1
-            
+
             billing_period = f"{period_year:04d}{period_month:02d}"
 
             # Create installment
@@ -105,7 +105,7 @@ class InstallmentGenerator:
                 billing_period=billing_period,
                 due_date=due_date,
             )
-            
+
             installments.append(installment)
 
         return installments

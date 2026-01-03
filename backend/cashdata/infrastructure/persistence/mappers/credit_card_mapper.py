@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Optional
 
-from cashdata.domain.entities.tarjeta_credito import CreditCard
+from cashdata.domain.entities.credit_card import CreditCard
 from cashdata.domain.value_objects.money import Money, Currency
 from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
 
