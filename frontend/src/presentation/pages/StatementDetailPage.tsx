@@ -258,6 +258,16 @@ export function StatementDetailPage() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="bg-gray-50">
+                <tr>
+                  <td colSpan={4} className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
+                    Total a Pagar:
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900 text-right">
+                    {formatCurrency(statement.total_amount, statement.currency)}
+                  </td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         )}

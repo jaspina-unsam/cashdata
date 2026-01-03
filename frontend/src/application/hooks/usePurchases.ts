@@ -118,6 +118,10 @@ export function useCreatePurchase() {
           queryKey: ['creditCards', variables.data.credit_card_id, 'summary'],
         });
       }
+      // Invalidate statements since creating a purchase creates statements
+      queryClient.invalidateQueries({
+        queryKey: ['statements', variables.userId],
+      });
     },
   });
 }
