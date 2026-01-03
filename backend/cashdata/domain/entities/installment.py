@@ -8,13 +8,13 @@ from cashdata.domain.value_objects.money import Money
 @dataclass(frozen=True)
 class Installment:
     """
-    Domain entity representing a single installment payment of a purchase.
+    Domain entity representing a single installment payment of a purchase or credit.
 
     Invariants:
     - installment_number must be >= 1
     - installment_number must be <= total_installments
     - total_installments must be >= 1
-    - amount must be > 0
+    - amount must be != 0 (negative for credits/bonifications)
     - billing_period must match YYYYMM format with valid month (01-12)
     - id can be None (before persistence)
     """
@@ -47,9 +47,9 @@ class Installment:
                 f"total_installments ({self.total_installments})"
             )
 
-        # Validate amount is positive
-        if self.amount.amount <= 0:
-            raise ValueError(f"amount must be positive, got {self.amount.amount}")
+        # Validate amount is not zero (can be negative for credits/bonifications)
+        if self.amount.amount == 0:
+            raise ValueError(f"amount cannot be zero, got {self.amount.amount}")
 
         # Validate billing_period format (YYYYMM)
         if not re.match(r"^\d{6}$", self.billing_period):

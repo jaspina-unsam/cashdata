@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 
 from cashdata.domain.entities.installment import Installment
 from cashdata.domain.entities.tarjeta_credito import CreditCard
@@ -49,30 +50,50 @@ class InstallmentGenerator:
                 f"installments_count must be >= 1, got {installments_count}"
             )
 
-        if total_amount.amount <= 0:
+        if total_amount.amount == 0:
             raise InvalidCalculation(
-                f"total_amount must be positive, got {total_amount.amount}"
+                f"total_amount cannot be zero, got {total_amount.amount}"
             )
 
-        # Calculate base amount and remainder
-        base_amount = total_amount.amount // installments_count
-        remainder = total_amount.amount % installments_count
+        # Calculate base amount per installment using proper Decimal division
+        # to preserve cents precision
+        base_amount = (total_amount.amount / Decimal(installments_count)).quantize(
+            Decimal('0.01')
+        )
+        
+        # Calculate remainder after distributing base amounts
+        total_distributed = base_amount * Decimal(installments_count)
+        remainder = total_amount.amount - total_distributed
 
         installments = []
-        current_date = purchase_date
+        
+        # Calculate initial statement close and due dates based on purchase date
+        # We'll use the old calculate_billing_period to determine which statement this falls into
+        initial_statement_month = credit_card.calculate_billing_period(purchase_date)
+        initial_due_date = credit_card.calculate_due_date(initial_statement_month)
 
         for i in range(1, installments_count + 1):
-            # First installment absorbs the remainder
+            # First installment absorbs the remainder to ensure exact total
             if i == 1:
                 installment_amount = base_amount + remainder
             else:
                 installment_amount = base_amount
 
-            # Calculate billing period for this installment
-            billing_period = credit_card.calculate_billing_period(current_date)
-
-            # Calculate due date for the period
-            due_date = credit_card.calculate_due_date(billing_period)
+            # Calculate due date for this installment (i-1 months after initial)
+            due_date = initial_due_date + relativedelta(months=(i - 1))
+            
+            # Calculate billing_period from due_date minus 1 month
+            # This ensures the period represents when charges were made
+            due_year = due_date.year
+            due_month = due_date.month
+            
+            period_month = due_month - 1
+            period_year = due_year
+            if period_month < 1:
+                period_month = 12
+                period_year -= 1
+            
+            billing_period = f"{period_year:04d}{period_month:02d}"
 
             # Create installment
             installment = Installment(
@@ -84,34 +105,7 @@ class InstallmentGenerator:
                 billing_period=billing_period,
                 due_date=due_date,
             )
-
+            
             installments.append(installment)
-
-            # Move to next month for next installment calculation
-            # Use the due date as reference for next period calculation
-            # to handle month transitions correctly
-            if i < installments_count:
-                # Move current_date to next billing cycle
-                # Add 32 days and set to day 1 to ensure we're in the next month
-                year = int(billing_period[:4])
-                month = int(billing_period[4:6])
-                
-                # Calculate next month
-                next_month = month + 1
-                next_year = year
-                if next_month > 12:
-                    next_month = 1
-                    next_year += 1
-                
-                # Set current_date to close day of next period
-                # This ensures proper period calculation for next installment
-                try:
-                    current_date = date(next_year, next_month, credit_card.billing_close_day)
-                except ValueError:
-                    # If close day doesn't exist in month (e.g., Feb 31)
-                    # Use last day of month
-                    from calendar import monthrange
-                    last_day = monthrange(next_year, next_month)[1]
-                    current_date = date(next_year, next_month, last_day)
 
         return installments

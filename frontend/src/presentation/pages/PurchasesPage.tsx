@@ -34,7 +34,7 @@ export function PurchasesPage() {
     purchase_date: new Date().toISOString().split('T')[0],
     description: '',
     total_amount: '',
-    total_currency: 'ARS',
+    currency: 'ARS',
     installments_count: '1',
   });
 
@@ -78,8 +78,8 @@ export function PurchasesPage() {
     }
 
     const amount = parseFloat(formData.total_amount);
-    if (amount <= 0) {
-      alert('El monto debe ser mayor a 0');
+    if (amount === 0) {
+      alert('El monto no puede ser cero. Usá valores positivos para compras o negativos para créditos/bonificaciones.');
       return;
     }
 
@@ -89,8 +89,8 @@ export function PurchasesPage() {
         category_id: parseInt(formData.category_id),
         purchase_date: formData.purchase_date,
         description: formData.description.trim(),
-        total_amount: formData.total_amount,
-        total_currency: formData.total_currency,
+        total_amount: parseFloat(formData.total_amount),
+        currency: formData.total_currency,
         installments_count: installments,
       };
 
@@ -103,7 +103,7 @@ export function PurchasesPage() {
         purchase_date: new Date().toISOString().split('T')[0],
         description: '',
         total_amount: '',
-        total_currency: 'ARS',
+        currency: 'ARS',
         installments_count: '1',
       });
       setShowForm(false);
@@ -120,7 +120,7 @@ export function PurchasesPage() {
       purchase_date: new Date().toISOString().split('T')[0],
       description: '',
       total_amount: '',
-      total_currency: 'ARS',
+      currency: 'ARS',
       installments_count: '1',
     });
     setShowForm(false);
@@ -258,22 +258,21 @@ export function PurchasesPage() {
                 {/* Total Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Monto Total *
+                    Monto Total * <span className="text-xs text-gray-500">(negativo para créditos)</span>
                   </label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       value={formData.total_amount}
                       onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
-                      placeholder="10000.00"
+                      placeholder="10000.00 (o -500.00 para crédito)"
                       step="0.01"
-                      min="0.01"
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                     <select
-                      value={formData.total_currency}
-                      onChange={(e) => setFormData({ ...formData, total_currency: e.target.value })}
+                      value={formData.currency}
+                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                       className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="ARS">ARS</option>
@@ -357,7 +356,7 @@ export function PurchasesPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
-                        {purchase.total_currency} {parseFloat(purchase.total_amount).toLocaleString()}
+                        {purchase.currency} {parseFloat(purchase.total_amount).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-600">
                         {purchase.installments_count === 1 
@@ -396,7 +395,7 @@ export function PurchasesPage() {
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Pago único</span>
                             <span className="font-semibold">
-                              {purchase.total_currency} {parseFloat(purchase.total_amount).toLocaleString()}
+                              {purchase.currency} {parseFloat(purchase.total_amount).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -410,7 +409,7 @@ export function PurchasesPage() {
                                   Cuota {i + 1}/{purchase.installments_count}
                                 </span>
                                 <span className="font-semibold">
-                                  {purchase.total_currency} {installmentAmount.toFixed(2)}
+                                  {purchase.currency} {installmentAmount.toFixed(2)}
                                 </span>
                               </div>
                             </div>

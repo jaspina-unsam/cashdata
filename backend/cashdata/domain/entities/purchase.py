@@ -7,11 +7,11 @@ from cashdata.domain.value_objects.money import Money
 @dataclass(frozen=True)
 class Purchase:
     """
-    Domain entity representing a credit card purchase.
+    Domain entity representing a credit card purchase or credit.
 
     Invariants:
     - installments_count must be >= 1
-    - total_amount must be > 0
+    - total_amount must be != 0 (negative for credits/bonifications, positive for purchases)
     - description must not be empty or only whitespace
     - id can be None (before persistence)
     """
@@ -33,10 +33,10 @@ class Purchase:
                 f"installments_count must be >= 1, got {self.installments_count}"
             )
 
-        # Validate total_amount is positive
-        if self.total_amount.amount <= 0:
+        # Validate total_amount is not zero (can be negative for credits/bonifications)
+        if self.total_amount.amount == 0:
             raise ValueError(
-                f"total_amount must be positive, got {self.total_amount.amount}"
+                f"total_amount cannot be zero, got {self.total_amount.amount}"
             )
 
         # Validate description is not empty

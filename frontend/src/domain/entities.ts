@@ -53,8 +53,8 @@ export interface Purchase {
   category_id: number;
   purchase_date: string;
   description: string;
-  total_amount: string;
-  total_currency: string;
+  total_amount: number | string; // number when sending, string when receiving from API
+  currency: string;
   installments_count: number;
 }
 

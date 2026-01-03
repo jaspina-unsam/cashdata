@@ -39,6 +39,8 @@ export function StatementDetailPage() {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
       currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -234,7 +236,9 @@ export function StatementDetailPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {statement.purchases.map((purchase, index) => (
+                {[...statement.purchases]
+                  .sort((a, b) => a.purchase_date.localeCompare(b.purchase_date))
+                  .map((purchase, index) => (
                   <tr key={`${purchase.id}-${index}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(purchase.purchase_date)}
@@ -246,10 +250,10 @@ export function StatementDetailPage() {
                       {purchase.category_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {purchase.installment_number !== null
+                      {purchase.installments === 1
+                        ? ''
+                        : purchase.installment_number !== null
                         ? `${purchase.installment_number}/${purchase.installments}`
-                        : purchase.installments === 1
-                        ? '1 pago'
                         : `${purchase.installments} cuotas`}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
