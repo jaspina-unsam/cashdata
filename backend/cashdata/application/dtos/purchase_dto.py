@@ -14,7 +14,7 @@ class CreatePurchaseInputDTO(BaseModel):
     description: str = Field(
         min_length=1, max_length=500, description="Purchase description"
     )
-    total_amount: Decimal = Field(gt=0, description="Total purchase amount")
+    total_amount: Decimal = Field(description="Total purchase amount (positive for purchases, negative for credits)")
     currency: Currency = Field(default=Currency.ARS, description="Currency")
     installments_count: int = Field(
         ge=1, description="Number of installments (minimum 1)"

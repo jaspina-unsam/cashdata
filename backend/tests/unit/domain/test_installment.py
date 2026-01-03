@@ -246,7 +246,7 @@ class TestInstallmentEntity:
         THEN: Should raise ValueError
         """
         # Arrange & Act & Assert
-        with pytest.raises(ValueError, match="amount must be positive"):
+        with pytest.raises(ValueError, match="amount cannot be zero"):
             Installment(
                 id=None,
                 purchase_id=100,
@@ -257,23 +257,25 @@ class TestInstallmentEntity:
                 due_date=date(2025, 2, 10),
             )
 
-    def test_raises_error_for_negative_amount(self):
+    def test_allows_negative_amount_for_credits(self):
         """
-        GIVEN: amount < 0
+        GIVEN: amount < 0 (credit/bonification)
         WHEN: Creating an Installment
-        THEN: Should raise ValueError
+        THEN: Should succeed
         """
-        # Arrange & Act & Assert
-        with pytest.raises(ValueError, match="amount must be positive"):
-            Installment(
-                id=None,
-                purchase_id=100,
-                installment_number=1,
-                total_installments=6,
-                amount=Money(Decimal("-100.00"), Currency.ARS),
-                billing_period="202501",
-                due_date=date(2025, 2, 10),
-            )
+        # Arrange & Act
+        installment = Installment(
+            id=None,
+            purchase_id=100,
+            installment_number=1,
+            total_installments=1,
+            amount=Money(Decimal("-100.00"), Currency.ARS),
+            billing_period="202501",
+            due_date=date(2025, 2, 10),
+        )
+        
+        # Assert
+        assert installment.amount.amount == Decimal("-100.00")
 
     # ===== VALIDATION ERRORS - BILLING PERIOD =====
 

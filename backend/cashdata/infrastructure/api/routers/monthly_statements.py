@@ -159,7 +159,7 @@ def update_statement_dates(
     """
     with uow:
         use_case = UpdateStatementDatesUseCase(
-            uow.monthly_statements, uow.credit_cards
+            uow.monthly_statements, uow.credit_cards, uow.purchases, uow.installments
         )
         try:
             result = use_case.execute(statement_id, user_id, dates_data)

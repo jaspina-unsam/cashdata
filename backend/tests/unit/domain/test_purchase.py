@@ -174,7 +174,7 @@ class TestPurchaseEntity:
         THEN: Should raise ValueError
         """
         # Arrange & Act & Assert
-        with pytest.raises(ValueError, match="total_amount must be positive"):
+        with pytest.raises(ValueError, match="total_amount cannot be zero"):
             Purchase(
                 id=None,
                 user_id=10,
@@ -186,24 +186,26 @@ class TestPurchaseEntity:
                 installments_count=1,
             )
 
-    def test_raises_error_for_negative_amount(self):
+    def test_allows_negative_amount_for_credits(self):
         """
-        GIVEN: total_amount < 0
+        GIVEN: total_amount < 0 (credit/bonification)
         WHEN: Creating a Purchase
-        THEN: Should raise ValueError
+        THEN: Should succeed
         """
-        # Arrange & Act & Assert
-        with pytest.raises(ValueError, match="total_amount must be positive"):
-            Purchase(
-                id=None,
-                user_id=10,
-                credit_card_id=5,
-                category_id=3,
-                purchase_date=date(2025, 1, 15),
-                description="Invalid purchase",
-                total_amount=Money(Decimal("-100.00"), Currency.ARS),
-                installments_count=1,
-            )
+        # Arrange & Act
+        purchase = Purchase(
+            id=None,
+            user_id=10,
+            credit_card_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Credit",
+            total_amount=Money(Decimal("-100.00"), Currency.ARS),
+            installments_count=1,
+        )
+        
+        # Assert
+        assert purchase.total_amount.amount == Decimal("-100.00")
 
     def test_raises_error_for_empty_description(self):
         """

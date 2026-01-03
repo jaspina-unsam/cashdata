@@ -160,10 +160,11 @@ class TestCreatePurchaseUseCaseIntegration:
             installments = uow.installments.find_by_purchase_id(result.purchase_id)
             
         assert len(installments) == 3
-        # 10000 / 3 = 3333.33... -> [3334, 3333, 3333]
-        assert installments[0].amount.amount == Decimal("3334.00")
-        assert installments[1].amount.amount == Decimal("3333.00")
-        assert installments[2].amount.amount == Decimal("3333.00")
+        # 10000 / 3 = 3333.33 per installment (rounded to cents)
+        # First installment: 3333.33 + 0.01 remainder = 3333.34
+        assert installments[0].amount.amount == Decimal("3333.34")
+        assert installments[1].amount.amount == Decimal("3333.33")
+        assert installments[2].amount.amount == Decimal("3333.33")
         
         # Verify total
         total = sum(inst.amount.amount for inst in installments)
@@ -251,9 +252,14 @@ class TestCreatePurchaseUseCaseIntegration:
     
     def test_installments_have_correct_billing_periods(self, use_case, session_factory):
         """
-        GIVEN: Purchase on 2025-01-15 with card closing day 10
+        GIVEN: Purchase on 2025-01-15 with card closing day 10, due day 20
         WHEN: Execute use case with 3 installments
-        THEN: Installments have correct sequential billing periods
+        THEN: Installments have correct sequential billing periods based on due_date - 1
+        
+        Purchase on Jan 15 (after close day 10):
+        - Inst 1: closes Feb 10, dues Feb 20 → period = Jan (202501)
+        - Inst 2: closes Mar 10, dues Mar 20 → period = Feb (202502)
+        - Inst 3: closes Apr 10, dues Apr 20 → period = Mar (202503)
         """
         # Arrange
         command = CreatePurchaseCommand(
@@ -274,10 +280,10 @@ class TestCreatePurchaseUseCaseIntegration:
         with SQLAlchemyUnitOfWork(session_factory) as uow:
             installments = uow.installments.find_by_purchase_id(result.purchase_id)
             
-        # Purchase on Jan 15, after close day 10, so first billing is Feb (202502)
-        assert installments[0].billing_period == "202502"
-        assert installments[1].billing_period == "202503"
-        assert installments[2].billing_period == "202504"
+        # Billing period = month of due_date minus 1
+        assert installments[0].billing_period == "202501"  # Due Feb 20 → Jan
+        assert installments[1].billing_period == "202502"  # Due Mar 20 → Feb
+        assert installments[2].billing_period == "202503"  # Due Apr 20 → Mar
     
     def test_transaction_rollback_on_error(self, use_case, session_factory):
         """

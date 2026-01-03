@@ -67,13 +67,16 @@ def get_or_create_statement_for_date(
         )
 
     # Check if a statement already exists for this period
-    # Look for statements with the same billing_close_date for this card
+    # Search by period (year+month), not exact date, to avoid duplicates
+    # when statement dates have been manually modified
     existing_statements = statement_repository.find_by_credit_card_id(
         credit_card.id, include_future=True
     )
 
+    target_period = billing_close_date.strftime("%Y%m")
     for stmt in existing_statements:
-        if stmt.billing_close_date == billing_close_date:
+        stmt_period = stmt.billing_close_date.strftime("%Y%m")
+        if stmt_period == target_period:
             return stmt
 
     # No statement found, create one
@@ -130,12 +133,17 @@ def get_or_create_statement_for_period(
         payment_due_date = date(next_year, next_month, actual_payment_day)
 
     # Check if a statement already exists for this period
+    # Search by period (year+month), not exact date, to avoid duplicates
+    # when statement dates have been manually modified
     existing_statements = statement_repository.find_by_credit_card_id(
         credit_card.id, include_future=True
     )
 
     for stmt in existing_statements:
-        if stmt.billing_close_date == billing_close_date:
+        # Compare by period (YYYYMM) not exact date
+        stmt_period = stmt.billing_close_date.strftime("%Y%m")
+        target_period = billing_period
+        if stmt_period == target_period:
             return stmt
 
     # No statement found, create one

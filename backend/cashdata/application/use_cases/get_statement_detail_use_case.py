@@ -78,7 +78,18 @@ class GetStatementDetailUseCase:
         ]
 
         # Calculate the billing period for this statement (format: YYYYMM)
-        statement_period = statement.billing_close_date.strftime("%Y%m")
+        # Period is the month of payment_due_date minus 1
+        # This represents the month when charges were made
+        due_year = statement.payment_due_date.year
+        due_month = statement.payment_due_date.month
+        
+        period_month = due_month - 1
+        period_year = due_year
+        if period_month < 1:
+            period_month = 12
+            period_year -= 1
+        
+        statement_period = f"{period_year:04d}{period_month:02d}"
 
         # Now get installments for each purchase and filter by billing_period
         statement_purchases = []
@@ -93,7 +104,7 @@ class GetStatementDetailUseCase:
                         self._create_purchase_dto(
                             purchase, 
                             installment.installment_number,
-                            installment.amount.amount
+                            float(installment.amount.amount)
                         )
                     )
 
@@ -128,7 +139,7 @@ class GetStatementDetailUseCase:
         category_name = category.name if category else "Unknown"
 
         # Use installment amount if provided, otherwise use total amount
-        amount = installment_amount if installment_amount is not None else purchase.total_amount.amount
+        amount = installment_amount if installment_amount is not None else float(purchase.total_amount.amount)
 
         return PurchaseInStatementDTO(
             id=purchase.id,
