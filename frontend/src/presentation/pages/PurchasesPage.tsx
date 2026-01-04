@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit } from 'lucide-react';
 import { usePurchases, useCreatePurchase, useDeletePurchase } from '../../application/hooks/usePurchases';
 import { useCreditCards } from '../../application/hooks/useCreditCards';
 import { useCategories } from '../../application/hooks/useCategories';
@@ -359,21 +359,31 @@ export function PurchasesPage() {
                         {purchase.currency} {parseFloat(purchase.total_amount).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {purchase.installments_count === 1 
-                          ? 'Pago único' 
+                        {purchase.installments_count === 1
+                          ? 'Pago único'
                           : `${purchase.installments_count} cuotas`}
                       </p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(purchase.id, purchase.description);
-                        }}
-                        disabled={deletePurchase.isPending}
-                        className="mt-2 flex items-center gap-1 text-red-600 hover:text-red-700 text-sm disabled:opacity-50"
-                      >
-                        <Trash2 size={14} />
-                        {deletePurchase.isPending ? 'Eliminando...' : 'Eliminar'}
-                      </button>
+
+                      {/* Buttons placed bottom-right, visually-only (no action) */}
+                      <div className="flex justify-end gap-3 mt-3">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); /* UI-only: no action */ }}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700 text-sm"
+                          aria-label="Eliminar compra"
+                        >
+                          <Trash2 size={14} />
+                          Eliminar
+                        </button>
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); /* UI-only: no action */ }}
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
+                          aria-label="Editar compra"
+                        >
+                          <Edit size={14} />
+                          Editar
+                        </button>
+                      </div>
                     </div>
                   </div>
                   <div className="ml-4">
