@@ -70,26 +70,36 @@ class GetStatementDetailUseCase:
             previous_statement.billing_close_date if previous_statement else None
         )
 
-        # Get all installments for this card that belong to this billing period
-        # We query all user purchases to get the ones for this card
-        all_purchases = self._purchase_repository.find_by_user_id(user_id)
-        card_purchases = [
-            p for p in all_purchases if p.credit_card_id == statement.credit_card_id
-        ]
+        # Get purchases that were assigned to this statement (FK)
+        purchases_by_fk = self._purchase_repository.find_by_monthly_statement_id(
+            statement.id
+        )
 
-        # Calculate the billing period for this statement (format: YYYYMM)
-        # Period is the month of payment_due_date minus 1
-        # This represents the month when charges were made
+        # Also include purchases for this card that have installments in this billing period
+        all_card_purchases = self._purchase_repository.find_by_credit_card_id(
+            statement.credit_card_id
+        )
+
+        # Determine statement_period (YYYYMM)
         due_year = statement.payment_due_date.year
         due_month = statement.payment_due_date.month
-        
         period_month = due_month - 1
         period_year = due_year
         if period_month < 1:
             period_month = 12
             period_year -= 1
-        
         statement_period = f"{period_year:04d}{period_month:02d}"
+
+        purchases_map: dict[int, Purchase] = {p.id: p for p in purchases_by_fk}
+
+        for p in all_card_purchases:
+            if p.id in purchases_map:
+                continue
+            installs = self._installment_repository.find_by_purchase_id(p.id)
+            if any(inst.billing_period == statement_period for inst in installs):
+                purchases_map[p.id] = p
+
+        card_purchases = list(purchases_map.values())
 
         # Now get installments for each purchase and filter by billing_period
         statement_purchases = []

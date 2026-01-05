@@ -21,6 +21,11 @@ class IPurchaseRepository(ABC):
         pass
 
     @abstractmethod
+    def find_by_monthly_statement_id(self, statement_id: int) -> List[Purchase]:
+        """Retrieve all purchases associated with a monthly statement"""
+        pass
+
+    @abstractmethod
     def save(self, purchase: Purchase) -> Purchase:
         """Insert or update purchase"""
         pass

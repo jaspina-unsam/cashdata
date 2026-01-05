@@ -24,6 +24,7 @@ class Purchase:
     description: str
     total_amount: Money
     installments_count: int
+    monthly_statement_id: int | None = None
 
     def __post_init__(self):
         """Validate invariants after initialization"""

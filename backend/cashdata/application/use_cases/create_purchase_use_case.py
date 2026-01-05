@@ -89,6 +89,30 @@ class CreatePurchaseUseCase:
                 installments_count=command.installments_count,
             )
 
+            # Determine which statement this purchase belongs to and set FK
+            from cashdata.application.helpers.statement_helper import (
+                get_or_create_statement_for_date,
+            )
+
+            statement = get_or_create_statement_for_date(
+                credit_card=credit_card,
+                purchase_date=purchase.purchase_date,
+                statement_repository=uow.monthly_statements,
+            )
+
+            # Attach statement FK to purchase before saving
+            purchase = Purchase(
+                id=purchase.id,
+                user_id=purchase.user_id,
+                credit_card_id=purchase.credit_card_id,
+                category_id=purchase.category_id,
+                purchase_date=purchase.purchase_date,
+                description=purchase.description,
+                total_amount=purchase.total_amount,
+                installments_count=purchase.installments_count,
+                monthly_statement_id=statement.id,
+            )
+
             # Save purchase
             saved_purchase = uow.purchases.save(purchase)
 

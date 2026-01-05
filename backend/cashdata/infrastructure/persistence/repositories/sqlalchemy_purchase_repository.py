@@ -33,6 +33,13 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
         ).all()
         return [PurchaseMapper.to_entity(p) for p in purchases]
 
+    def find_by_monthly_statement_id(self, statement_id: int) -> List[Purchase]:
+        """Retrieve all purchases associated with a monthly statement"""
+        purchases = self.session.scalars(
+            select(PurchaseModel).where(PurchaseModel.monthly_statement_id == statement_id)
+        ).all()
+        return [PurchaseMapper.to_entity(p) for p in purchases]
+
     def save(self, purchase: Purchase) -> Purchase:
         """Insert or update purchase"""
         if purchase.id is not None:
