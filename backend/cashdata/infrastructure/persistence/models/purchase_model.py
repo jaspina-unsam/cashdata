@@ -16,6 +16,7 @@ class PurchaseModel(Base):
     total_amount = Column(Numeric(precision=12, scale=2), nullable=False)
     total_currency = Column(String(3), nullable=False)
     installments_count = Column(Integer, nullable=False)
+    monthly_statement_id = Column(Integer, ForeignKey("monthly_statements.id"), nullable=True)
 
     def __repr__(self):
         return f"<PurchaseModel(id={self.id}, description='{self.description}', amount={self.total_amount})>"

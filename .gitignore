@@ -2,6 +2,7 @@
 .support
 .support/*
 *.db
+*.db*
 
 # Python
 __pycache__/

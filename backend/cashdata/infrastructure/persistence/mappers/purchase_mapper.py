@@ -20,6 +20,7 @@ class PurchaseMapper:
                 Decimal(str(model.total_amount)), Currency(model.total_currency)
             ),
             installments_count=model.installments_count,
+            monthly_statement_id=getattr(model, "monthly_statement_id", None),
         )
 
     @staticmethod
@@ -35,4 +36,5 @@ class PurchaseMapper:
             total_amount=float(entity.total_amount.amount),
             total_currency=entity.total_amount.currency.value,
             installments_count=entity.installments_count,
+            monthly_statement_id=getattr(entity, "monthly_statement_id", None),
         )
