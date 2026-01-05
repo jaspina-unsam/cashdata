@@ -70,8 +70,8 @@ class UpdateStatementDatesUseCase:
         updated_statement = MonthlyStatement(
             id=statement.id,
             credit_card_id=statement.credit_card_id,
-            billing_close_date=input_dto.billing_close_date,
-            payment_due_date=input_dto.payment_due_date,
+            closing_date=input_dto.billing_close_date,
+            due_date=input_dto.payment_due_date,
         )
 
         # Save statement
@@ -79,18 +79,18 @@ class UpdateStatementDatesUseCase:
 
         # Recalculate billing_period for all affected installments
         # Get the new period (YYYYMM format) - month of due_date minus 1
-        due_year = saved_statement.payment_due_date.year
-        due_month = saved_statement.payment_due_date.month
+        due_year = saved_statement.due_date.year
+        due_month = saved_statement.due_date.month
         period_month = due_month - 1
         period_year = due_year
         if period_month < 1:
             period_month = 12
             period_year -= 1
         new_period = f"{period_year:04d}{period_month:02d}"
-        
+
         # Calculate old period
-        old_due_year = statement.payment_due_date.year
-        old_due_month = statement.payment_due_date.month
+        old_due_year = statement.due_date.year
+        old_due_month = statement.due_date.month
         old_period_month = old_due_month - 1
         old_period_year = old_due_year
         if old_period_month < 1:
@@ -108,8 +108,8 @@ class UpdateStatementDatesUseCase:
             id=saved_statement.id,
             credit_card_id=saved_statement.credit_card_id,
             credit_card_name=credit_card.name,
-            billing_close_date=saved_statement.billing_close_date,
-            payment_due_date=saved_statement.payment_due_date,
+            billing_close_date=saved_statement.closing_date,
+            payment_due_date=saved_statement.due_date,
         )
 
     def _recalculate_installment_periods(
@@ -131,17 +131,17 @@ class UpdateStatementDatesUseCase:
             user_id: The user's ID for filtering purchases
         """
         # Calculate old and new periods using due_date - 1 logic
-        old_due_year = old_statement.payment_due_date.year
-        old_due_month = old_statement.payment_due_date.month
+        old_due_year = old_statement.due_date.year
+        old_due_month = old_statement.due_date.month
         old_period_month = old_due_month - 1
         old_period_year = old_due_year
         if old_period_month < 1:
             old_period_month = 12
             old_period_year -= 1
         old_period = f"{old_period_year:04d}{old_period_month:02d}"
-        
-        new_due_year = new_statement.payment_due_date.year
-        new_due_month = new_statement.payment_due_date.month
+
+        new_due_year = new_statement.due_date.year
+        new_due_month = new_statement.due_date.month
         new_period_month = new_due_month - 1
         new_period_year = new_due_year
         if new_period_month < 1:

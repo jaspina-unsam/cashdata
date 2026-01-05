@@ -79,7 +79,7 @@ def get_or_create_statement_for_date(
 
     target_period = billing_close_date.strftime("%Y%m")
     for stmt in existing_statements:
-        stmt_period = stmt.billing_close_date.strftime("%Y%m")
+        stmt_period = stmt.closing_date.strftime("%Y%m")
         if stmt_period == target_period:
             return stmt
 
@@ -87,8 +87,8 @@ def get_or_create_statement_for_date(
     new_statement = MonthlyStatement(
         id=None,
         credit_card_id=credit_card.id,
-        billing_close_date=billing_close_date,
-        payment_due_date=payment_due_date,
+        closing_date=billing_close_date,
+        due_date=payment_due_date,
     )
 
     return statement_repository.save(new_statement)
@@ -145,7 +145,7 @@ def get_or_create_statement_for_period(
 
     for stmt in existing_statements:
         # Compare by period (YYYYMM) not exact date
-        stmt_period = stmt.billing_close_date.strftime("%Y%m")
+        stmt_period = stmt.closing_date.strftime("%Y%m")
         target_period = billing_period
         if stmt_period == target_period:
             return stmt
@@ -154,8 +154,8 @@ def get_or_create_statement_for_period(
     new_statement = MonthlyStatement(
         id=None,
         credit_card_id=credit_card.id,
-        billing_close_date=billing_close_date,
-        payment_due_date=payment_due_date,
+        closing_date=billing_close_date,
+        due_date=payment_due_date,
     )
 
     return statement_repository.save(new_statement)

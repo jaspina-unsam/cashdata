@@ -63,11 +63,11 @@ class GetStatementDetailUseCase:
 
         # Get previous statement to calculate period start
         previous_statement = self._statement_repository.get_previous_statement(
-            statement.credit_card_id, statement.billing_close_date
+            statement.credit_card_id, statement.closing_date
         )
 
         period_start = statement.get_period_start_date(
-            previous_statement.billing_close_date if previous_statement else None
+            previous_statement.closing_date if previous_statement else None
         )
 
         # Get purchases that were assigned to this statement (FK)
@@ -81,8 +81,8 @@ class GetStatementDetailUseCase:
         )
 
         # Determine statement_period (YYYYMM)
-        due_year = statement.payment_due_date.year
-        due_month = statement.payment_due_date.month
+        due_year = statement.due_date.year
+        due_month = statement.due_date.month
         period_month = due_month - 1
         period_year = due_year
         if period_month < 1:
@@ -126,10 +126,10 @@ class GetStatementDetailUseCase:
             id=statement.id,
             credit_card_id=statement.credit_card_id,
             credit_card_name=credit_card.name,
-            billing_close_date=statement.billing_close_date,
-            payment_due_date=statement.payment_due_date,
+            billing_close_date=statement.closing_date,
+            payment_due_date=statement.due_date,
             period_start_date=period_start,
-            period_end_date=statement.billing_close_date,
+            period_end_date=statement.closing_date,
             purchases=statement_purchases,
             total_amount=total_amount,
             currency=currency,

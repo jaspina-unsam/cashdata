@@ -14,24 +14,24 @@ class TestMonthlyStatementValidation:
         statement = MonthlyStatement(
             id=None,
             credit_card_id=1,
-            billing_close_date=date(2024, 1, 7),
-            payment_due_date=date(2024, 1, 27),
+            closing_date=date(2024, 1, 7),
+            due_date=date(2024, 1, 27),
         )
 
         assert statement.credit_card_id == 1
-        assert statement.billing_close_date == date(2024, 1, 7)
-        assert statement.payment_due_date == date(2024, 1, 27)
+        assert statement.closing_date == date(2024, 1, 7)
+        assert statement.due_date == date(2024, 1, 27)
 
     def test_billing_close_date_equals_payment_due_date(self):
         """Test that close date can equal due date (same day payment)."""
         statement = MonthlyStatement(
             id=None,
             credit_card_id=1,
-            billing_close_date=date(2024, 1, 15),
-            payment_due_date=date(2024, 1, 15),
+            closing_date=date(2024, 1, 15),
+            due_date=date(2024, 1, 15),
         )
 
-        assert statement.billing_close_date == statement.payment_due_date
+        assert statement.closing_date == statement.due_date
 
     def test_billing_close_date_after_payment_due_date_raises_error(self):
         """Test that close date after due date raises ValueError."""
@@ -42,8 +42,8 @@ class TestMonthlyStatementValidation:
             MonthlyStatement(
                 id=None,
                 credit_card_id=1,
-                billing_close_date=date(2024, 1, 27),
-                payment_due_date=date(2024, 1, 7),
+                closing_date=date(2024, 1, 27),
+                due_date=date(2024, 1, 7),
             )
 
 
@@ -55,8 +55,8 @@ class TestPeriodStartCalculation:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -70,8 +70,8 @@ class TestPeriodStartCalculation:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         period_start = statement.get_period_start_date(None)
@@ -85,8 +85,8 @@ class TestPeriodStartCalculation:
         statement = MonthlyStatement(
             id=2,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 31),
-            payment_due_date=date(2024, 6, 20),
+            closing_date=date(2024, 5, 31),
+            due_date=date(2024, 6, 20),
         )
 
         previous_close = date(2024, 4, 30)
@@ -104,8 +104,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -118,8 +118,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -132,8 +132,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -146,8 +146,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -160,8 +160,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         previous_close = date(2024, 4, 8)
@@ -174,8 +174,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         # Period starts 30 days before close: April 7
@@ -188,8 +188,8 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         # Period starts April 7 (30 days before close)
@@ -206,14 +206,14 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=1,
             credit_card_id=2,  # Different card
-            billing_close_date=date(2024, 6, 7),  # Different dates
-            payment_due_date=date(2024, 6, 27),
+            closing_date=date(2024, 6, 7),  # Different dates
+            due_date=date(2024, 6, 27),
         )
 
         assert statement1 == statement2
@@ -223,14 +223,14 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=2,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
 
         assert statement1 != statement2
@@ -240,14 +240,14 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
-            billing_close_date=date(2024, 5, 7),
-            payment_due_date=date(2024, 5, 27),
+            closing_date=date(2024, 5, 7),
+            due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=2,
             credit_card_id=1,
-            billing_close_date=date(2024, 6, 7),
-            payment_due_date=date(2024, 6, 27),
+            closing_date=date(2024, 6, 7),
+            due_date=date(2024, 6, 27),
         )
 
         statement_set = {statement1, statement2}

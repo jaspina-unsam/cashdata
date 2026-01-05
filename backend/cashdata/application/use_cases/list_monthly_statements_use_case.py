@@ -52,8 +52,8 @@ class ListMonthlyStatementsUseCase:
                         id=statement.id,
                         credit_card_id=statement.credit_card_id,
                         credit_card_name=credit_card.name,
-                        billing_close_date=statement.billing_close_date,
-                        payment_due_date=statement.payment_due_date,
+                        billing_close_date=statement.closing_date,
+                        payment_due_date=statement.due_date,
                     )
                 )
 

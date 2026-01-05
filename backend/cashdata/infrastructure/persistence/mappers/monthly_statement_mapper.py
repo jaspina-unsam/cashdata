@@ -22,8 +22,8 @@ class MonthlyStatementMapper:
         return MonthlyStatement(
             id=model.id,
             credit_card_id=model.credit_card_id,
-            billing_close_date=model.billing_close_date,
-            payment_due_date=model.payment_due_date,
+            closing_date=model.billing_close_date,
+            due_date=model.payment_due_date,
         )
 
     @staticmethod
@@ -39,6 +39,6 @@ class MonthlyStatementMapper:
         return MonthlyStatementModel(
             id=entity.id,
             credit_card_id=entity.credit_card_id,
-            billing_close_date=entity.billing_close_date,
-            payment_due_date=entity.payment_due_date,
+            billing_close_date=entity.closing_date,
+            payment_due_date=entity.due_date,
         )

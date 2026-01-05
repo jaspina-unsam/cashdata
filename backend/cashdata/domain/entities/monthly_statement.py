@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 
 
 @dataclass
@@ -18,19 +18,21 @@ class MonthlyStatement:
 
     id: int | None
     credit_card_id: int
-    billing_close_date: date  # Fecha de cierre específica de este resumen
-    payment_due_date: date  # Fecha de vencimiento específica de este resumen
+    closing_date: date  # Fecha de cierre específica de este resumen
+    due_date: date  # Fecha de vencimiento específica de este resumen
 
     def __post_init__(self):
         """Validate invariants after initialization"""
         # Validate dates relationship
-        if self.billing_close_date > self.payment_due_date:
+        if self.closing_date > self.due_date:
             raise ValueError(
-                f"billing_close_date ({self.billing_close_date}) must be before "
-                f"or equal to payment_due_date ({self.payment_due_date})"
+                f"billing_close_date ({self.closing_date}) must be before "
+                f"or equal to payment_due_date ({self.due_date})"
             )
 
-    def get_period_start_date(self, previous_close_date: date | None) -> date:
+    def get_period_start_date(
+        self, previous_statement_closing_date: date | None
+    ) -> date:
         """
         Calculate the start date of this statement's billing period.
 
@@ -43,15 +45,11 @@ class MonthlyStatement:
         Returns:
             The first day of this statement's billing period
         """
-        if previous_close_date is None:
+        if previous_statement_closing_date is None:
             # If no previous close date, period starts 30 days before this close
-            from datetime import timedelta
+            return self.closing_date - timedelta(days=30)
 
-            return self.billing_close_date - timedelta(days=30)
-
-        from datetime import timedelta
-
-        return previous_close_date + timedelta(days=1)
+        return previous_statement_closing_date + timedelta(days=1)
 
     def includes_purchase_date(
         self, purchase_date: date, previous_close_date: date | None
@@ -67,7 +65,7 @@ class MonthlyStatement:
             True if the purchase belongs to this statement's period
         """
         period_start = self.get_period_start_date(previous_close_date)
-        return period_start <= purchase_date <= self.billing_close_date
+        return period_start <= purchase_date <= self.closing_date
 
     def __eq__(self, other):
         """Statements are equal if they have the same ID"""
