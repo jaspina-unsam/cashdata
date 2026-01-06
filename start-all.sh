@@ -45,7 +45,7 @@ echo -e "${GREEN}🚀 Starting CashData services...${NC}\n"
 # Start backend
 echo -e "${BLUE}Starting backend server...${NC}"
 cd backend
-poetry run uvicorn cashdata.infrastructure.api.main:app --reload --host 0.0.0.0 --port 8000 > ../backend.log 2>&1 &
+poetry run uvicorn app.infrastructure.api.main:app --reload --host 0.0.0.0 --port 8000 > ../backend.log 2>&1 &
 BACKEND_PID=$!
 cd ..
 
