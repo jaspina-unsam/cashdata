@@ -63,6 +63,32 @@ class TestMonthlyStatementValidation:
 
         assert "dates must satisfy" in str(err_desc).lower()
 
+    def test_statement_validates_start_before_closing(self):
+        """start_date must be before closing_date."""
+        with pytest.raises(InvalidStatementDateRange, match="start < closing"):
+            MonthlyStatement(
+                id=None,
+                credit_card_id=1,
+                start_date=date(2025, 9, 30),
+                closing_date=date(2025, 9, 30),
+                due_date=date(2025, 10, 20),
+            )
+
+    def test_includes_purchase_date(self):
+        """Purchase within period is included."""
+        stmt = MonthlyStatement(
+            id=1,
+            credit_card_id=1,
+            start_date=date(2025, 8, 28),
+            closing_date=date(2025, 10, 2),
+            due_date=date(2025, 10, 20),
+        )
+
+        assert stmt.includes_purchase_date(date(2025, 9, 1))
+        assert stmt.includes_purchase_date(date(2025, 10, 1))
+        assert not stmt.includes_purchase_date(date(2025, 8, 27))
+        assert not stmt.includes_purchase_date(date(2025, 10, 3))
+
 
 class TestPurchaseDateInclusion:
     """Test purchase date inclusion logic."""
