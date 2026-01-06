@@ -6,9 +6,7 @@ from app.domain.entities.purchase import Purchase
 from app.domain.value_objects.money import Money, Currency
 from app.domain.services.installment_generator import InstallmentGenerator
 from app.domain.repositories import IUnitOfWork
-from app.domain.services.statement_helper import (
-    get_or_create_statement_for_period,
-)
+from app.application.services.statement_finder import StatementFinder
 
 
 @dataclass(frozen=True)
@@ -89,17 +87,6 @@ class CreatePurchaseUseCase:
                 installments_count=command.installments_count,
             )
 
-            # Determine which statement this purchase belongs to and set FK
-            from app.domain.services.statement_helper import (
-                get_or_create_statement_for_date,
-            )
-
-            statement = get_or_create_statement_for_date(
-                credit_card=credit_card,
-                purchase_date=purchase.purchase_date,
-                statement_repository=uow.monthly_statements,
-            )
-
             # Attach statement FK to purchase before saving
             purchase = Purchase(
                 id=purchase.id,
@@ -129,7 +116,7 @@ class CreatePurchaseUseCase:
 
             # Automatically create statements for all installment billing periods
             for installment in installments:
-                get_or_create_statement_for_period(
+                StatementFinder.get_or_create_statement_for_period(
                     credit_card=credit_card,
                     billing_period=installment.billing_period,
                     statement_repository=uow.monthly_statements,
