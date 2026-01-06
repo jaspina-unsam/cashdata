@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date
 
 from cashdata.domain.exceptions.domain_exceptions import InvalidStatementDateRange
 
