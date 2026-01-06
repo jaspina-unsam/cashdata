@@ -21,12 +21,12 @@ def clean_duplicate_statements():
     session = Session()
 
     try:
-        # Find duplicates: same credit_card_id and same period (YYYYMM from billing_close_date)
+        # Find duplicates: same credit_card_id and same period (YYYYMM from closing_date)
         query = text(
             """
             SELECT 
                 credit_card_id,
-                strftime('%Y%m', billing_close_date) as period,
+                strftime('%Y%m', closing_date) as period,
                 GROUP_CONCAT(id ORDER BY id) as ids,
                 COUNT(*) as count
             FROM monthly_statements

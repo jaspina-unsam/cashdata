@@ -70,8 +70,9 @@ class UpdateStatementDatesUseCase:
         updated_statement = MonthlyStatement(
             id=statement.id,
             credit_card_id=statement.credit_card_id,
-            closing_date=input_dto.billing_close_date,
-            due_date=input_dto.payment_due_date,
+            start_date=input_dto.start_date,
+            closing_date=input_dto.closing_date,
+            due_date=input_dto.due_date,
         )
 
         # Save statement
@@ -108,8 +109,9 @@ class UpdateStatementDatesUseCase:
             id=saved_statement.id,
             credit_card_id=saved_statement.credit_card_id,
             credit_card_name=credit_card.name,
-            billing_close_date=saved_statement.closing_date,
-            payment_due_date=saved_statement.due_date,
+            start_date=saved_statement.start_date,
+            closing_date=saved_statement.closing_date,
+            due_date=saved_statement.due_date,
         )
 
     def _recalculate_installment_periods(
@@ -121,7 +123,7 @@ class UpdateStatementDatesUseCase:
     ):
         """Recalculate billing periods for installments when statement dates change.
 
-        The billing period is calculated as the month of payment_due_date minus 1.
+        The billing period is calculated as the month of due_date minus 1.
         This represents the month when the charges were made, not when the statement closes.
 
         Args:

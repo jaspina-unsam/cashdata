@@ -34,7 +34,7 @@ class ListMonthlyStatementsUseCase:
             include_future: Whether to include statements with future payment dates
 
         Returns:
-            List of monthly statements ordered by payment_due_date descending
+            List of monthly statements ordered by due_date descending
         """
         statements = self._statement_repository.find_all_by_user_id(
             user_id, include_future
@@ -52,8 +52,9 @@ class ListMonthlyStatementsUseCase:
                         id=statement.id,
                         credit_card_id=statement.credit_card_id,
                         credit_card_name=credit_card.name,
-                        billing_close_date=statement.closing_date,
-                        payment_due_date=statement.due_date,
+                        start_date=statement.start_date,
+                        closing_date=statement.closing_date,
+                        due_date=statement.due_date,
                     )
                 )
 

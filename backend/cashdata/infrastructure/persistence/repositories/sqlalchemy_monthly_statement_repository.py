@@ -47,10 +47,10 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
 
         if not include_future:
             today = date.today()
-            query = query.where(MonthlyStatementModel.payment_due_date <= today)
+            query = query.where(MonthlyStatementModel.due_date <= today)
 
-        # Order by payment_due_date descending (most recent first)
-        query = query.order_by(MonthlyStatementModel.payment_due_date.desc())
+        # Order by due_date descending (most recent first)
+        query = query.order_by(MonthlyStatementModel.due_date.desc())
 
         models = self._session.execute(query).scalars().all()
         return [MonthlyStatementMapper.to_entity(model) for model in models]
@@ -70,10 +70,10 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
 
         if not include_future:
             today = date.today()
-            query = query.where(MonthlyStatementModel.payment_due_date <= today)
+            query = query.where(MonthlyStatementModel.due_date <= today)
 
-        # Order by payment_due_date descending (most recent first)
-        query = query.order_by(MonthlyStatementModel.payment_due_date.desc())
+        # Order by due_date descending (most recent first)
+        query = query.order_by(MonthlyStatementModel.due_date.desc())
 
         models = self._session.execute(query).scalars().all()
         return [MonthlyStatementMapper.to_entity(model) for model in models]
@@ -93,13 +93,13 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
             )
             model = self._session.execute(stmt).scalar_one()
             model.credit_card_id = statement.credit_card_id
-            model.billing_close_date = statement.closing_date
-            model.payment_due_date = statement.due_date
+            model.closing_date = statement.closing_date
+            model.due_date = statement.due_date
             self._session.flush()
             return MonthlyStatementMapper.to_entity(model)
 
     def get_previous_statement(
-        self, credit_card_id: int, billing_close_date: date
+        self, credit_card_id: int, closing_date: date
     ) -> MonthlyStatement | None:
         """Get the previous statement for a credit card."""
         stmt = (
@@ -107,10 +107,10 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
             .where(
                 and_(
                     MonthlyStatementModel.credit_card_id == credit_card_id,
-                    MonthlyStatementModel.billing_close_date < billing_close_date,
+                    MonthlyStatementModel.closing_date < closing_date,
                 )
             )
-            .order_by(MonthlyStatementModel.billing_close_date.desc())
+            .order_by(MonthlyStatementModel.closing_date.desc())
             .limit(1)
         )
         model = self._session.execute(stmt).scalar_one_or_none()

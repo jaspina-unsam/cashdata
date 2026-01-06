@@ -46,8 +46,8 @@ def list_statements(
 ):
     """List all monthly statements for a user's credit cards.
 
-    Statements are returned ordered by payment_due_date descending (most recent first).
-    By default, only past statements (payment_due_date <= today) are included.
+    Statements are returned ordered by due_date descending (most recent first).
+    By default, only past statements (due_date <= today) are included.
     """
     with uow:
         use_case = ListMonthlyStatementsUseCase(
@@ -114,7 +114,7 @@ def create_statement(
 ):
     """Create a new monthly statement for a credit card.
 
-    The billing_close_date must be on or before the payment_due_date.
+    The closing_date must be on or before the due_date.
     The credit card must exist and belong to the specified user.
     """
     with uow:
@@ -155,7 +155,7 @@ def update_statement_dates(
     which purchases belong to this statement. The frontend should refresh
     the statement detail after this operation.
 
-    The billing_close_date must be on or before the payment_due_date.
+    The closing_date must be on or before the due_date.
     """
     with uow:
         use_case = UpdateStatementDatesUseCase(

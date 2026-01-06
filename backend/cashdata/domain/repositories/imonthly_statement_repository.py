@@ -32,7 +32,7 @@ class IMonthlyStatementRepository(ABC):
             include_future: Whether to include statements with future payment dates
 
         Returns:
-            List of monthly statements ordered by payment_due_date descending
+            List of monthly statements ordered by due_date descending
         """
         pass
 
@@ -47,7 +47,7 @@ class IMonthlyStatementRepository(ABC):
             include_future: Whether to include statements with future payment dates
 
         Returns:
-            List of monthly statements ordered by payment_due_date descending
+            List of monthly statements ordered by due_date descending
         """
         pass
 
@@ -65,13 +65,13 @@ class IMonthlyStatementRepository(ABC):
 
     @abstractmethod
     def get_previous_statement(
-        self, credit_card_id: int, billing_close_date: date
+        self, credit_card_id: int, closing_date: date
     ) -> MonthlyStatement | None:
         """Get the previous statement for a credit card.
 
         Args:
             credit_card_id: The credit card's ID
-            billing_close_date: The current statement's close date
+            closing_date: The current statement's close date
 
         Returns:
             The previous statement (with earlier close date), or None if this is the first

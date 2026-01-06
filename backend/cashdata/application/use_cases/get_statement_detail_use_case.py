@@ -61,15 +61,6 @@ class GetStatementDetailUseCase:
         if not credit_card or credit_card.user_id != user_id:
             return None
 
-        # Get previous statement to calculate period start
-        previous_statement = self._statement_repository.get_previous_statement(
-            statement.credit_card_id, statement.closing_date
-        )
-
-        period_start = statement.get_period_start_date(
-            previous_statement.closing_date if previous_statement else None
-        )
-
         # Get purchases that were assigned to this statement (FK)
         purchases_by_fk = self._purchase_repository.find_by_monthly_statement_id(
             statement.id
@@ -106,29 +97,36 @@ class GetStatementDetailUseCase:
         for purchase in card_purchases:
             # Get installments for this purchase
             installments = self._installment_repository.find_by_purchase_id(purchase.id)
-            
+
             # Filter installments whose billing_period matches this statement's period
             for installment in installments:
                 if installment.billing_period == statement_period:
                     statement_purchases.append(
                         self._create_purchase_dto(
-                            purchase, 
+                            purchase,
                             installment.installment_number,
-                            float(installment.amount.amount)
+                            float(installment.amount.amount),
                         )
                     )
 
         # Calculate total amount
         total_amount = sum(p.amount for p in statement_purchases)
-        currency = statement_purchases[0].currency if statement_purchases else credit_card.credit_limit.currency if credit_card.credit_limit else "ARS"
+        currency = (
+            statement_purchases[0].currency
+            if statement_purchases
+            else (
+                credit_card.credit_limit.currency if credit_card.credit_limit else "ARS"
+            )
+        )
 
         return StatementDetailDTO(
             id=statement.id,
             credit_card_id=statement.credit_card_id,
             credit_card_name=credit_card.name,
-            billing_close_date=statement.closing_date,
-            payment_due_date=statement.due_date,
-            period_start_date=period_start,
+            start_date=statement.start_date,
+            closing_date=statement.closing_date,
+            due_date=statement.due_date,
+            period_start_date=statement.start_date,
             period_end_date=statement.closing_date,
             purchases=statement_purchases,
             total_amount=total_amount,
@@ -136,10 +134,13 @@ class GetStatementDetailUseCase:
         )
 
     def _create_purchase_dto(
-        self, purchase: Purchase, installment_number: int | None, installment_amount: float | None = None
+        self,
+        purchase: Purchase,
+        installment_number: int | None,
+        installment_amount: float | None = None,
     ) -> PurchaseInStatementDTO:
         """Create a purchase DTO with category name.
-        
+
         Args:
             purchase: The purchase entity
             installment_number: The installment number if this is an installment
@@ -149,7 +150,11 @@ class GetStatementDetailUseCase:
         category_name = category.name if category else "Unknown"
 
         # Use installment amount if provided, otherwise use total amount
-        amount = installment_amount if installment_amount is not None else float(purchase.total_amount.amount)
+        amount = (
+            installment_amount
+            if installment_amount is not None
+            else float(purchase.total_amount.amount)
+        )
 
         return PurchaseInStatementDTO(
             id=purchase.id,

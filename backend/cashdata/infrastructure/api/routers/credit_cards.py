@@ -173,7 +173,7 @@ def get_credit_card_summary(
     billing_period: str = Query(
         ...,
         description="Billing period in YYYYMM format (e.g., 202501)",
-        regex=r"^\d{6}$",
+        pattern=r"^\d{6}$",
     ),
     user_id: int = Query(..., description="User ID (from auth context)"),
     uow: IUnitOfWork = Depends(get_unit_of_work),

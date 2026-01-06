@@ -58,8 +58,9 @@ class CreateStatementUseCase:
         statement = MonthlyStatement(
             id=None,
             credit_card_id=input_dto.credit_card_id,
-            closing_date=input_dto.billing_close_date,
-            due_date=input_dto.payment_due_date,
+            start_date=input_dto.start_date,
+            closing_date=input_dto.closing_date,
+            due_date=input_dto.due_date,
         )
 
         # Save
@@ -69,6 +70,7 @@ class CreateStatementUseCase:
             id=saved_statement.id,
             credit_card_id=saved_statement.credit_card_id,
             credit_card_name=credit_card.name,
-            billing_close_date=saved_statement.closing_date,
-            payment_due_date=saved_statement.due_date,
+            start_date=saved_statement.start_date,
+            closing_date=saved_statement.closing_date,
+            due_date=saved_statement.due_date,
         )

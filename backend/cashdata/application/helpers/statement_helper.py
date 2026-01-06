@@ -44,7 +44,7 @@ def get_or_create_statement_for_date(
     _, last_day_of_month = monthrange(statement_month.year, statement_month.month)
     actual_close_day = min(credit_card.billing_close_day, last_day_of_month)
 
-    billing_close_date = date(
+    closing_date = date(
         statement_month.year, statement_month.month, actual_close_day
     )
 
@@ -56,7 +56,7 @@ def get_or_create_statement_for_date(
             statement_month.year, statement_month.month
         )
         actual_due_day = min(credit_card.payment_due_day, last_day_of_due_month)
-        payment_due_date = date(
+        due_date = date(
             statement_month.year, statement_month.month, actual_due_day
         )
     else:
@@ -66,7 +66,7 @@ def get_or_create_statement_for_date(
             payment_month.year, payment_month.month
         )
         actual_payment_day = min(credit_card.payment_due_day, last_day_of_payment_month)
-        payment_due_date = date(
+        due_date = date(
             payment_month.year, payment_month.month, actual_payment_day
         )
 
@@ -77,7 +77,7 @@ def get_or_create_statement_for_date(
         credit_card.id, include_future=True
     )
 
-    target_period = billing_close_date.strftime("%Y%m")
+    target_period = closing_date.strftime("%Y%m")
     for stmt in existing_statements:
         stmt_period = stmt.closing_date.strftime("%Y%m")
         if stmt_period == target_period:
@@ -87,8 +87,9 @@ def get_or_create_statement_for_date(
     new_statement = MonthlyStatement(
         id=None,
         credit_card_id=credit_card.id,
-        closing_date=billing_close_date,
-        due_date=payment_due_date,
+        start_date=start_date,
+        closing_date=closing_date,
+        due_date=due_date,
     )
 
     return statement_repository.save(new_statement)
@@ -117,14 +118,14 @@ def get_or_create_statement_for_period(
     _, last_day_of_month = monthrange(year, month)
     actual_close_day = min(credit_card.billing_close_day, last_day_of_month)
 
-    billing_close_date = date(year, month, actual_close_day)
+    closing_date = date(year, month, actual_close_day)
 
     # Payment due date calculation
     if credit_card.payment_due_day >= credit_card.billing_close_day:
         # Due date is in the same month as close date
         _, last_day_of_due_month = monthrange(year, month)
         actual_due_day = min(credit_card.payment_due_day, last_day_of_due_month)
-        payment_due_date = date(year, month, actual_due_day)
+        due_date = date(year, month, actual_due_day)
     else:
         # Due day is before close day -> due date is next month
         next_month = month + 1
@@ -134,7 +135,7 @@ def get_or_create_statement_for_period(
             next_year += 1
         _, last_day_of_payment_month = monthrange(next_year, next_month)
         actual_payment_day = min(credit_card.payment_due_day, last_day_of_payment_month)
-        payment_due_date = date(next_year, next_month, actual_payment_day)
+        due_date = date(next_year, next_month, actual_payment_day)
 
     # Check if a statement already exists for this period
     # Search by period (year+month), not exact date, to avoid duplicates
@@ -154,8 +155,9 @@ def get_or_create_statement_for_period(
     new_statement = MonthlyStatement(
         id=None,
         credit_card_id=credit_card.id,
-        closing_date=billing_close_date,
-        due_date=payment_due_date,
+        start_date=start_date,
+        closing_date=closing_date,
+        due_date=due_date,
     )
 
     return statement_repository.save(new_statement)

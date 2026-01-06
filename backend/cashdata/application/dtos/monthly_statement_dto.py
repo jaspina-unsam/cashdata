@@ -11,16 +11,18 @@ class MonthlyStatementResponseDTO:
     id: int
     credit_card_id: int
     credit_card_name: str
-    billing_close_date: date
-    payment_due_date: date
+    start_date: date
+    closing_date: date
+    due_date: date
 
 
 @dataclass
 class UpdateStatementDatesInputDTO:
     """DTO for updating statement dates."""
 
-    billing_close_date: date
-    payment_due_date: date
+    start_date: date
+    closing_date: date
+    due_date: date
 
 
 @dataclass
@@ -28,8 +30,9 @@ class CreateStatementInputDTO:
     """DTO for creating a new statement."""
 
     credit_card_id: int
-    billing_close_date: date
-    payment_due_date: date
+    start_date: date
+    closing_date: date
+    due_date: date
 
 
 @dataclass
@@ -53,8 +56,9 @@ class StatementDetailDTO:
     id: int
     credit_card_id: int
     credit_card_name: str
-    billing_close_date: date
-    payment_due_date: date
+    start_date: date
+    closing_date: date
+    due_date: date
     period_start_date: date
     period_end_date: date
     purchases: list[PurchaseInStatementDTO]
