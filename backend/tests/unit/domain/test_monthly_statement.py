@@ -1,9 +1,10 @@
 """Unit tests for MonthlyStatement entity."""
 
 import pytest
-from datetime import date, timedelta
+from datetime import date
 
 from cashdata.domain.entities.monthly_statement import MonthlyStatement
+from cashdata.domain.exceptions.domain_exceptions import InvalidStatementDateRange
 
 
 class TestMonthlyStatementValidation:
@@ -14,86 +15,53 @@ class TestMonthlyStatementValidation:
         statement = MonthlyStatement(
             id=None,
             credit_card_id=1,
+            start_date=date(2023, 12, 8),
             closing_date=date(2024, 1, 7),
             due_date=date(2024, 1, 27),
         )
 
         assert statement.credit_card_id == 1
+        assert statement.start_date == date(2023, 12, 8)
         assert statement.closing_date == date(2024, 1, 7)
         assert statement.due_date == date(2024, 1, 27)
 
-    def test_billing_close_date_equals_payment_due_date(self):
+    def test_closing_date_equals_due_date(self):
         """Test that close date can equal due date (same day payment)."""
         statement = MonthlyStatement(
             id=None,
             credit_card_id=1,
+            start_date=date(2023, 12, 16),
             closing_date=date(2024, 1, 15),
             due_date=date(2024, 1, 15),
         )
 
         assert statement.closing_date == statement.due_date
 
-    def test_billing_close_date_after_payment_due_date_raises_error(self):
+    def test_closing_date_after_due_date_raises_error(self):
         """Test that close date after due date raises ValueError."""
-        with pytest.raises(
-            ValueError,
-            match="billing_close_date .* must be before or equal to payment_due_date",
-        ):
+        with pytest.raises(InvalidStatementDateRange) as err_desc:
             MonthlyStatement(
                 id=None,
                 credit_card_id=1,
+                start_date=date(2023, 12, 28),
                 closing_date=date(2024, 1, 27),
                 due_date=date(2024, 1, 7),
             )
 
+        assert "dates must satisfy" in str(err_desc).lower()
 
-class TestPeriodStartCalculation:
-    """Test period start date calculation logic."""
+    def test_start_date_after_closing_date_raises_error(self):
+        """Test that close date after due date raises ValueError."""
+        with pytest.raises(InvalidStatementDateRange) as err_desc:
+            MonthlyStatement(
+                id=None,
+                credit_card_id=1,
+                start_date=date(2024, 2, 28),
+                closing_date=date(2024, 1, 27),
+                due_date=date(2024, 2, 10),
+            )
 
-    def test_period_start_with_previous_close_date(self):
-        """Test period starts the day after previous statement closes."""
-        statement = MonthlyStatement(
-            id=1,
-            credit_card_id=1,
-            closing_date=date(2024, 5, 7),
-            due_date=date(2024, 5, 27),
-        )
-
-        previous_close = date(2024, 4, 8)
-        period_start = statement.get_period_start_date(previous_close)
-
-        # Period should start April 9 (day after previous close)
-        assert period_start == date(2024, 4, 9)
-
-    def test_period_start_without_previous_close_date(self):
-        """Test period start defaults to 30 days before close when no previous."""
-        statement = MonthlyStatement(
-            id=1,
-            credit_card_id=1,
-            closing_date=date(2024, 5, 7),
-            due_date=date(2024, 5, 27),
-        )
-
-        period_start = statement.get_period_start_date(None)
-
-        # Period should start 30 days before close: May 7 - 30 days = April 7
-        expected_start = date(2024, 5, 7) - timedelta(days=30)
-        assert period_start == expected_start
-
-    def test_period_start_first_day_of_month(self):
-        """Test period start calculation when previous close is end of month."""
-        statement = MonthlyStatement(
-            id=2,
-            credit_card_id=1,
-            closing_date=date(2024, 5, 31),
-            due_date=date(2024, 6, 20),
-        )
-
-        previous_close = date(2024, 4, 30)
-        period_start = statement.get_period_start_date(previous_close)
-
-        # Period should start May 1 (day after April 30)
-        assert period_start == date(2024, 5, 1)
+        assert "dates must satisfy" in str(err_desc).lower()
 
 
 class TestPurchaseDateInclusion:
@@ -104,98 +72,70 @@ class TestPurchaseDateInclusion:
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 7),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
 
-        previous_close = date(2024, 4, 8)
-        purchase_date = date(2024, 5, 7)  # Same as close date
+        purchase_date = date(2024, 5, 7)
 
-        assert statement.includes_purchase_date(purchase_date, previous_close) is True
+        assert statement.includes_purchase_date(purchase_date) is True
 
     def test_purchase_on_period_start_is_included(self):
         """Test purchase on period start date is included."""
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
 
-        previous_close = date(2024, 4, 8)
-        purchase_date = date(2024, 4, 9)  # Period start
+        purchase_date = date(2024, 4, 8)
 
-        assert statement.includes_purchase_date(purchase_date, previous_close) is True
+        assert statement.includes_purchase_date(purchase_date) is True
 
     def test_purchase_in_middle_of_period_is_included(self):
         """Test purchase in middle of period is included."""
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
 
-        previous_close = date(2024, 4, 8)
-        purchase_date = date(2024, 4, 25)  # Between April 9 and May 7
+        purchase_date = date(2024, 4, 25)
 
-        assert statement.includes_purchase_date(purchase_date, previous_close) is True
+        assert statement.includes_purchase_date(purchase_date) is True
 
     def test_purchase_before_period_is_excluded(self):
         """Test purchase before period start is excluded."""
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
 
-        previous_close = date(2024, 4, 8)
-        purchase_date = date(2024, 4, 8)  # On previous close (before period start)
+        purchase_date = date(2024, 4, 7)
 
-        assert statement.includes_purchase_date(purchase_date, previous_close) is False
+        assert statement.includes_purchase_date(purchase_date) is False
 
     def test_purchase_after_close_date_is_excluded(self):
         """Test purchase after billing close date is excluded."""
         statement = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
 
-        previous_close = date(2024, 4, 8)
-        purchase_date = date(2024, 5, 8)  # Day after close
+        purchase_date = date(2024, 5, 8)
 
-        assert statement.includes_purchase_date(purchase_date, previous_close) is False
-
-    def test_purchase_inclusion_without_previous_close(self):
-        """Test purchase inclusion when there's no previous statement."""
-        statement = MonthlyStatement(
-            id=1,
-            credit_card_id=1,
-            closing_date=date(2024, 5, 7),
-            due_date=date(2024, 5, 27),
-        )
-
-        # Period starts 30 days before close: April 7
-        purchase_date = date(2024, 4, 10)
-
-        assert statement.includes_purchase_date(purchase_date, None) is True
-
-    def test_purchase_before_30_day_window_is_excluded(self):
-        """Test purchase before 30-day lookback window is excluded."""
-        statement = MonthlyStatement(
-            id=1,
-            credit_card_id=1,
-            closing_date=date(2024, 5, 7),
-            due_date=date(2024, 5, 27),
-        )
-
-        # Period starts April 7 (30 days before close)
-        purchase_date = date(2024, 4, 6)  # Before 30-day window
-
-        assert statement.includes_purchase_date(purchase_date, None) is False
+        assert statement.includes_purchase_date(purchase_date) is False
 
 
 class TestEqualityAndHash:
@@ -206,13 +146,15 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=1,
-            credit_card_id=2,  # Different card
-            closing_date=date(2024, 6, 7),  # Different dates
+            credit_card_id=2,
+            start_date=date(2024, 5, 8),
+            closing_date=date(2024, 6, 7),
             due_date=date(2024, 6, 27),
         )
 
@@ -223,12 +165,14 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=2,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
@@ -240,12 +184,14 @@ class TestEqualityAndHash:
         statement1 = MonthlyStatement(
             id=1,
             credit_card_id=1,
+            start_date=date(2024, 4, 8),
             closing_date=date(2024, 5, 7),
             due_date=date(2024, 5, 27),
         )
         statement2 = MonthlyStatement(
             id=2,
             credit_card_id=1,
+            start_date=date(2024, 5, 8),
             closing_date=date(2024, 6, 7),
             due_date=date(2024, 6, 27),
         )
@@ -254,3 +200,40 @@ class TestEqualityAndHash:
         assert len(statement_set) == 2
         assert statement1 in statement_set
         assert statement2 in statement_set
+
+
+class TestStatementRepresentation:
+    """Test string and number (duration) representations of a monthly statement."""
+
+    def test_should_return_period_identifier(self):
+        stmt = MonthlyStatement(
+            id=None,
+            credit_card_id=1,
+            start_date=date(2025, 9, 15),
+            closing_date=date(2025, 10, 15),
+            due_date=date(2025, 10, 25),
+        )
+
+        assert stmt.get_period_identifier() == "202510"
+
+    def test_should_return_period_display(self):
+        stmt = MonthlyStatement(
+            id=None,
+            credit_card_id=1,
+            start_date=date(2025, 9, 15),
+            closing_date=date(2025, 10, 15),
+            due_date=date(2025, 10, 25),
+        )
+
+        assert stmt.get_period_display() == "Sep 15 - Oct 15, 2025"
+
+    def test_should_return_period_duration(self):
+        stmt = MonthlyStatement(
+            id=None,
+            credit_card_id=1,
+            start_date=date(2025, 9, 15),
+            closing_date=date(2025, 10, 15),
+            due_date=date(2025, 10, 25),
+        )
+
+        assert stmt.get_duration_days() == 31

@@ -26,7 +26,6 @@ class MonthlyStatement:
 
     def __post_init__(self):
         """Validate invariants after initialization"""
-        # Validate dates relationship
         if not (self.start_date < self.closing_date <= self.due_date):
             raise InvalidStatementDateRange(
                 f"Dates must satisfy: start < closing <= due. "
@@ -49,7 +48,7 @@ class MonthlyStatement:
         """
         Return period identifier (e.g. '202508' for August 2025).
         """
-        return f"{self.start_date.year}{self.start_date.month:02d}"
+        return f"{self.closing_date.year}{self.closing_date.month:02d}"
 
     def get_period_display(self) -> str:
         """
@@ -66,7 +65,7 @@ class MonthlyStatement:
         """Return number of days in this period"""
         return (self.closing_date - self.start_date).days + 1
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         """Statements are equal if they have the same ID"""
         if not isinstance(other, MonthlyStatement):
             return False
@@ -74,6 +73,6 @@ class MonthlyStatement:
             return self is other
         return self.id == other.id
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Allow MonthlyStatement to be used in sets/dicts"""
         return hash(self.id) if self.id is not None else id(self)
