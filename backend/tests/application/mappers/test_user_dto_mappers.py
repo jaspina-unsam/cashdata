@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from app.domain.value_objects.money import Money, Currency
 from app.domain.entities.user import User
-from app.application.mappers.user_dto_mapper import UserDTOMapper
+from app.infrastructure.persistence.mappers.user_dto_mapper import UserDTOMapper
 from app.application.dtos.user_dto import UserResponseDTO
 
 

@@ -3,7 +3,7 @@ from app.application.exceptions.application_exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from app.application.mappers.user_dto_mapper import UserDTOMapper
+from app.infrastructure.persistence.mappers.user_dto_mapper import UserDTOMapper
 from app.domain.entities.user import User
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.money import Money

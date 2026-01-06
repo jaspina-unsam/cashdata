@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 from app.domain.entities.user import User
-from app.domain.entities.monthly_income import MonthlyIncome, IncomeSource
+from app.domain.entities.monthly_income import MonthlyIncome
 from app.domain.value_objects.money import Money, Currency
 from app.domain.value_objects.period import Period
 from app.domain.value_objects.percentage import Percentage

@@ -22,7 +22,7 @@ from app.application.dtos.purchase_dto import (
     CreditCardSummaryResponseDTO,
     PurchaseResponseDTO,
 )
-from app.application.mappers.purchase_dto_mapper import (
+from app.infrastructure.persistence.mappers.purchase_dto_mapper import (
     CreditCardDTOMapper,
     CreditCardSummaryDTOMapper,
     PurchaseDTOMapper,

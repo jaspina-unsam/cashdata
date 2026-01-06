@@ -4,7 +4,7 @@ from sqlalchemy import select, exists
 
 from app.domain.entities import User
 from app.domain.repositories import IUserRepository
-from app.infrastructure.persistence.mappers import UserMapper
+from app.infrastructure.persistence.mappers.user_mapper import UserMapper
 from app.infrastructure.persistence.models import UserModel
 
 

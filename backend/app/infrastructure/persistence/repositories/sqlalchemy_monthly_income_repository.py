@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.domain.entities import MonthlyIncome
 from app.domain.value_objects import Period
 from app.domain.repositories import IMonthlyIncomeRepository
-from app.infrastructure.persistence.mappers import MonthlyIncomeMapper
+from app.infrastructure.persistence.mappers.monthly_income_mapper import MonthlyIncomeMapper
 from app.infrastructure.persistence.models import MonthlyIncomeModel
 
 

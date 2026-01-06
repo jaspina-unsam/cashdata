@@ -1,6 +1,6 @@
 from app.application.dtos.user_dto import UserResponseDTO
 from app.application.exceptions.application_exceptions import UserNotFoundError
-from app.application.mappers.user_dto_mapper import UserDTOMapper
+from app.infrastructure.persistence.mappers.user_dto_mapper import UserDTOMapper
 from app.domain.repositories import IUnitOfWork
 
 
