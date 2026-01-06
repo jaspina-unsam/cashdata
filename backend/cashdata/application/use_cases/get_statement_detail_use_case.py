@@ -1,7 +1,5 @@
 """Use case for getting monthly statement detail with purchases."""
 
-from datetime import date
-
 from cashdata.application.dtos.monthly_statement_dto import (
     PurchaseInStatementDTO,
     StatementDetailDTO,
@@ -36,11 +34,11 @@ class GetStatementDetailUseCase:
             category_repository: Repository for categories
             installment_repository: Repository for installments
         """
-        self._statement_repository = statement_repository
-        self._credit_card_repository = credit_card_repository
-        self._purchase_repository = purchase_repository
-        self._category_repository = category_repository
-        self._installment_repository = installment_repository
+        self._statement_repo = statement_repository
+        self._credit_card_repo = credit_card_repository
+        self._purchase_repo = purchase_repository
+        self._category_repo = category_repository
+        self._installment_repo = installment_repository
 
     def execute(self, statement_id: int, user_id: int) -> StatementDetailDTO | None:
         """Get statement detail with all installments that fall in this period.
@@ -52,72 +50,33 @@ class GetStatementDetailUseCase:
         Returns:
             Statement detail with purchases/installments, or None if not found or not authorized
         """
-        statement = self._statement_repository.find_by_id(statement_id)
+        statement = self._statement_repo.find_by_id(statement_id)
         if not statement:
             return None
 
         # Get credit card to verify ownership
-        credit_card = self._credit_card_repository.find_by_id(statement.credit_card_id)
+        credit_card = self._credit_card_repo.find_by_id(statement.credit_card_id)
         if not credit_card or credit_card.user_id != user_id:
             return None
 
         # Get purchases that were assigned to this statement (FK)
-        purchases_by_fk = self._purchase_repository.find_by_monthly_statement_id(
-            statement.id
-        )
+        all_purchases = self._purchase_repo.find_by_credit_card_id(credit_card.id)
 
-        # Also include purchases for this card that have installments in this billing period
-        all_card_purchases = self._purchase_repository.find_by_credit_card_id(
-            statement.credit_card_id
-        )
+        # Get period identifier
+        period = statement.get_period_identifier()
 
-        # Determine statement_period (YYYYMM)
-        due_year = statement.due_date.year
-        due_month = statement.due_date.month
-        period_month = due_month - 1
-        period_year = due_year
-        if period_month < 1:
-            period_month = 12
-            period_year -= 1
-        statement_period = f"{period_year:04d}{period_month:02d}"
-
-        purchases_map: dict[int, Purchase] = {p.id: p for p in purchases_by_fk}
-
-        for p in all_card_purchases:
-            if p.id in purchases_map:
-                continue
-            installs = self._installment_repository.find_by_purchase_id(p.id)
-            if any(inst.billing_period == statement_period for inst in installs):
-                purchases_map[p.id] = p
-
-        card_purchases = list(purchases_map.values())
-
-        # Now get installments for each purchase and filter by billing_period
+        # Filter purchases with installments in this period
         statement_purchases = []
-        for purchase in card_purchases:
-            # Get installments for this purchase
-            installments = self._installment_repository.find_by_purchase_id(purchase.id)
+        for purchase in all_purchases:
+            installments = self._installment_repo.find_by_purchase_id(purchase.id)
 
-            # Filter installments whose billing_period matches this statement's period
-            for installment in installments:
-                if installment.billing_period == statement_period:
+            for expense in installments:
+                if expense.billing_period == period:
                     statement_purchases.append(
-                        self._create_purchase_dto(
-                            purchase,
-                            installment.installment_number,
-                            float(installment.amount.amount),
-                        )
+                        self._create_purchase_dto(purchase, expense)
                     )
 
-        # Calculate total amount
-        total_amount = sum(p.amount for p in statement_purchases)
-        currency = (
-            statement_purchases[0].currency
-            if statement_purchases
-            else (
-                credit_card.credit_limit.currency if credit_card.credit_limit else "ARS"
-            )
-        )
+        total = sum([p.amount for p in statement_purchases])
 
         return StatementDetailDTO(
             id=statement.id,
@@ -126,11 +85,9 @@ class GetStatementDetailUseCase:
             start_date=statement.start_date,
             closing_date=statement.closing_date,
             due_date=statement.due_date,
-            period_start_date=statement.start_date,
-            period_end_date=statement.closing_date,
             purchases=statement_purchases,
-            total_amount=total_amount,
-            currency=currency,
+            total_amount=total,
+            currency=credit_card.credit_limit.currency,
         )
 
     def _create_purchase_dto(
@@ -146,7 +103,7 @@ class GetStatementDetailUseCase:
             installment_number: The installment number if this is an installment
             installment_amount: The installment amount (if different from total)
         """
-        category = self._category_repository.find_by_id(purchase.category_id)
+        category = self._category_repo.find_by_id(purchase.category_id)
         category_name = category.name if category else "Unknown"
 
         # Use installment amount if provided, otherwise use total amount
