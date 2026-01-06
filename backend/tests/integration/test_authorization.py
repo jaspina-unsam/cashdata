@@ -6,9 +6,9 @@ Tests that users can only access their own resources.
 
 import pytest
 
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.mappers.user_mapper import UserMapper
 
 
 def create_user_in_db(db_session, name, email):

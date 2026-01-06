@@ -3,26 +3,26 @@ from datetime import date
 from decimal import Decimal
 from unittest.mock import Mock
 
-from cashdata.application.use_cases.list_installments_by_purchase_use_case import (
+from app.application.use_cases.list_installments_by_purchase_use_case import (
     ListInstallmentsByPurchaseUseCase,
     ListInstallmentsByPurchaseQuery,
 )
-from cashdata.application.use_cases.list_purchases_by_credit_card_use_case import (
+from app.application.use_cases.list_purchases_by_credit_card_use_case import (
     ListPurchasesByCreditCardUseCase,
     ListPurchasesByCreditCardQuery,
 )
-from cashdata.application.use_cases.list_purchases_by_date_range_use_case import (
+from app.application.use_cases.list_purchases_by_date_range_use_case import (
     ListPurchasesByDateRangeUseCase,
     ListPurchasesByDateRangeQuery,
 )
-from cashdata.application.use_cases.list_credit_cards_by_user_use_case import (
+from app.application.use_cases.list_credit_cards_by_user_use_case import (
     ListCreditCardsByUserUseCase,
     ListCreditCardsByUserQuery,
 )
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.purchase import Purchase
+from app.domain.entities.installment import Installment
+from app.domain.entities.credit_card import CreditCard
+from app.domain.value_objects.money import Money, Currency
 
 
 @pytest.fixture

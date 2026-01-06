@@ -3,11 +3,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
 
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import (
+from app.domain.entities.credit_card import CreditCard
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import (
     SQLAlchemyCreditCardRepository,
 )
 

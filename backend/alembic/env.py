@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from cashdata.infrastructure.persistence.models import (
+from app.infrastructure.persistence.models import (
     Base,
     UserModel,
     MonthlyIncomeModel,

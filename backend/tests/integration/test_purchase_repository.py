@@ -4,13 +4,13 @@ from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
 from datetime import date
 
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.models.purchase_model import PurchaseModel
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
-from cashdata.infrastructure.persistence.models.category_model import CategoryModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
+from app.domain.entities.purchase import Purchase
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.models.purchase_model import PurchaseModel
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
     SQLAlchemyPurchaseRepository,
 )
 

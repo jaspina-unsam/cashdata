@@ -7,9 +7,9 @@ Tests complete user workflows from start to finish.
 import pytest
 from datetime import date
 
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.mappers.user_mapper import UserMapper
 
 
 def create_user_in_db(db_session, name, email):

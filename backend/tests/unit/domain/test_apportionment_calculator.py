@@ -1,12 +1,12 @@
 import pytest
 from decimal import Decimal
-from cashdata.domain.entities.user import User
-from cashdata.domain.entities.monthly_income import MonthlyIncome, IncomeSource
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.value_objects.period import Period
-from cashdata.domain.value_objects.percentage import Percentage
-from cashdata.domain.services.apportionment_calculator import ApportionmentCalculator
-from cashdata.domain.exceptions.domain_exceptions import InvalidCalculation
+from app.domain.entities.user import User
+from app.domain.entities.monthly_income import MonthlyIncome, IncomeSource
+from app.domain.value_objects.money import Money, Currency
+from app.domain.value_objects.period import Period
+from app.domain.value_objects.percentage import Percentage
+from app.domain.services.apportionment_calculator import ApportionmentCalculator
+from app.domain.exceptions.domain_exceptions import InvalidCalculation
 
 
 # Fixtures

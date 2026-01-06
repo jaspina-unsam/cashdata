@@ -2,10 +2,10 @@ import pytest
 from datetime import date
 from decimal import Decimal
 
-from cashdata.domain.services.installment_generator import InstallmentGenerator
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.exceptions.domain_exceptions import InvalidCalculation
+from app.domain.services.installment_generator import InstallmentGenerator
+from app.domain.entities.credit_card import CreditCard
+from app.domain.value_objects.money import Money, Currency
+from app.domain.exceptions.domain_exceptions import InvalidCalculation
 
 
 class TestInstallmentGenerator:

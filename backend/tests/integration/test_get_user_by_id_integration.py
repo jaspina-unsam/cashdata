@@ -3,16 +3,16 @@ from decimal import Decimal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cashdata.application.use_cases.get_user_by_id_use_case import (
+from app.application.use_cases.get_user_by_id_use_case import (
     GetUserByIdUseCase,
 )
-from cashdata.application.exceptions.application_exceptions import (
+from app.application.exceptions.application_exceptions import (
     UserNotFoundError,
 )
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 

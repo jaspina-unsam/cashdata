@@ -2,10 +2,10 @@
 import json
 from decimal import Decimal
 import pytest
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.entities.user import User
-from cashdata.application.mappers.user_dto_mapper import UserDTOMapper
-from cashdata.application.dtos.user_dto import UserResponseDTO
+from app.domain.value_objects.money import Money, Currency
+from app.domain.entities.user import User
+from app.application.mappers.user_dto_mapper import UserDTOMapper
+from app.application.dtos.user_dto import UserResponseDTO
 
 
 @pytest.fixture

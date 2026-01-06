@@ -1,10 +1,10 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_user_repository import (
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.repositories.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
 )
 from decimal import Decimal

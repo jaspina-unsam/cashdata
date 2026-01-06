@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import MagicMock
-from cashdata.application.use_cases.delete_user_use_case import DeleteUserUseCase
-from cashdata.application.exceptions.application_exceptions import UserNotFoundError
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
+from app.application.use_cases.delete_user_use_case import DeleteUserUseCase
+from app.application.exceptions.application_exceptions import UserNotFoundError
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
 from decimal import Decimal
 
 

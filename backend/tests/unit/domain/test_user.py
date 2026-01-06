@@ -1,8 +1,8 @@
 import pytest
 from decimal import Decimal
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.exceptions.domain_exceptions import InvalidEntity
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.domain.exceptions.domain_exceptions import InvalidEntity
 
 
 @pytest.fixture

@@ -1,15 +1,15 @@
 import pytest
 from unittest.mock import Mock
 
-from cashdata.application.use_cases.get_user_by_id_use_case import (
+from app.application.use_cases.get_user_by_id_use_case import (
     GetUserByIdUseCase,
 )
-from cashdata.application.dtos.user_dto import UserResponseDTO
-from cashdata.application.exceptions.application_exceptions import (
+from app.application.dtos.user_dto import UserResponseDTO
+from app.application.exceptions.application_exceptions import (
     UserNotFoundError,
 )
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
 
 
 class TestGetUserByIdUseCase:

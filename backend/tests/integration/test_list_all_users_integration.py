@@ -3,11 +3,11 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cashdata.application.use_cases.list_all_users_use_case import ListAllUsersUseCase
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Currency, Money
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
+from app.application.use_cases.list_all_users_use_case import ListAllUsersUseCase
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Currency, Money
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 

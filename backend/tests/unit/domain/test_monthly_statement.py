@@ -3,8 +3,8 @@
 import pytest
 from datetime import date
 
-from cashdata.domain.entities.monthly_statement import MonthlyStatement
-from cashdata.domain.exceptions.domain_exceptions import InvalidStatementDateRange
+from app.domain.entities.monthly_statement import MonthlyStatement
+from app.domain.exceptions.domain_exceptions import InvalidStatementDateRange
 
 
 class TestMonthlyStatementValidation:

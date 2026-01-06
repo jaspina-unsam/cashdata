@@ -1,7 +1,7 @@
 """add_start_date_to_monthly_statements
 
 Revision ID: 397ae91a41e4
-Revises: 3b1f7a9b8c2b
+Revises: e9c143903dd1
 Create Date: 2026-01-06 13:26:04.975447
 
 """
@@ -16,7 +16,7 @@ from sqlalchemy import text
 
 # revision identifiers, used by Alembic.
 revision: str = "397ae91a41e4"
-down_revision: Union[str, Sequence[str], None] = "3b1f7a9b8c2b"
+down_revision: Union[str, Sequence[str], None] = "e9c143903dd1"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -3,13 +3,13 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from decimal import Decimal
 
-from cashdata.application.use_cases.create_user_use_case import CreateUserUseCase
-from cashdata.application.dtos.user_dto import CreateUserInputDTO, UserResponseDTO
-from cashdata.application.exceptions.application_exceptions import (
+from app.application.use_cases.create_user_use_case import CreateUserUseCase
+from app.application.dtos.user_dto import CreateUserInputDTO, UserResponseDTO
+from app.application.exceptions.application_exceptions import (
     UserAlreadyExistsError,
 )
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
 
 
 class TestCreateUserUseCase:

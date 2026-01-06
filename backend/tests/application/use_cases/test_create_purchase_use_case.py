@@ -4,17 +4,17 @@ from decimal import Decimal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cashdata.application.use_cases.create_purchase_use_case import (
+from app.application.use_cases.create_purchase_use_case import (
     CreatePurchaseUseCase,
     CreatePurchaseCommand,
 )
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.models.category_model import CategoryModel
-from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
-from cashdata.infrastructure.persistence.models.purchase_model import PurchaseModel
-from cashdata.infrastructure.persistence.models.installment_model import InstallmentModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.purchase_model import PurchaseModel
+from app.infrastructure.persistence.models.installment_model import InstallmentModel
+from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 

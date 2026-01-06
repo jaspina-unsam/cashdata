@@ -24,19 +24,19 @@ def upgrade() -> None:
         'monthly_statements',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
         sa.Column('credit_card_id', sa.Integer(), nullable=False),
-        sa.Column('billing_close_date', sa.Date(), nullable=False),
-        sa.Column('payment_due_date', sa.Date(), nullable=False),
+        sa.Column('closing_date', sa.Date(), nullable=False),
+        sa.Column('due_date', sa.Date(), nullable=False),
         sa.ForeignKeyConstraint(['credit_card_id'], ['credit_cards.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     # Create index for efficient queries by credit card
     op.create_index('ix_monthly_statements_credit_card_id', 'monthly_statements', ['credit_card_id'])
     # Create index for efficient queries by due date
-    op.create_index('ix_monthly_statements_payment_due_date', 'monthly_statements', ['payment_due_date'])
+    op.create_index('ix_monthly_statements_due_date', 'monthly_statements', ['due_date'])
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_index('ix_monthly_statements_payment_due_date', table_name='monthly_statements')
+    op.drop_index('ix_monthly_statements_due_date', table_name='monthly_statements')
     op.drop_index('ix_monthly_statements_credit_card_id', table_name='monthly_statements')
     op.drop_table('monthly_statements')

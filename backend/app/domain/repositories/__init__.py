@@ -1,0 +1,7 @@
+from app.domain.repositories.imonthly_income_repository import IMonthlyIncomeRepository
+from app.domain.repositories.iuser_repository import IUserRepository
+from app.domain.repositories.icategory_repository import ICategoryRepository
+from app.domain.repositories.icredit_card_repository import ICreditCardRepository
+from app.domain.repositories.ipurchase_repository import IPurchaseRepository
+from app.domain.repositories.iinstallment_repository import IInstallmentRepository
+from app.domain.repositories.iunit_of_work import IUnitOfWork

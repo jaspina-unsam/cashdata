@@ -1,0 +1,20 @@
+from sqlalchemy.orm import declarative_base
+from app.infrastructure.persistence.models.base import Base
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.models.monthly_income_model import (
+    MonthlyIncomeModel,
+)
+from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.purchase_model import PurchaseModel
+from app.infrastructure.persistence.models.installment_model import InstallmentModel
+
+__all__ = [
+    "Base",
+    "UserModel",
+    "MonthlyIncomeModel",
+    "CategoryModel",
+    "CreditCardModel",
+    "PurchaseModel",
+    "InstallmentModel",
+]
