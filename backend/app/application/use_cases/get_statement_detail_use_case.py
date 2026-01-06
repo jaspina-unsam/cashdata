@@ -70,10 +70,14 @@ class GetStatementDetailUseCase:
         for purchase in all_purchases:
             installments = self._installment_repo.find_by_purchase_id(purchase.id)
 
-            for expense in installments:
-                if expense.billing_period == period:
+            for installment in installments:
+                if installment.billing_period == period:
                     statement_purchases.append(
-                        self._create_purchase_dto(purchase, expense)
+                        self._create_purchase_dto(
+                            purchase,
+                            installment.installment_number,
+                            float(installment.amount.amount),
+                        )
                     )
 
         total = sum([p.amount for p in statement_purchases])
@@ -85,6 +89,8 @@ class GetStatementDetailUseCase:
             start_date=statement.start_date,
             closing_date=statement.closing_date,
             due_date=statement.due_date,
+            period_start_date=statement.start_date,
+            period_end_date=statement.closing_date,
             purchases=statement_purchases,
             total_amount=total,
             currency=credit_card.credit_limit.currency,

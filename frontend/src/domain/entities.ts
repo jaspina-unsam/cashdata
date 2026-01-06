@@ -91,14 +91,15 @@ export interface CreditCardSummary {
  * Domain Entity: Monthly Statement
  * 
  * Represents a monthly statement for a credit card.
- * Each statement has specific billing close and payment due dates.
+ * Each statement has explicit period boundaries with start, closing, and due dates.
  */
 export interface MonthlyStatement {
   id: number;
   credit_card_id: number;
   credit_card_name: string;
-  billing_close_date: string; // ISO date format (YYYY-MM-DD)
-  payment_due_date: string; // ISO date format (YYYY-MM-DD)
+  start_date: string; // ISO date format (YYYY-MM-DD) - period start
+  closing_date: string; // ISO date format (YYYY-MM-DD) - billing close
+  due_date: string; // ISO date format (YYYY-MM-DD) - payment due
 }
 
 /**
@@ -126,8 +127,9 @@ export interface StatementDetail {
   id: number;
   credit_card_id: number;
   credit_card_name: string;
-  billing_close_date: string; // ISO date format (YYYY-MM-DD)
-  payment_due_date: string; // ISO date format (YYYY-MM-DD)
+  start_date: string; // ISO date format (YYYY-MM-DD), period start
+  closing_date: string; // ISO date format (YYYY-MM-DD)
+  due_date: string; // ISO date format (YYYY-MM-DD)
   period_start_date: string; // ISO date format (YYYY-MM-DD)
   period_end_date: string; // ISO date format (YYYY-MM-DD)
   purchases: PurchaseInStatement[];

@@ -44,8 +44,8 @@ export function useCreateStatement() {
       userId: number;
       data: {
         credit_card_id: number;
-        billing_close_date: string;
-        payment_due_date: string;
+        closing_date: string;
+        due_date: string;
       };
     }) => monthlyStatementRepository.create(userId, data),
     onSuccess: (_, variables) => {
@@ -72,8 +72,8 @@ export function useUpdateStatementDates() {
       statementId: number;
       userId: number;
       data: {
-        billing_close_date: string;
-        payment_due_date: string;
+        closing_date: string;
+        due_date: string;
       };
     }) => monthlyStatementRepository.updateDates(statementId, userId, data),
     onSuccess: (_, variables) => {

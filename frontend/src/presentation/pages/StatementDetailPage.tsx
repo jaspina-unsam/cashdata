@@ -26,8 +26,8 @@ export function StatementDetailPage() {
 
   // Initialize form when statement loads
   if (statement && !billingCloseDate) {
-    setBillingCloseDate(statement.billing_close_date);
-    setPaymentDueDate(statement.payment_due_date);
+    setBillingCloseDate(statement.closing_date);
+    setPaymentDueDate(statement.due_date);
   }
 
   const formatDate = (dateStr: string) => {
@@ -52,8 +52,8 @@ export function StatementDetailPage() {
         statementId: statement.id,
         userId,
         data: {
-          billing_close_date: billingCloseDate,
-          payment_due_date: paymentDueDate,
+          closing_date: billingCloseDate,
+          due_date: paymentDueDate,
         },
       });
       setIsEditing(false);
@@ -64,8 +64,8 @@ export function StatementDetailPage() {
 
   const handleCancelEdit = () => {
     if (statement) {
-      setBillingCloseDate(statement.billing_close_date);
-      setPaymentDueDate(statement.payment_due_date);
+      setBillingCloseDate(statement.closing_date);
+      setPaymentDueDate(statement.due_date);
     }
     setIsEditing(false);
   };
@@ -181,13 +181,13 @@ export function StatementDetailPage() {
               <div>
                 <p className="text-sm text-gray-600">Fecha de Cierre</p>
                 <p className="text-lg font-semibold text-gray-800">
-                  {formatDate(statement.billing_close_date)}
+                  {formatDate(statement.closing_date)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Fecha de Vencimiento</p>
                 <p className="text-lg font-semibold text-gray-800">
-                  {formatDate(statement.payment_due_date)}
+                  {formatDate(statement.due_date)}
                 </p>
               </div>
             </div>
