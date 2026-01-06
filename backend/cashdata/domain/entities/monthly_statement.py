@@ -1,71 +1,70 @@
 from dataclasses import dataclass
 from datetime import date, timedelta
 
+from cashdata.domain.exceptions.domain_exceptions import InvalidStatementDateRange
+
 
 @dataclass
 class MonthlyStatement:
     """
-    Domain entity representing a credit card monthly statement (resumen mensual).
+    Credit card monthly statement with explicit period boundaries.
 
-    Each statement represents a billing period for a credit card, with specific
-    closing and due dates. These dates can be customized per statement, overriding
-    the credit card's default dates.
+    Real-world example:
+        start_date: 2025-08-28 (day after previous statement closed)
+        closing_date: 2025-10-02 (actual closing date, even if in next month)
+        due_date: 2025-10-20 (payment deadline)
 
     Invariants:
-    - billing_close_date must be before or equal to payment_due_date
-    - id can be None (before persistence)
+        start_date < closing_date <= due_date
     """
 
     id: int | None
     credit_card_id: int
-    closing_date: date  # Fecha de cierre específica de este resumen
-    due_date: date  # Fecha de vencimiento específica de este resumen
+    start_date: date
+    closing_date: date
+    due_date: date
 
     def __post_init__(self):
         """Validate invariants after initialization"""
         # Validate dates relationship
-        if self.closing_date > self.due_date:
-            raise ValueError(
-                f"billing_close_date ({self.closing_date}) must be before "
-                f"or equal to payment_due_date ({self.due_date})"
+        if not (self.start_date < self.closing_date <= self.due_date):
+            raise InvalidStatementDateRange(
+                f"Dates must satisfy: start < closing <= due. "
+                f"Got: {self.start_date} < {self.closing_date} <= {self.due_date}"
             )
 
-    def get_period_start_date(
-        self, previous_statement_closing_date: date | None
-    ) -> date:
-        """
-        Calculate the start date of this statement's billing period.
-
-        The period starts the day after the previous statement's close date.
-        If there's no previous statement, we use a default lookback period.
-
-        Args:
-            previous_close_date: The closing date of the previous statement, or None
-
-        Returns:
-            The first day of this statement's billing period
-        """
-        if previous_statement_closing_date is None:
-            # If no previous close date, period starts 30 days before this close
-            return self.closing_date - timedelta(days=30)
-
-        return previous_statement_closing_date + timedelta(days=1)
-
-    def includes_purchase_date(
-        self, purchase_date: date, previous_close_date: date | None
-    ) -> bool:
+    def includes_purchase_date(self, purchase_date: date) -> bool:
         """
         Check if a purchase date falls within this statement's billing period.
 
         Args:
             purchase_date: The date of the purchase
-            previous_close_date: The closing date of the previous statement
 
         Returns:
             True if the purchase belongs to this statement's period
         """
-        period_start = self.get_period_start_date(previous_close_date)
-        return period_start <= purchase_date <= self.closing_date
+        return self.start_date <= purchase_date <= self.closing_date
+
+    def get_period_identifier(self) -> str:
+        """
+        Return period identifier (e.g. '202508' for August 2025).
+        """
+        return f"{self.start_date.year}{self.start_date.month:02d}"
+
+    def get_period_display(self) -> str:
+        """
+        Return human-readable period matching bank statements.
+
+        Example: 'Aug 28 - Oct 2, 2025'
+        """
+
+        start_str = self.start_date.strftime("%b %d")
+        close_str = self.closing_date.strftime("%b %d, %Y")
+        return f"{start_str} - {close_str}"
+
+    def get_duration_days(self) -> int:
+        """Return number of days in this period"""
+        return (self.closing_date - self.start_date).days + 1
 
     def __eq__(self, other):
         """Statements are equal if they have the same ID"""

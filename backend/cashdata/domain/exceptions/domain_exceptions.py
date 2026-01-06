@@ -25,3 +25,7 @@ class InvalidEntity(DomainException):
 class InvalidCalculation(DomainException):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+class InvalidStatementDateRange(DomainException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
