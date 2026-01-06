@@ -2,9 +2,9 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from cashdata.domain.entities.category import Category
-from cashdata.infrastructure.persistence.models.category_model import CategoryModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_category_repository import (
+from app.domain.entities.category import Category
+from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.repositories.sqlalchemy_category_repository import (
     SQLAlchemyCategoryRepository,
 )
 

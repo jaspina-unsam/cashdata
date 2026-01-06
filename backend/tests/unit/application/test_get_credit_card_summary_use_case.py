@@ -3,14 +3,14 @@ from datetime import date
 from decimal import Decimal
 from unittest.mock import Mock
 
-from cashdata.application.use_cases.get_credit_card_summary_use_case import (
+from app.application.use_cases.get_credit_card_summary_use_case import (
     GetCreditCardSummaryUseCase,
     GetCreditCardSummaryQuery,
     CreditCardSummary,
 )
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.credit_card import CreditCard
+from app.domain.entities.installment import Installment
+from app.domain.value_objects.money import Money, Currency
 
 
 @pytest.fixture

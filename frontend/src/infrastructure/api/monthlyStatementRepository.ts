@@ -36,8 +36,8 @@ export class ApiMonthlyStatementRepository implements IMonthlyStatementRepositor
     userId: number,
     data: {
       credit_card_id: number;
-      billing_close_date: string;
-      payment_due_date: string;
+      closing_date: string;
+      due_date: string;
     }
   ): Promise<MonthlyStatement> {
     return httpClient.post<MonthlyStatement>(
@@ -51,8 +51,8 @@ export class ApiMonthlyStatementRepository implements IMonthlyStatementRepositor
     statementId: number,
     userId: number,
     data: {
-      billing_close_date: string;
-      payment_due_date: string;
+      closing_date: string;
+      due_date: string;
     }
   ): Promise<MonthlyStatement> {
     return httpClient.put<MonthlyStatement>(

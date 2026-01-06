@@ -62,11 +62,11 @@ export interface IMonthlyStatementRepository {
   findById(statementId: number, userId: number): Promise<StatementDetail | null>;
   create(userId: number, data: {
     credit_card_id: number;
-    billing_close_date: string;
-    payment_due_date: string;
+    closing_date: string;
+    due_date: string;
   }): Promise<MonthlyStatement>;
   updateDates(statementId: number, userId: number, data: {
-    billing_close_date: string;
-    payment_due_date: string;
+    closing_date: string;
+    due_date: string;
   }): Promise<MonthlyStatement>;
 }

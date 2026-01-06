@@ -83,12 +83,12 @@ export function StatementsPage() {
                     {statement.credit_card_name}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Vencimiento: {formatDate(statement.payment_due_date)}
+                    Vencimiento: {formatDate(statement.due_date)}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
-                    Cierre: {formatDate(statement.billing_close_date)}
+                    Cierre: {formatDate(statement.closing_date)}
                   </p>
                   <svg
                     className="w-6 h-6 text-gray-400 mt-2"

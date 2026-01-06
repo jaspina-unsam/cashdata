@@ -4,16 +4,16 @@ from decimal import Decimal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cashdata.application.use_cases.create_user_use_case import CreateUserUseCase
-from cashdata.application.use_cases.update_user_use_case import UpdateUserUseCase
-from cashdata.application.dtos.user_dto import CreateUserInputDTO, UpdateUserInputDTO
-from cashdata.application.exceptions.application_exceptions import (
+from app.application.use_cases.create_user_use_case import CreateUserUseCase
+from app.application.use_cases.update_user_use_case import UpdateUserUseCase
+from app.application.dtos.user_dto import CreateUserInputDTO, UpdateUserInputDTO
+from app.application.exceptions.application_exceptions import (
     UserAlreadyExistsError,
     UserNotFoundError,
 )
-from cashdata.domain.value_objects.money import Currency
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
+from app.domain.value_objects.money import Currency
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 

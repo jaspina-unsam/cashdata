@@ -3,14 +3,14 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from cashdata.infrastructure.api.main import app
-from cashdata.infrastructure.api.dependencies import get_session
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper
+from app.infrastructure.api.main import app
+from app.infrastructure.api.dependencies import get_session
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Money, Currency
+from app.infrastructure.persistence.mappers.user_mapper import UserMapper
 
 # Import Base and ALL models to ensure they're registered
-from cashdata.infrastructure.persistence.models import (
+from app.infrastructure.persistence.models import (
     Base,
     UserModel,
     MonthlyIncomeModel,

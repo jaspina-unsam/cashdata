@@ -1,6 +1,6 @@
 import pytest
 from dataclasses import FrozenInstanceError
-from cashdata.domain.entities.category import Category
+from app.domain.entities.category import Category
 
 
 class TestCategoryEntity:

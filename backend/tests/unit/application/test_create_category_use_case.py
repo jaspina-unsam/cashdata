@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import Mock
 
-from cashdata.application.use_cases.create_category_use_case import (
+from app.application.use_cases.create_category_use_case import (
     CreateCategoryUseCase,
     CreateCategoryCommand,
 )
-from cashdata.domain.entities.category import Category
+from app.domain.entities.category import Category
 
 
 @pytest.fixture

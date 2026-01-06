@@ -3,12 +3,12 @@ from datetime import date
 from decimal import Decimal
 from unittest.mock import Mock
 
-from cashdata.application.use_cases.get_purchase_by_id_use_case import (
+from app.application.use_cases.get_purchase_by_id_use_case import (
     GetPurchaseByIdUseCase,
     GetPurchaseByIdQuery,
 )
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.purchase import Purchase
+from app.domain.value_objects.money import Money, Currency
 
 
 @pytest.fixture

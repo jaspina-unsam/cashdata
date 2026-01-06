@@ -3,23 +3,23 @@ import pytest
 from datetime import date
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from cashdata.domain.entities.monthly_income import IncomeSource, MonthlyIncome
-from cashdata.domain.entities.user import User
-from cashdata.domain.entities.category import Category
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.value_objects.money import Currency, Money
-from cashdata.domain.value_objects.period import Period
-from cashdata.infrastructure.persistence.models.user_model import UserModel
-from cashdata.infrastructure.persistence.models.monthly_income_model import (
+from app.domain.entities.monthly_income import IncomeSource, MonthlyIncome
+from app.domain.entities.user import User
+from app.domain.entities.category import Category
+from app.domain.entities.credit_card import CreditCard
+from app.domain.entities.purchase import Purchase
+from app.domain.entities.installment import Installment
+from app.domain.value_objects.money import Currency, Money
+from app.domain.value_objects.period import Period
+from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.models.monthly_income_model import (
     MonthlyIncomeModel,
 )
-from cashdata.infrastructure.persistence.models.category_model import CategoryModel
-from cashdata.infrastructure.persistence.models.credit_card_model import CreditCardModel
-from cashdata.infrastructure.persistence.models.purchase_model import PurchaseModel
-from cashdata.infrastructure.persistence.models.installment_model import InstallmentModel
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
+from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.purchase_model import PurchaseModel
+from app.infrastructure.persistence.models.installment_model import InstallmentModel
+from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 

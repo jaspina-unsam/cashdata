@@ -1,13 +1,13 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from cashdata.domain.entities.monthly_income import MonthlyIncome, IncomeSource
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.value_objects.period import Period
-from cashdata.infrastructure.persistence.models.monthly_income_model import (
+from app.domain.entities.monthly_income import MonthlyIncome, IncomeSource
+from app.domain.value_objects.money import Money, Currency
+from app.domain.value_objects.period import Period
+from app.infrastructure.persistence.models.monthly_income_model import (
     MonthlyIncomeModel,
 )
-from cashdata.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import (
+from app.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import (
     SQLAlchemyMonthlyIncomeRepository,
 )
 from decimal import Decimal

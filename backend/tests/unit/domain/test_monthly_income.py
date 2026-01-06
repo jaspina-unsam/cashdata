@@ -1,9 +1,9 @@
 # backend/tests/unit/domain/test_monthly_income.py
 import pytest
 from decimal import Decimal
-from cashdata.domain.entities.monthly_income import MonthlyIncome, IncomeSource
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.value_objects.period import Period
+from app.domain.entities.monthly_income import MonthlyIncome, IncomeSource
+from app.domain.value_objects.money import Money, Currency
+from app.domain.value_objects.period import Period
 
 
 @pytest.fixture

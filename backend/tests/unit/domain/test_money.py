@@ -1,8 +1,8 @@
 # backend/tests/unit/domain/test_money.py
 import pytest
 from decimal import Decimal
-from cashdata.domain.value_objects.money import Currency, Money
-from cashdata.domain.exceptions.domain_exceptions import InvalidMoneyOperation
+from app.domain.value_objects.money import Currency, Money
+from app.domain.exceptions.domain_exceptions import InvalidMoneyOperation
 
 
 class TestMoneyCreation:

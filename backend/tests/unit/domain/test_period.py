@@ -1,8 +1,8 @@
 # backend/tests/unit/domain/test_period.py
 import pytest
 from datetime import date
-from cashdata.domain.value_objects.period import Period
-from cashdata.domain.exceptions.domain_exceptions import InvalidPeriodFormat
+from app.domain.value_objects.period import Period
+from app.domain.exceptions.domain_exceptions import InvalidPeriodFormat
 
 
 class TestPeriodCreation:

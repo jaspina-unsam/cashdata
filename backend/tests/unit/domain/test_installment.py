@@ -3,8 +3,8 @@ from dataclasses import FrozenInstanceError
 from datetime import date
 from decimal import Decimal
 
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.installment import Installment
+from app.domain.value_objects.money import Money, Currency
 
 
 class TestInstallmentEntity:

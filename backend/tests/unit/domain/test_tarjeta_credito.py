@@ -2,8 +2,8 @@ import pytest
 from decimal import Decimal
 from datetime import date
 from dataclasses import FrozenInstanceError
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.credit_card import CreditCard
+from app.domain.value_objects.money import Money, Currency
 
 
 class TestTarjetaCreditoEntity:

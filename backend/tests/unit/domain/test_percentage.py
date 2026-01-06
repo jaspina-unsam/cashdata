@@ -1,9 +1,9 @@
 # backend/tests/unit/domain/test_percentage.py
 import pytest
 from decimal import Decimal
-from cashdata.domain.value_objects.percentage import Percentage
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.domain.exceptions.domain_exceptions import InvalidPercentage
+from app.domain.value_objects.percentage import Percentage
+from app.domain.value_objects.money import Money, Currency
+from app.domain.exceptions.domain_exceptions import InvalidPercentage
 
 
 class TestPercentageCreation:

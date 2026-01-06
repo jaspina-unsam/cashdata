@@ -1,2 +1,0 @@
-from cashdata.infrastructure.persistence.mappers.monthly_income_mapper import MonthlyIncomeMapper
-from cashdata.infrastructure.persistence.mappers.user_mapper import UserMapper

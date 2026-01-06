@@ -2,9 +2,9 @@ from decimal import Decimal
 from unittest.mock import Mock
 import pytest
 
-from cashdata.application.use_cases.list_all_users_use_case import ListAllUsersUseCase
-from cashdata.domain.entities.user import User
-from cashdata.domain.value_objects.money import Currency, Money
+from app.application.use_cases.list_all_users_use_case import ListAllUsersUseCase
+from app.domain.entities.user import User
+from app.domain.value_objects.money import Currency, Money
 
 
 @pytest.fixture

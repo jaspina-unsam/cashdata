@@ -3,16 +3,16 @@ from datetime import date
 from decimal import Decimal
 from unittest.mock import Mock, MagicMock
 
-from cashdata.application.use_cases.create_purchase_use_case import (
+from app.application.use_cases.create_purchase_use_case import (
     CreatePurchaseUseCase,
     CreatePurchaseCommand,
     CreatePurchaseResult,
 )
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.entities.category import Category
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.value_objects.money import Money, Currency
+from app.domain.entities.purchase import Purchase
+from app.domain.entities.category import Category
+from app.domain.entities.credit_card import CreditCard
+from app.domain.entities.installment import Installment
+from app.domain.value_objects.money import Money, Currency
 
 
 @pytest.fixture

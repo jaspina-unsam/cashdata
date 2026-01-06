@@ -2,22 +2,22 @@ import pytest
 from datetime import date
 from decimal import Decimal
 
-from cashdata.domain.entities.purchase import Purchase
-from cashdata.domain.entities.installment import Installment
-from cashdata.domain.entities.credit_card import CreditCard
-from cashdata.domain.entities.category import Category
-from cashdata.domain.value_objects.money import Money, Currency
-from cashdata.application.use_cases.get_credit_card_summary_use_case import (
+from app.domain.entities.purchase import Purchase
+from app.domain.entities.installment import Installment
+from app.domain.entities.credit_card import CreditCard
+from app.domain.entities.category import Category
+from app.domain.value_objects.money import Money, Currency
+from app.application.use_cases.get_credit_card_summary_use_case import (
     CreditCardSummary,
 )
-from cashdata.application.mappers.purchase_dto_mapper import (
+from app.infrastructure.persistence.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
     InstallmentDTOMapper,
     CreditCardDTOMapper,
     CategoryDTOMapper,
     CreditCardSummaryDTOMapper,
 )
-from cashdata.application.dtos.purchase_dto import (
+from app.application.dtos.purchase_dto import (
     PurchaseResponseDTO,
     InstallmentResponseDTO,
     CreditCardResponseDTO,
