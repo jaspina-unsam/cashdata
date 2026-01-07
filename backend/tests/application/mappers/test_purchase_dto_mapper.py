@@ -10,7 +10,7 @@ from app.domain.value_objects.money import Money, Currency
 from app.application.use_cases.get_credit_card_summary_use_case import (
     CreditCardSummary,
 )
-from app.infrastructure.persistence.mappers.purchase_dto_mapper import (
+from app.application.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
     InstallmentDTOMapper,
     CreditCardDTOMapper,
