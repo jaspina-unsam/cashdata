@@ -6,7 +6,7 @@ from app.domain.entities.purchase import Purchase
 from app.domain.value_objects.money import Money, Currency
 from app.domain.services.installment_generator import InstallmentGenerator
 from app.domain.repositories import IUnitOfWork
-from app.application.services.statement_finder import StatementFinder
+from app.application.services.statement_factory import StatementFactory
 
 
 @dataclass(frozen=True)
@@ -116,7 +116,7 @@ class CreatePurchaseUseCase:
 
             # Automatically create statements for all installment billing periods
             for installment in installments:
-                StatementFinder.get_or_create_statement_for_period(
+                StatementFactory.get_or_create_statement_for_period(
                     credit_card=credit_card,
                     billing_period=installment.billing_period,
                     statement_repository=uow.monthly_statements,

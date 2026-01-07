@@ -1,6 +1,6 @@
 from typing import List
 from app.application.dtos.user_dto import UserResponseDTO
-from app.infrastructure.persistence.mappers.user_dto_mapper import UserDTOMapper
+from app.application.mappers.user_dto_mapper import UserDTOMapper
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 

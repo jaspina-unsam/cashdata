@@ -30,7 +30,7 @@ from app.application.dtos.purchase_dto import (
     PurchaseResponseDTO,
     InstallmentResponseDTO,
 )
-from app.infrastructure.persistence.mappers.purchase_dto_mapper import (
+from app.application.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
     InstallmentDTOMapper,
 )
