@@ -67,7 +67,7 @@ class SQLAlchemyInstallmentRepository(IInstallmentRepository):
                 existing.amount = float(installment.amount.amount)
                 existing.currency = installment.amount.currency.value
                 existing.billing_period = installment.billing_period
-                existing.due_date = installment.due_date
+                existing.manually_assigned_statement_id = installment.manually_assigned_statement_id
                 self.session.flush()
                 self.session.refresh(existing)
                 return InstallmentMapper.to_entity(existing)
