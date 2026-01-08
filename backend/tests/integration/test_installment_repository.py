@@ -81,7 +81,6 @@ class TestSQLAlchemyInstallmentRepositorySave:
             total_installments=6,
             amount=Money(Decimal("2000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
         )
         saved = installment_repository.save(installment)
 
@@ -98,7 +97,6 @@ class TestSQLAlchemyInstallmentRepositorySave:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period=f"20250{i}",
-                due_date=date(2025, i, 10),
             )
             for i in range(1, 4)
         ]
@@ -117,7 +115,6 @@ class TestSQLAlchemyInstallmentRepositoryFindByPurchaseId:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period=f"20250{i}",
-                due_date=date(2025, i, 10),
             )
             installment_repository.save(inst)
 
@@ -134,7 +131,6 @@ class TestSQLAlchemyInstallmentRepositoryFindByBillingPeriod:
             total_installments=1,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
         )
         installment_repository.save(inst)
 
@@ -153,7 +149,6 @@ class TestSQLAlchemyInstallmentRepositoryFindByCreditCardAndPeriod:
             total_installments=1,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
         )
         installment_repository.save(inst)
 

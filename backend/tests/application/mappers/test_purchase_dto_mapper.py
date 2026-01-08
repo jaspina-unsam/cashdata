@@ -78,7 +78,6 @@ class TestInstallmentDTOMapper:
             total_installments=12,
             amount=Money(Decimal("10000.00"), Currency.ARS),
             billing_period="202502",
-            due_date=date(2025, 2, 20),
         )
 
         # Act
@@ -93,7 +92,6 @@ class TestInstallmentDTOMapper:
         assert dto.amount == Decimal("10000.00")
         assert dto.currency == Currency.ARS
         assert dto.billing_period == "202502"
-        assert dto.due_date == date(2025, 2, 20)
 
 
 class TestCreditCardDTOMapper:
@@ -213,7 +211,6 @@ class TestCreditCardSummaryDTOMapper:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 20),
             ),
             Installment(
                 id=2,
@@ -222,7 +219,6 @@ class TestCreditCardSummaryDTOMapper:
                 total_installments=1,
                 amount=Money(Decimal("2000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 20),
             ),
         ]
 

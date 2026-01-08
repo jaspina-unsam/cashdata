@@ -283,9 +283,9 @@ class TestCreatePurchaseUseCaseIntegration:
         THEN: Installments have correct sequential billing periods based on due_date - 1
 
         Purchase on Jan 15 (after close day 10):
-        - Inst 1: closes Feb 10, dues Feb 20 → period = Jan (202501)
-        - Inst 2: closes Mar 10, dues Mar 20 → period = Feb (202502)
-        - Inst 3: closes Apr 10, dues Apr 20 → period = Mar (202503)
+        - Inst 1: closes Feb 10, dues Feb 20 → period = Feb (202502)
+        - Inst 2: closes Mar 10, dues Mar 20 → period = Mar (202503)
+        - Inst 3: closes Apr 10, dues Apr 20 → period = Apr (202504)
         """
         # Arrange
         command = CreatePurchaseCommand(
@@ -306,10 +306,9 @@ class TestCreatePurchaseUseCaseIntegration:
         with SQLAlchemyUnitOfWork(session_factory) as uow:
             installments = uow.installments.find_by_purchase_id(result.purchase_id)
 
-        # Billing period = month of due_date minus 1
-        assert installments[0].billing_period == "202501"  # Due Feb 20 → Jan
-        assert installments[1].billing_period == "202502"  # Due Mar 20 → Feb
-        assert installments[2].billing_period == "202503"  # Due Apr 20 → Mar
+        assert installments[0].billing_period == "202502"  # Due Feb 20 → Jan
+        assert installments[1].billing_period == "202503"  # Due Mar 20 → Feb
+        assert installments[2].billing_period == "202504"  # Due Apr 20 → Mar
 
     def test_transaction_rollback_on_error(self, use_case, session_factory):
         """

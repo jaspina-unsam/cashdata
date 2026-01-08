@@ -14,7 +14,6 @@ class InstallmentModel(Base):
     amount = Column(Numeric(precision=12, scale=2), nullable=False)
     currency = Column(String(3), nullable=False)
     billing_period = Column(String(6), nullable=False)  # YYYYMM format
-    due_date = Column(Date, nullable=False)
 
     def __repr__(self):
         return f"<InstallmentModel(id={self.id}, purchase_id={self.purchase_id}, {self.installment_number}/{self.total_installments})>"

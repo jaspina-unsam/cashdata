@@ -85,7 +85,6 @@ class InstallmentResponseDTO(BaseModel):
     amount: Decimal
     currency: Currency
     billing_period: str
-    due_date: date
 
     model_config = ConfigDict(
         from_attributes=True,
