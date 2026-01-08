@@ -85,6 +85,7 @@ class InstallmentResponseDTO(BaseModel):
     amount: Decimal
     currency: Currency
     billing_period: str
+    manually_assigned_statement_id: int | None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -99,6 +100,7 @@ class InstallmentResponseDTO(BaseModel):
                 "currency": "ARS",
                 "billing_period": "202502",
                 "due_date": "2025-02-20",
+                "manually_assigned_statement_id": 14
             }
         },
     )

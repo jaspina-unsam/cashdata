@@ -98,6 +98,7 @@ class InstallmentGenerator:
                 total_installments=installments_count,
                 amount=Money(installment_amount, total_amount.currency),
                 billing_period=billing_period,
+                manually_assigned_statement_id=None
             )
 
             installments.append(installment)

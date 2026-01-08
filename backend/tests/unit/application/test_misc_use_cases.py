@@ -62,6 +62,7 @@ class TestListInstallmentsByPurchaseUseCase:
                 total_installments=3,
                 amount=Money(Decimal("10000.00"), Currency.ARS),
                 billing_period="202504",
+                manually_assigned_statement_id=None
             ),
             Installment(
                 id=1,
@@ -70,6 +71,7 @@ class TestListInstallmentsByPurchaseUseCase:
                 total_installments=3,
                 amount=Money(Decimal("10000.00"), Currency.ARS),
                 billing_period="202502",
+                manually_assigned_statement_id=None
             ),
             Installment(
                 id=2,
@@ -78,6 +80,7 @@ class TestListInstallmentsByPurchaseUseCase:
                 total_installments=3,
                 amount=Money(Decimal("10000.00"), Currency.ARS),
                 billing_period="202503",
+                manually_assigned_statement_id=None
             ),
         ]
 
