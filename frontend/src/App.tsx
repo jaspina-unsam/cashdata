@@ -6,7 +6,8 @@ import {
   UsersPage, 
   CategoriesPage, 
   CreditCardsPage, 
-  PurchasesPage 
+  PurchasesPage, 
+  EditPurchasePage,
 } from './presentation';
 import { StatementsPage } from './presentation/pages/StatementsPage';
 import { StatementDetailPage } from './presentation/pages/StatementDetailPage';
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/credit-cards" element={<CreditCardsPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />
+            <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />
             <Route path="/statements" element={<StatementsPage />} />
             <Route path="/statements/:id" element={<StatementDetailPage />} />
           </Routes>

@@ -10,6 +10,8 @@ import { usePurchases, useCreatePurchase, useDeletePurchase } from '../../applic
 import { useCreditCards } from '../../application/hooks/useCreditCards';
 import { useCategories } from '../../application/hooks/useCategories';
 import type { Purchase } from '../../domain/entities';
+import { useNavigate } from 'react-router-dom';
+import DeletePurchaseModal from '../components/DeletePurchaseModal';
 
 // Hardcoded user ID for MVP (will be replaced with auth context)
 const CURRENT_USER_ID = 1;
@@ -44,21 +46,18 @@ export function PurchasesPage() {
   const createPurchase = useCreatePurchase();
   const deletePurchase = useDeletePurchase();
 
-  const handleDelete = async (purchaseId: number, description: string) => {
-    if (!confirm(`¿Estás seguro que querés eliminar la compra "${description}"? Esta acción eliminará también todas sus cuotas y no se puede deshacer.`)) {
-      return;
-    }
+  const navigate = useNavigate();
 
-    try {
-      await deletePurchase.mutateAsync({ id: purchaseId, userId: CURRENT_USER_ID });
-      // Close expanded view if this purchase was expanded
-      if (expandedPurchase === purchaseId) {
-        setExpandedPurchase(null);
-      }
-    } catch (err: any) {
-      console.error('Failed to delete purchase:', err);
-      alert(`Error al eliminar compra: ${err.message || 'Error desconocido'}`);
-    }
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; description?: string } | null>(null);
+
+  const openDeleteModal = (id: number, description?: string) => {
+    setDeleteTarget({ id, description });
+    setDeleteModalOpen(true);
+  };
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setDeleteTarget(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +89,7 @@ export function PurchasesPage() {
         purchase_date: formData.purchase_date,
         description: formData.description.trim(),
         total_amount: parseFloat(formData.total_amount),
-        currency: formData.total_currency,
+        currency: formData.currency,
         installments_count: installments,
       };
 
@@ -367,7 +366,7 @@ export function PurchasesPage() {
                       {/* Buttons placed bottom-right, visually-only (no action) */}
                       <div className="flex justify-end gap-3 mt-3">
                         <button
-                          onClick={(e) => { e.stopPropagation(); /* UI-only: no action */ }}
+                          onClick={(e) => { e.stopPropagation(); openDeleteModal(purchase.id!, purchase.description); }}
                           className="flex items-center gap-1 text-red-600 hover:text-red-700 text-sm"
                           aria-label="Eliminar compra"
                         >
@@ -376,7 +375,7 @@ export function PurchasesPage() {
                         </button>
 
                         <button
-                          onClick={(e) => { e.stopPropagation(); /* UI-only: no action */ }}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/purchases/${purchase.id}/edit`); }}
                           className="flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
                           aria-label="Editar compra"
                         >
@@ -447,6 +446,14 @@ export function PurchasesPage() {
           </div>
         )}
       </div>
+
+      <DeletePurchaseModal
+        purchaseId={deleteTarget?.id ?? null}
+        isOpen={deleteModalOpen}
+        onClose={() => { closeDeleteModal(); if (deleteTarget && expandedPurchase === deleteTarget.id) setExpandedPurchase(null); }}
+        description={deleteTarget?.description}
+        userId={CURRENT_USER_ID}
+      />
     </div>
   );
 }

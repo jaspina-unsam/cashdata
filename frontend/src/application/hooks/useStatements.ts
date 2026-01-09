@@ -1,3 +1,12 @@
+import { statementsRepository } from '../../infrastructure';
+
+export function useStatementsByCard(creditCardId: number, userId: number) {
+  return useQuery({
+    queryKey: ['statements', 'byCard', creditCardId, userId],
+    queryFn: () => statementsRepository.findByCard(creditCardId, userId),
+    enabled: !!creditCardId && !!userId,
+  });
+}
 /**
  * Application Hooks: Monthly Statements
  * 
