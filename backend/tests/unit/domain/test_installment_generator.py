@@ -48,7 +48,7 @@ class TestInstallmentGenerator:
         assert installments[0].total_installments == 1
         assert installments[0].amount.amount == Decimal("10000.00")
         assert installments[0].amount.currency == Currency.ARS
-        assert installments[0].billing_period == "202501"  # Dues Feb 20 → Jan
+        assert installments[0].billing_period == "202502"  # After close 10 → Feb statement
         assert installments[0].id is None
 
     # ===== HAPPY PATH - EXACT DIVISION =====
@@ -197,9 +197,9 @@ class TestInstallmentGenerator:
             credit_card=credit_card,
         )
 
-        # Assert - Periods shift back 1 month with new logic
-        # Purchase Jan 5 (before close 10) → closes Jan 10, dues Jan 20 → period Dec 2024
-        expected_periods = ["202412", "202501", "202502", "202503", "202504", "202505"]
+        # Assert - Sequential periods starting from statement month
+        # Purchase Jan 5 (before close 10) → Jan statement → period 202501
+        expected_periods = ["202501", "202502", "202503", "202504", "202505", "202506"]
         actual_periods = [inst.billing_period for inst in installments]
         assert actual_periods == expected_periods
 
@@ -232,8 +232,8 @@ class TestInstallmentGenerator:
         )
 
         # Assert - Verify year transition
-        # Purchase Oct 5 → closes Oct 10, dues Oct 20 → period Sep 2025
-        expected_periods = ["202509", "202510", "202511", "202512", "202601", "202602"]
+        # Purchase Oct 5 (before close 10) → Oct statement → period 202510
+        expected_periods = ["202510", "202511", "202512", "202601", "202602", "202603"]
         actual_periods = [inst.billing_period for inst in installments]
         assert actual_periods == expected_periods
 
@@ -265,11 +265,10 @@ class TestInstallmentGenerator:
             credit_card=credit_card,
         )
 
-        # Assert - Period is due_date minus 1 month
-        # Purchase on Jan 10 (close day) → closes Jan 10, dues Jan 20 → period Dec 2024
-        assert installments[0].billing_period == "202412"  # Dues Jan 20 → Dec
-        assert installments[1].billing_period == "202501"  # Dues Feb 20 → Jan
-        assert installments[2].billing_period == "202502"  # Dues Mar 20 → Feb
+        # Purchase on Jan 10 (close day) → Jan 10 statement → period 202501
+        assert installments[0].billing_period == "202501"  # Jan statement
+        assert installments[1].billing_period == "202502"  # Feb statement
+        assert installments[2].billing_period == "202503"  # Mar statement
 
     def test_purchase_after_close_day_next_period(self):
         """
@@ -300,81 +299,10 @@ class TestInstallmentGenerator:
         )
 
         # Assert - Purchase after close day goes to next statement
-        # Purchase Jan 15 → closes Feb 10, dues Feb 20 → period Jan
-        assert installments[0].billing_period == "202501"  # Dues Feb 20 → Jan
-        assert installments[1].billing_period == "202502"  # Dues Mar 20 → Feb
-        assert installments[2].billing_period == "202503"  # Dues Apr 20 → Mar
-
-    # ===== DUE DATE CALCULATION =====
-
-    def test_due_dates_calculated_correctly(self):
-        """
-        GIVEN: Purchase with multiple installments
-        WHEN: Generating installments
-        THEN: Due dates should be calculated for each period
-        """
-        # Arrange
-        credit_card = CreditCard(
-            id=1,
-            user_id=10,
-            name="Visa",
-            bank="HSBC",
-            last_four_digits="1234",
-            billing_close_day=10,
-            payment_due_day=20,
-        )
-        total_amount = Money(Decimal("3000.00"), Currency.ARS)
-        purchase_date = date(2025, 1, 5)
-
-        # Act
-        installments = InstallmentGenerator.generate_installments(
-            purchase_id=100,
-            total_amount=total_amount,
-            installments_count=3,
-            purchase_date=purchase_date,
-            credit_card=credit_card,
-        )
-
-        # Assert - due_day (20) > close_day (10), so same month
-        assert installments[0].due_date == date(2025, 1, 20)
-        assert installments[1].due_date == date(2025, 2, 20)
-        assert installments[2].due_date == date(2025, 3, 20)
-
-    def test_due_dates_when_due_before_close(self):
-        """
-        GIVEN: Credit card where due day < close day
-        WHEN: Generating installments
-        THEN: Due dates should be in next month
-        """
-        # Arrange
-        credit_card = CreditCard(
-            id=1,
-            user_id=10,
-            name="Visa",
-            bank="HSBC",
-            last_four_digits="1234",
-            billing_close_day=25,
-            payment_due_day=5,  # Due before close
-        )
-        total_amount = Money(Decimal("2000.00"), Currency.ARS)
-        purchase_date = date(2025, 1, 20)
-
-        # Act
-        installments = InstallmentGenerator.generate_installments(
-            purchase_id=100,
-            total_amount=total_amount,
-            installments_count=2,
-            purchase_date=purchase_date,
-            credit_card=credit_card,
-        )
-
-        # Assert - Period 202501, but due in next month
-        # Purchase Jan 20, close_day=25, due_day=5 (before close)
-        # Closes Jan 25, dues Feb 5 → period Jan (202501)
-        assert installments[0].billing_period == "202501"  # Dues Feb 5 → Jan
-        assert installments[0].due_date == date(2025, 2, 5)
-        assert installments[1].billing_period == "202502"  # Dues Mar 5 → Feb
-        assert installments[1].due_date == date(2025, 3, 5)
+        # Purchase Jan 15 (after close 10) → Feb 10 statement → period 202502
+        assert installments[0].billing_period == "202502"  # Feb statement
+        assert installments[1].billing_period == "202503"  # Mar statement
+        assert installments[2].billing_period == "202504"  # Apr statement
 
     # ===== VALIDATION ERRORS =====
 
@@ -484,7 +412,7 @@ class TestInstallmentGenerator:
             purchase_date=date(2025, 1, 15),
             credit_card=credit_card,
         )
-        
+
         # Assert
         assert len(installments) == 1
         assert installments[0].amount.amount == Decimal("-1000.00")
@@ -524,11 +452,11 @@ class TestInstallmentGenerator:
         # All equal amounts (exact division)
         for inst in installments:
             assert inst.amount.amount == Decimal("1000.00")
-        # Verify span 2 years (due_date - 1 month)
-        # First: Purchase Jan 5 → closes Jan 10, dues Jan 20 → period Dec 2024
-        # Last (24th): closes Dec 2026, dues Dec 20 2026 → period Nov 2026
-        assert installments[0].billing_period == "202412"
-        assert installments[23].billing_period == "202611"
+
+        # First: Purchase Jan 5 (before close 10) → Jan statement → period 202501
+        # Last (24th): 23 months later → Dec 2026 statement → period 202612
+        assert installments[0].billing_period == "202501"
+        assert installments[23].billing_period == "202612"
 
     def test_purchase_on_last_day_of_month(self):
         """
@@ -559,10 +487,10 @@ class TestInstallmentGenerator:
         )
 
         # Assert - After close day 15
-        # Purchase Jan 31 (after close 15) → closes Feb 15, dues Feb 25 → period Jan
-        assert installments[0].billing_period == "202501"  # Dues Feb 25 → Jan
-        assert installments[1].billing_period == "202502"  # Dues Mar 25 → Feb
-        assert installments[2].billing_period == "202503"  # Dues Apr 25 → Mar
+        # Purchase Jan 31 (after close 15) → Feb 15 statement → period 202502
+        assert installments[0].billing_period == "202502"  # Feb statement
+        assert installments[1].billing_period == "202503"  # Mar statement
+        assert installments[2].billing_period == "202504"  # Apr statement
 
     def test_different_currency_preserved(self):
         """

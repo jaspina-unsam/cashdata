@@ -57,3 +57,9 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
         self.session.flush()
         self.session.refresh(merged_model)
         return PurchaseMapper.to_entity(merged_model)
+
+    def delete(self, purchase_id: int) -> None:
+        """Delete purchase by ID"""
+        purchase = self.session.get(PurchaseModel, purchase_id)
+        if purchase:
+            self.session.delete(purchase)

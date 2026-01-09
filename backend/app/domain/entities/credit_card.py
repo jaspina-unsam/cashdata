@@ -38,7 +38,9 @@ class CreditCard:
 
         # Validate billing_close_day
         if not (1 <= self.billing_close_day <= 31):
-            raise ValueError(f"billing_close_day must be between 1-31, got {self.billing_close_day}")
+            raise ValueError(
+                f"billing_close_day must be between 1-31, got {self.billing_close_day}"
+            )
 
         # Validate payment_due_day
         if not (1 <= self.payment_due_day <= 31):
@@ -57,56 +59,30 @@ class CreditCard:
         """
         Calculate billing period (YYYYMM) for a purchase date.
 
+        The billing period represents the statement month when the purchase
+        will appear, not the charge month. This matches real-world credit
+        card statement labeling.
+
         Logic:
-        - If purchase day <= closure day: current month
-        - If purchase day > closure day: next month
+        - If purchase day <= closure day: current statement (same month)
+        - If purchase day > closure day: next statement (next month)
 
         Example:
         - Card closes on day 10
-        - Purchase on Jan 5 → Period "202501"
-        - Purchase on Jan 15 → Period "202502"
+        - Purchase on Jan 5 (before close) → Jan 10 statement → Period "202501"
+        - Purchase on Jan 15 (after close) → Feb 10 statement → Period "202502"
+        
+        Real example:
+        - Close day 30, Purchase Nov 26 → Nov 30 statement → Period "202511"
         """
         if purchase_date.day <= self.billing_close_day:
-            # Purchase before closure → current period
+            # Purchase before closure → current month statement
             period_date = purchase_date
         else:
-            # Purchase after closure → next period
+            # Purchase after closure → next month statement
             period_date = purchase_date + relativedelta(months=1)
 
         return period_date.strftime("%Y%m")
-
-    def calculate_due_date(self, period: str) -> date:
-        """
-        Calculate due date for a billing period.
-
-        Args:
-            period: "YYYYMM" format
-
-        Returns:
-            Due date for that period
-
-        Example:
-        - Period "202501", due day 20 → 2025-01-20
-        - Period "202501", due day 5, closure 25 → 2025-02-05 (next month)
-        """
-        # Parse "202501" → year=2025, month=1
-        year = int(period[:4])
-        month = int(period[4:6])
-
-        # Create base date with due day
-        try:
-            due_date = date(year, month, self.payment_due_day)
-        except ValueError:
-            # Invalid day for month (e.g.: 31 in February)
-            # Use last day of month
-            last_day = monthrange(year, month)[1]
-            due_date = date(year, month, last_day)
-
-        # If due < closure, it's next month
-        if self.payment_due_day < self.billing_close_day:
-            due_date = due_date + relativedelta(months=1)
-
-        return due_date
 
     def __eq__(self, other):
         """Credit cards are equal if they have the same ID"""

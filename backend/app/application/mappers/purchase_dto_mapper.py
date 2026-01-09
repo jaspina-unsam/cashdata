@@ -47,7 +47,7 @@ class InstallmentDTOMapper:
             amount=installment.amount.amount,
             currency=installment.amount.currency,
             billing_period=installment.billing_period,
-            due_date=installment.due_date,
+            manually_assigned_statement_id=installment.manually_assigned_statement_id,
         )
 
 

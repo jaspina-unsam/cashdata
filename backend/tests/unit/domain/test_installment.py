@@ -26,7 +26,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -37,7 +37,7 @@ class TestInstallmentEntity:
         assert installment.amount.amount == Decimal("5000.00")
         assert installment.amount.currency == Currency.ARS
         assert installment.billing_period == "202501"
-        assert installment.due_date == date(2025, 2, 10)
+        assert installment.manually_assigned_statement_id is None
 
     def test_create_installment_without_id(self):
         """
@@ -53,7 +53,7 @@ class TestInstallmentEntity:
             total_installments=1,
             amount=Money(Decimal("10000.00"), Currency.ARS),
             billing_period="202502",
-            due_date=date(2025, 3, 15),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -73,7 +73,7 @@ class TestInstallmentEntity:
             total_installments=12,
             amount=Money(Decimal("8333.33"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -94,7 +94,7 @@ class TestInstallmentEntity:
             total_installments=12,
             amount=Money(Decimal("8333.33"), Currency.ARS),
             billing_period="202612",
-            due_date=date(2027, 1, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -115,7 +115,7 @@ class TestInstallmentEntity:
             total_installments=1,
             amount=Money(Decimal("50000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -136,7 +136,7 @@ class TestInstallmentEntity:
             total_installments=3,
             amount=Money(Decimal("100.00"), Currency.USD),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -159,7 +159,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_negative_installment_number(self):
@@ -177,7 +177,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_zero_total_installments(self):
@@ -195,7 +195,7 @@ class TestInstallmentEntity:
                 total_installments=0,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_negative_total_installments(self):
@@ -213,7 +213,7 @@ class TestInstallmentEntity:
                 total_installments=-5,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_when_installment_number_exceeds_total(self):
@@ -234,7 +234,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     # ===== VALIDATION ERRORS - AMOUNT =====
@@ -254,7 +254,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("0.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_allows_negative_amount_for_credits(self):
@@ -271,9 +271,9 @@ class TestInstallmentEntity:
             total_installments=1,
             amount=Money(Decimal("-100.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
-        
+
         # Assert
         assert installment.amount.amount == Decimal("-100.00")
 
@@ -294,7 +294,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="2025-01",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_billing_period_too_short(self):
@@ -312,7 +312,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="20251",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_billing_period_too_long(self):
@@ -330,7 +330,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="2025011",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_billing_period_with_letters(self):
@@ -348,7 +348,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="2025AB",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_invalid_month_zero(self):
@@ -368,7 +368,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202500",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     def test_raises_error_for_invalid_month_thirteen(self):
@@ -388,7 +388,7 @@ class TestInstallmentEntity:
                 total_installments=6,
                 amount=Money(Decimal("5000.00"), Currency.ARS),
                 billing_period="202513",
-                due_date=date(2025, 2, 10),
+                manually_assigned_statement_id=None
             )
 
     @pytest.mark.parametrize(
@@ -415,7 +415,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period=valid_period,
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -437,7 +437,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment2 = Installment(
             id=1,
@@ -446,7 +446,7 @@ class TestInstallmentEntity:
             total_installments=12,
             amount=Money(Decimal("1000.00"), Currency.USD),
             billing_period="202512",
-            due_date=date(2026, 1, 15),
+            manually_assigned_statement_id=None
         )
 
         # Act & Assert
@@ -466,7 +466,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment2 = Installment(
             id=2,
@@ -475,7 +475,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Act & Assert
@@ -495,7 +495,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment2 = Installment(
             id=None,
@@ -504,7 +504,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Act & Assert
@@ -524,7 +524,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Act & Assert
@@ -546,7 +546,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Act & Assert
@@ -567,7 +567,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment2 = Installment(
             id=2,
@@ -576,7 +576,7 @@ class TestInstallmentEntity:
             total_installments=6,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202502",
-            due_date=date(2025, 3, 10),
+            manually_assigned_statement_id=None
         )
         installment3 = Installment(
             id=1,
@@ -585,7 +585,7 @@ class TestInstallmentEntity:
             total_installments=99,
             amount=Money(Decimal("1.00"), Currency.USD),
             billing_period="203012",
-            due_date=date(2031, 1, 31),
+            manually_assigned_statement_id=None
         )
 
         # Act
@@ -610,7 +610,7 @@ class TestInstallmentEntity:
             total_installments=1,
             amount=Money(Decimal("0.01"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -630,7 +630,7 @@ class TestInstallmentEntity:
             total_installments=1,
             amount=Money(Decimal("999999999.99"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert
@@ -650,7 +650,7 @@ class TestInstallmentEntity:
             total_installments=60,
             amount=Money(Decimal("1666.67"), Currency.ARS),
             billing_period="203001",
-            due_date=date(2030, 2, 10),
+            manually_assigned_statement_id=None
         )
 
         # Assert

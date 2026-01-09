@@ -9,7 +9,7 @@ class DeletePurchaseUseCase:
 
     def execute(self, purchase_id: int, user_id: int) -> None:
         """
-        Delete a purchase (purchases don't support soft delete currently)
+        Delete a purchase and all its installments.
 
         Args:
             purchase_id: ID of the purchase to delete
@@ -25,9 +25,6 @@ class DeletePurchaseUseCase:
                     f"Purchase with ID {purchase_id} not found for user {user_id}"
                 )
 
-            # For now, just validate - actual deletion would need repository method
-            # TODO: Implement hard delete in repository
-            raise NotImplementedError(
-                "Purchase deletion is not yet implemented. "
-                "Purchases don't currently support soft delete."
-            )
+            # Delete the purchase (cascade will delete installments)
+            self._uow.purchases.delete(purchase_id)
+            self._uow.commit()

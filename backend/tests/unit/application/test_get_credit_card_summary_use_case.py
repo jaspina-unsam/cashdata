@@ -1,5 +1,4 @@
 import pytest
-from datetime import date
 from decimal import Decimal
 from unittest.mock import Mock
 
@@ -58,7 +57,7 @@ class TestGetCreditCardSummaryUseCase:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 20),
+                manually_assigned_statement_id=None
             ),
             Installment(
                 id=2,
@@ -67,7 +66,7 @@ class TestGetCreditCardSummaryUseCase:
                 total_installments=1,
                 amount=Money(Decimal("2000.00"), Currency.ARS),
                 billing_period="202501",
-                due_date=date(2025, 2, 20),
+                manually_assigned_statement_id=None
             ),
         ]
 

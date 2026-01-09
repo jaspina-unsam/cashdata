@@ -65,13 +65,20 @@ class GetStatementDetailUseCase:
         # Get period identifier
         period = statement.get_period_identifier()
 
-        # Filter purchases with installments in this period
+        # Filter purchases with installments in this period or manually assigned to this statement
         statement_purchases = []
         for purchase in all_purchases:
             installments = self._installment_repo.find_by_purchase_id(purchase.id)
 
             for installment in installments:
-                if installment.billing_period == period:
+                # Include installment if:
+                # 1. It's manually assigned to this statement, OR
+                # 2. It's automatically assigned to this statement (billing_period matches) AND not manually assigned elsewhere
+                should_include = (
+                    installment.manually_assigned_statement_id == statement_id or
+                    (installment.billing_period == period and installment.manually_assigned_statement_id is None)
+                )
+                if should_include:
                     statement_purchases.append(
                         self._create_purchase_dto(
                             purchase,

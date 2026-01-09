@@ -81,7 +81,7 @@ class TestSQLAlchemyInstallmentRepositorySave:
             total_installments=6,
             amount=Money(Decimal("2000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         saved = installment_repository.save(installment)
 
@@ -98,7 +98,7 @@ class TestSQLAlchemyInstallmentRepositorySave:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period=f"20250{i}",
-                due_date=date(2025, i, 10),
+                manually_assigned_statement_id=None
             )
             for i in range(1, 4)
         ]
@@ -106,6 +106,32 @@ class TestSQLAlchemyInstallmentRepositorySave:
         assert len(saved_list) == 3
         assert all(i.id is not None for i in saved_list)
 
+    def test_should_update_installment(self, installment_repository):
+        installment = Installment(
+            id=None,
+            purchase_id=1,
+            installment_number=1,
+            total_installments=6,
+            amount=Money(Decimal("2000.00"), Currency.ARS),
+            billing_period="202501",
+            manually_assigned_statement_id=None
+        )
+        saved = installment_repository.save(installment)
+
+        updated_installment = Installment(
+            id=saved.id,
+            purchase_id=1,
+            installment_number=1,
+            total_installments=6,
+            amount=Money(Decimal("2000.00"), Currency.ARS),
+            billing_period="202501",
+            manually_assigned_statement_id=14
+        )
+
+        updated = installment_repository.save(updated_installment)
+
+        assert updated.id == saved.id
+        assert updated.manually_assigned_statement_id == 14
 
 class TestSQLAlchemyInstallmentRepositoryFindByPurchaseId:
     def test_should_return_all_installments_for_purchase(self, installment_repository):
@@ -117,7 +143,7 @@ class TestSQLAlchemyInstallmentRepositoryFindByPurchaseId:
                 total_installments=3,
                 amount=Money(Decimal("1000.00"), Currency.ARS),
                 billing_period=f"20250{i}",
-                due_date=date(2025, i, 10),
+                manually_assigned_statement_id=None
             )
             installment_repository.save(inst)
 
@@ -134,7 +160,7 @@ class TestSQLAlchemyInstallmentRepositoryFindByBillingPeriod:
             total_installments=1,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment_repository.save(inst)
 
@@ -153,7 +179,7 @@ class TestSQLAlchemyInstallmentRepositoryFindByCreditCardAndPeriod:
             total_installments=1,
             amount=Money(Decimal("5000.00"), Currency.ARS),
             billing_period="202501",
-            due_date=date(2025, 2, 10),
+            manually_assigned_statement_id=None
         )
         installment_repository.save(inst)
 

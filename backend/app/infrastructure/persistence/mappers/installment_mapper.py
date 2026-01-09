@@ -16,7 +16,7 @@ class InstallmentMapper:
             total_installments=model.total_installments,
             amount=Money(Decimal(str(model.amount)), Currency(model.currency)),
             billing_period=model.billing_period,
-            due_date=model.due_date,
+            manually_assigned_statement_id=model.manually_assigned_statement_id,
         )
 
     @staticmethod
@@ -30,5 +30,5 @@ class InstallmentMapper:
             amount=float(entity.amount.amount),
             currency=entity.amount.currency.value,
             billing_period=entity.billing_period,
-            due_date=entity.due_date,
+            manually_assigned_statement_id=entity.manually_assigned_statement_id,
         )

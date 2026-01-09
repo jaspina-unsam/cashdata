@@ -287,3 +287,155 @@ class TestListInstallmentsByPurchase:
         )
 
         assert response.status_code == 404
+
+
+class TestUpdatePurchase:
+    """Test PATCH /api/v1/purchases/{purchase_id}"""
+
+    def test_patch_purchase_description_returns_200(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should update purchase description successfully"""
+        # Create purchase
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Original Description",
+            "total_amount": 1000.00,
+            "currency": "ARS",
+            "installments_count": 1,
+        }
+
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+
+        # Update description
+        update_data = {"description": "Updated Description"}
+        response = client.patch(
+            f"/api/v1/purchases/{purchase['id']}",
+            json=update_data,
+            params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["description"] == "Updated Description"
+        assert data["total_amount"] == "1000.00"  # Unchanged
+
+    def test_patch_purchase_invalid_id_returns_404(self, client, test_user):
+        """Should return 404 for invalid purchase ID"""
+        update_data = {"description": "Updated Description"}
+        response = client.patch(
+            "/api/v1/purchases/999",
+            json=update_data,
+            params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 404
+
+    def test_patch_purchase_wrong_user_returns_404(self, client, test_user, test_credit_card, test_category):
+        """Should return 404 when user doesn't own the purchase"""
+        # Create purchase for test_user
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 1000.00,
+            "currency": "ARS",
+            "installments_count": 1,
+        }
+
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+
+        # Try to update with different user ID
+        update_data = {"description": "Updated Description"}
+        response = client.patch(
+            f"/api/v1/purchases/{purchase['id']}",
+            json=update_data,
+            params={"user_id": 999}  # Wrong user
+        )
+
+        assert response.status_code == 404
+
+    def test_patch_purchase_amount_single_installment_updates_both(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should update both purchase total and single installment amount"""
+        # Create single installment purchase
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 1000.00,
+            "currency": "ARS",
+            "installments_count": 1,
+        }
+
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+
+        # Update amount
+        update_data = {"total_amount": 1500.00}
+        response = client.patch(
+            f"/api/v1/purchases/{purchase['id']}",
+            json=update_data,
+            params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["total_amount"] == "1500.00"
+
+        # Verify installment was also updated
+        installments_response = client.get(
+            f"/api/v1/purchases/{purchase['id']}/installments",
+            params={"user_id": test_user["id"]}
+        )
+        assert installments_response.status_code == 200
+        installments = installments_response.json()
+        assert len(installments) == 1
+        assert installments[0]["amount"] == "1500.00"
+
+    def test_patch_purchase_amount_multiple_installments_returns_400(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should return 400 when trying to update amount for multi-installment purchase"""
+        # Create multi-installment purchase
+        purchase_data = {
+            "credit_card_id": test_credit_card["id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 3000.00,
+            "currency": "ARS",
+            "installments_count": 3,
+        }
+
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+
+        # Try to update amount (should fail)
+        update_data = {"total_amount": 4000.00}
+        response = client.patch(
+            f"/api/v1/purchases/{purchase['id']}",
+            json=update_data,
+            params={"user_id": test_user["id"]}
+        )
+
+        assert response.status_code == 400

@@ -8,13 +8,14 @@ class InstallmentModel(Base):
     __tablename__ = "installments"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    purchase_id = Column(Integer, ForeignKey("purchases.id"), nullable=False)
+    purchase_id = Column(Integer, ForeignKey("purchases.id", ondelete="CASCADE"), nullable=False)
     installment_number = Column(Integer, nullable=False)
     total_installments = Column(Integer, nullable=False)
     amount = Column(Numeric(precision=12, scale=2), nullable=False)
     currency = Column(String(3), nullable=False)
-    billing_period = Column(String(6), nullable=False)  # YYYYMM format
-    due_date = Column(Date, nullable=False)
+    billing_period = Column(String(6), nullable=False)
+    manually_assigned_statement_id = Column(Integer, ForeignKey("monthly_statements.id"))
+
 
     def __repr__(self):
         return f"<InstallmentModel(id={self.id}, purchase_id={self.purchase_id}, {self.installment_number}/{self.total_installments})>"

@@ -14,7 +14,9 @@ class CreatePurchaseInputDTO(BaseModel):
     description: str = Field(
         min_length=1, max_length=500, description="Purchase description"
     )
-    total_amount: Decimal = Field(description="Total purchase amount (positive for purchases, negative for credits)")
+    total_amount: Decimal = Field(
+        description="Total purchase amount (positive for purchases, negative for credits)"
+    )
     currency: Currency = Field(default=Currency.ARS, description="Currency")
     installments_count: int = Field(
         ge=1, description="Number of installments (minimum 1)"
@@ -85,7 +87,7 @@ class InstallmentResponseDTO(BaseModel):
     amount: Decimal
     currency: Currency
     billing_period: str
-    due_date: date
+    manually_assigned_statement_id: int | None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -100,6 +102,7 @@ class InstallmentResponseDTO(BaseModel):
                 "currency": "ARS",
                 "billing_period": "202502",
                 "due_date": "2025-02-20",
+                "manually_assigned_statement_id": 14,
             }
         },
     )
@@ -234,4 +237,32 @@ class CreditCardSummaryResponseDTO(BaseModel):
                 ],
             }
         },
+    )
+
+
+class UpdatePurchaseInputDTO(BaseModel):
+    credit_card_id: int | None = Field(None, gt=0, description="Credit card ID")
+    category_id: int | None = Field(None, gt=0, description="Category ID")
+    purchase_date: date | None = Field(None, description="Date of purchase")
+    description: str | None = Field(None, min_length=1, max_length=500, description="Purchase description")
+    total_amount: Decimal | None = Field(None, description="Total purchase amount (positive for purchases, negative for credits)")
+
+    @field_validator("description")
+    @classmethod
+    def description_must_not_be_only_whitespace(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Description cannot be only whitespace")
+        return v.strip()
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+    )
+
+
+class UpdateInstallmentInputDTO(BaseModel):
+    amount: Decimal | None = Field(None, description="Installment amount")
+    manually_assigned_statement_id: int | None = Field(None, description="Manually assigned statement ID")
+
+    model_config = ConfigDict(
+        use_enum_values=True,
     )

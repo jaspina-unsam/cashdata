@@ -174,6 +174,6 @@ class UpdateStatementDatesUseCase:
                         total_installments=installment.total_installments,
                         amount=installment.amount,
                         billing_period=new_period,
-                        due_date=installment.due_date,
+                        manually_assigned_statement_id=None
                     )
                     self._installment_repository.save(updated_installment)

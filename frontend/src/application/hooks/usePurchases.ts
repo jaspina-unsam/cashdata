@@ -147,3 +147,22 @@ export function useDeletePurchase() {
     },
   });
 }
+
+/**
+ * Hook to update a purchase
+ */
+export function useUpdatePurchase() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, userId, data }: { id: number; userId: number; data: Partial<Omit<Purchase, 'id' | 'user_id'>> }) =>
+      purchaseRepository.update(id, userId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchases.all(variables.userId, undefined) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchases.detail(variables.id, variables.userId) });
+      // Invalidate statements and credit cards summaries
+      queryClient.invalidateQueries({ queryKey: ['statements'] });
+      queryClient.invalidateQueries({ queryKey: ['creditCards'] });
+    },
+  });
+}

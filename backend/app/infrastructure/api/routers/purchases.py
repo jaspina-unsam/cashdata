@@ -22,6 +22,10 @@ from app.application.use_cases.list_installments_by_purchase_use_case import (
     ListInstallmentsByPurchaseUseCase,
     ListInstallmentsByPurchaseQuery,
 )
+from app.application.use_cases.update_purchase_use_case import (
+    UpdatePurchaseUseCase,
+    UpdatePurchaseCommand,
+)
 from app.application.use_cases.delete_purchase_use_case import (
     DeletePurchaseUseCase,
 )
@@ -29,6 +33,7 @@ from app.application.dtos.purchase_dto import (
     CreatePurchaseInputDTO,
     PurchaseResponseDTO,
     InstallmentResponseDTO,
+    UpdatePurchaseInputDTO,
 )
 from app.application.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
@@ -102,6 +107,59 @@ def create_purchase(
         return PurchaseDTOMapper.to_response_dto(purchase)
 
     except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.patch(
+    "/{purchase_id}",
+    response_model=PurchaseResponseDTO,
+    summary="Update purchase",
+    responses={
+        200: {"description": "Purchase updated successfully"},
+        400: {"description": "Invalid input data or unsupported update"},
+        404: {"description": "Purchase, credit card, or category not found"},
+    },
+)
+def update_purchase(
+    purchase_id: int,
+    purchase_data: UpdatePurchaseInputDTO,
+    user_id: int = Query(..., description="User ID (from auth context)"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    Update an existing purchase.
+
+    Only basic fields can be updated currently (description, category).
+    Updating credit_card_id, purchase_date, or total_amount is not yet supported.
+
+    - **credit_card_id**: ID of the credit card (not yet supported)
+    - **category_id**: ID of the category
+    - **purchase_date**: Date of purchase (not yet supported)
+    - **description**: Description of the purchase
+    - **total_amount**: Total amount (not yet supported)
+    """
+    try:
+        command = UpdatePurchaseCommand(
+            purchase_id=purchase_id,
+            user_id=user_id,
+            credit_card_id=purchase_data.credit_card_id,
+            category_id=purchase_data.category_id,
+            purchase_date=purchase_data.purchase_date,
+            description=purchase_data.description,
+            total_amount=purchase_data.total_amount,
+        )
+
+        use_case = UpdatePurchaseUseCase(uow)
+        result = use_case.execute(command)
+
+        return result
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        # Catch application exceptions
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 

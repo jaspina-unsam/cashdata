@@ -67,7 +67,7 @@ class SQLAlchemyInstallmentRepository(IInstallmentRepository):
                 existing.amount = float(installment.amount.amount)
                 existing.currency = installment.amount.currency.value
                 existing.billing_period = installment.billing_period
-                existing.due_date = installment.due_date
+                existing.manually_assigned_statement_id = installment.manually_assigned_statement_id
                 self.session.flush()
                 self.session.refresh(existing)
                 return InstallmentMapper.to_entity(existing)
@@ -86,3 +86,12 @@ class SQLAlchemyInstallmentRepository(IInstallmentRepository):
             saved = self.save(installment)
             saved_installments.append(saved)
         return saved_installments
+
+    def delete(self, installment_id: int) -> bool:
+        """Delete installment by ID. Returns True if deleted, False if not found"""
+        installment = self.session.get(InstallmentModel, installment_id)
+        if installment:
+            self.session.delete(installment)
+            self.session.flush()
+            return True
+        return False

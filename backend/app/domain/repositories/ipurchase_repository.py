@@ -24,3 +24,8 @@ class IPurchaseRepository(ABC):
     def save(self, purchase: Purchase) -> Purchase:
         """Insert or update purchase"""
         pass
+
+    @abstractmethod
+    def delete(self, purchase_id: int) -> None:
+        """Delete purchase by ID"""
+        pass

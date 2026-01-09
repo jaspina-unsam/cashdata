@@ -19,8 +19,13 @@ from app.application.use_cases.get_statement_detail_use_case import (
 from app.application.use_cases.list_monthly_statements_use_case import (
     ListMonthlyStatementsUseCase,
 )
-from app.application.use_cases.update_statement_dates_use_case import (
-    UpdateStatementDatesUseCase,
+from app.application.use_cases.list_statements_by_credit_card_use_case import (
+    ListStatementByCreditCardUseCase,
+    ListStatementByCreditCardQuery,
+)
+from app.application.exceptions.application_exceptions import (
+    CreditCardNotFoundError,
+    CreditCardOwnerMismatchError,
 )
 from app.domain.repositories import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
@@ -118,9 +123,7 @@ def create_statement(
     The credit card must exist and belong to the specified user.
     """
     with uow:
-        use_case = CreateStatementUseCase(
-            uow.monthly_statements, uow.credit_cards
-        )
+        use_case = CreateStatementUseCase(uow.monthly_statements, uow.credit_cards)
         try:
             result = use_case.execute(user_id, statement_data)
             uow.commit()
@@ -174,5 +177,40 @@ def update_statement_dates(
             uow.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            )
+
+
+@router.get(
+    "/by-card/{credit_card_id}",
+    response_model=List[MonthlyStatementResponseDTO],
+    summary="List monthly statements for a credit card",
+    responses={
+        200: {"description": "List of monthly statements for the credit card"},
+        404: {"description": "Credit card not found or not authorized"},
+    },
+)
+def list_statements_by_card(
+    credit_card_id: int,
+    user_id: int = Query(..., description="User ID for authorization"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    List all monthly statements for a specific credit card.
+
+    Used for dropdowns when manually assigning installments to statements.
+    Only returns statements for credit cards owned by the authenticated user.
+    """
+    with uow:
+        use_case = ListStatementByCreditCardUseCase(uow)
+        query = ListStatementByCreditCardQuery(
+            user_id=user_id,
+            credit_card_id=credit_card_id,
+        )
+        try:
+            return use_case.execute(query)
+        except (CreditCardNotFoundError, CreditCardOwnerMismatchError) as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(e),
             )

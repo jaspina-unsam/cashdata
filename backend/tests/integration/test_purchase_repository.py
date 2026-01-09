@@ -1,5 +1,5 @@
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
 from datetime import date
@@ -10,6 +10,7 @@ from app.infrastructure.persistence.models.purchase_model import PurchaseModel
 from app.infrastructure.persistence.models.user_model import UserModel
 from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.installment_model import InstallmentModel
 from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
     SQLAlchemyPurchaseRepository,
 )
@@ -18,11 +19,17 @@ from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository 
 @pytest.fixture
 def db_session():
     """In-memory SQLite for tests"""
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    # Enable foreign keys for CASCADE deletes
+    with engine.connect() as conn:
+        conn.execute(text("PRAGMA foreign_keys = ON"))
+        conn.commit()
+
     UserModel.metadata.create_all(engine)
     CategoryModel.metadata.create_all(engine)
     CreditCardModel.metadata.create_all(engine)
     PurchaseModel.metadata.create_all(engine)
+    InstallmentModel.metadata.create_all(engine)  # Add installments table
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
 
@@ -35,7 +42,13 @@ def db_session():
         wage_currency="ARS",
         is_deleted=False,
     )
+    session.add(test_user)
+    session.commit()
+
     test_category = CategoryModel(id=1, name="Groceries")
+    session.add(test_category)
+    session.commit()
+
     test_card = CreditCardModel(
         id=1,
         user_id=1,
@@ -45,7 +58,7 @@ def db_session():
         billing_close_day=10,
         payment_due_day=20,
     )
-    session.add_all([test_user, test_category, test_card])
+    session.add(test_card)
     session.commit()
 
     yield session
@@ -172,3 +185,95 @@ class TestSQLAlchemyPurchaseRepositoryFindByCreditCardId:
 
         purchases = purchase_repository.find_by_credit_card_id(1)
         assert len(purchases) >= 1
+
+
+class TestSQLAlchemyPurchaseRepositoryDelete:
+    def test_should_delete_existing_purchase(self, purchase_repository):
+        # Create a purchase
+        purchase = Purchase(
+            id=None,
+            user_id=1,
+            credit_card_id=1,
+            category_id=1,
+            purchase_date=date(2025, 1, 15),
+            description="Purchase to delete",
+            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            installments_count=1,
+        )
+        saved_purchase = purchase_repository.save(purchase)
+        purchase_id = saved_purchase.id
+
+        # Verify it exists
+        found = purchase_repository.find_by_id(purchase_id)
+        assert found is not None
+
+        # Delete it
+        purchase_repository.delete(purchase_id)
+
+        # Verify it's gone
+        found_after_delete = purchase_repository.find_by_id(purchase_id)
+        assert found_after_delete is None
+
+    def test_should_delete_purchase_and_cascade_delete_installments(self, db_session):
+        """Test that deleting a purchase also deletes its installments via CASCADE"""
+        from app.infrastructure.persistence.repositories.sqlalchemy_installment_repository import (
+            SQLAlchemyInstallmentRepository,
+        )
+        from app.domain.entities.installment import Installment
+        from app.domain.value_objects.money import Money, Currency
+        from decimal import Decimal
+
+        # Create repositories
+        purchase_repo = SQLAlchemyPurchaseRepository(db_session)
+        installment_repo = SQLAlchemyInstallmentRepository(db_session)
+
+        # Create a purchase
+        purchase = Purchase(
+            id=None,
+            user_id=1,
+            credit_card_id=1,
+            category_id=1,
+            purchase_date=date(2025, 1, 15),
+            description="Purchase with installments to delete",
+            total_amount=Money(Decimal("3000.00"), Currency.ARS),
+            installments_count=3,
+        )
+        saved_purchase = purchase_repo.save(purchase)
+        purchase_id = saved_purchase.id
+
+        # Create installments for this purchase
+        installments = []
+        for i in range(1, 4):
+            installment = Installment(
+                id=None,
+                purchase_id=purchase_id,
+                installment_number=i,
+                total_installments=3,
+                amount=Money(Decimal("1000.00"), Currency.ARS),
+                billing_period="202501",
+                manually_assigned_statement_id=None,
+            )
+            installments.append(installment)
+
+        # Save installments
+        for installment in installments:
+            installment_repo.save(installment)
+
+        # Verify purchase and installments exist
+        found_purchase = purchase_repo.find_by_id(purchase_id)
+        assert found_purchase is not None
+
+        found_installments = db_session.query(InstallmentModel).filter_by(purchase_id=purchase_id).all()
+        assert len(found_installments) == 3
+
+        # Delete the purchase
+        purchase_repo.delete(purchase_id)
+        db_session.commit()  # Commit the transaction
+
+        # Verify purchase is gone
+        found_purchase_after = purchase_repo.find_by_id(purchase_id)
+        assert found_purchase_after is None
+
+        # Verify installments are also gone (CASCADE delete)
+        found_installments_after = db_session.query(InstallmentModel).filter_by(purchase_id=purchase_id).all()
+        assert len(found_installments_after) == 0

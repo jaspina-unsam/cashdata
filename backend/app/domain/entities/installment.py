@@ -25,7 +25,8 @@ class Installment:
     total_installments: int
     amount: Money
     billing_period: str
-    due_date: date
+    manually_assigned_statement_id: int | None
+
 
     def __post_init__(self):
         """Validate invariants after initialization"""

@@ -67,10 +67,7 @@ class InstallmentGenerator:
 
         installments = []
 
-        # Calculate initial statement close and due dates based on purchase date
-        # We'll use the old calculate_billing_period to determine which statement this falls into
-        initial_statement_month = credit_card.calculate_billing_period(purchase_date)
-        initial_due_date = credit_card.calculate_due_date(initial_statement_month)
+        initial_billing_period = credit_card.calculate_billing_period(purchase_date)
 
         for i in range(1, installments_count + 1):
             # First installment absorbs the remainder to ensure exact total
@@ -79,21 +76,19 @@ class InstallmentGenerator:
             else:
                 installment_amount = base_amount
 
-            # Calculate due date for this installment (i-1 months after initial)
-            due_date = initial_due_date + relativedelta(months=(i - 1))
+            # For each installment, add (i-1) months to the initial period
+            # Parse initial period to a date (use day 1 for calculation)
+            year = int(initial_billing_period[:4])
+            month = int(initial_billing_period[4:])
+            period_date = date(year, month, 1)
 
-            # Calculate billing_period from due_date minus 1 month
-            # This ensures the period represents when charges were made
-            due_year = due_date.year
-            due_month = due_date.month
+            # Add months
+            installment_period_date = period_date + relativedelta(months=(i - 1))
 
-            period_month = due_month - 1
-            period_year = due_year
-            if period_month < 1:
-                period_month = 12
-                period_year -= 1
-
-            billing_period = f"{period_year:04d}{period_month:02d}"
+            # Format back to YYYYMM
+            billing_period = (
+                f"{installment_period_date.year:04d}{installment_period_date.month:02d}"
+            )
 
             # Create installment
             installment = Installment(
@@ -103,7 +98,7 @@ class InstallmentGenerator:
                 total_installments=installments_count,
                 amount=Money(installment_amount, total_amount.currency),
                 billing_period=billing_period,
-                due_date=due_date,
+                manually_assigned_statement_id=None
             )
 
             installments.append(installment)

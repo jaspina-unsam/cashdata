@@ -36,3 +36,8 @@ class IInstallmentRepository(ABC):
     def save_all(self, installments: List[Installment]) -> List[Installment]:
         """Insert or update multiple installments (bulk operation)"""
         pass
+
+    @abstractmethod
+    def delete(self, installment_id: int) -> bool:
+        """Delete installment by ID. Returns True if deleted, False if not found"""
+        pass
