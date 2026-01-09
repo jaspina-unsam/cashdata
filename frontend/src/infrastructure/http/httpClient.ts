@@ -120,6 +120,24 @@ export class HttpClient {
     });
   }
 
+  async patch<T>(endpoint: string, data?: any, params?: Record<string, any>): Promise<T> {
+    const queryString = params
+      ? '?' + new URLSearchParams(
+          Object.entries(params).reduce((acc, [key, value]) => {
+            if (value !== undefined && value !== null) {
+              acc[key] = String(value);
+            }
+            return acc;
+          }, {} as Record<string, string>)
+        ).toString()
+      : '';
+
+    return this.request<T>(`${endpoint}${queryString}`, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
   async delete<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
     const url = params ? `${endpoint}?${new URLSearchParams(params).toString()}` : endpoint;
     return this.request<T>(url, {

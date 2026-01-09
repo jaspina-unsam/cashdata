@@ -5,7 +5,7 @@ export class InstallmentApiRepository {
   private readonly basePath = '/api/v1/installments';
 
   async update(id: number, userId: number, data: Partial<Installment>): Promise<Installment> {
-    return httpClient.put<Installment>(`${this.basePath}/${id}`, data, { user_id: userId });
+    return httpClient.patch<Installment>(`${this.basePath}/${id}`, data, { user_id: userId });
   }
 
   async findByPurchase(purchaseId: number, userId: number): Promise<Installment[]> {

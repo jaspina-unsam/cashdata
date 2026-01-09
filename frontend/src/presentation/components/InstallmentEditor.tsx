@@ -46,7 +46,7 @@ export function InstallmentEditor({ purchaseId, userId }: Props) {
     }
 
     try {
-      await updateMutation.mutateAsync({ id: instId, userId, data: { amount: amount, manually_assigned_statement_id: entry.statementId ?? null } });
+      await updateMutation.mutateAsync({ id: instId, userId, purchaseId, data: { amount: amount, manually_assigned_statement_id: entry.statementId ?? null } });
       alert('Cuota actualizada');
     } catch (err: any) {
       console.error('Update installment failed', err);

@@ -7,10 +7,12 @@ export function usePurchaseInstallmentsMutation() {
   return useMutation({
     mutationFn: ({ id, userId, data }: { id: number; userId: number; data: any }) =>
       installmentRepository.update(id, userId, data),
-    onSuccess: () => {
+    onSuccess: (_, { id, userId }) => {
       // Invalidate purchases and statements to refresh related data
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['statements'] });
+      // Also invalidate the specific installments query for this purchase
+      queryClient.invalidateQueries({ queryKey: ['purchases', variables.purchaseId, 'installments', variables.userId] });
     },
   });
 }
