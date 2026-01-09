@@ -25,3 +25,15 @@ class PurchaseNotFoundError(ApplicationError):
 class CategoryNotFoundError(ApplicationError):
     def __init__(self, *args):
         super().__init__(*args)
+
+class InstallmentNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class MonthlyStatementNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class BusinessRuleViolationError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)

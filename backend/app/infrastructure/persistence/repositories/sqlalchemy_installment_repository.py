@@ -86,3 +86,12 @@ class SQLAlchemyInstallmentRepository(IInstallmentRepository):
             saved = self.save(installment)
             saved_installments.append(saved)
         return saved_installments
+
+    def delete(self, installment_id: int) -> bool:
+        """Delete installment by ID. Returns True if deleted, False if not found"""
+        installment = self.session.get(InstallmentModel, installment_id)
+        if installment:
+            self.session.delete(installment)
+            self.session.flush()
+            return True
+        return False

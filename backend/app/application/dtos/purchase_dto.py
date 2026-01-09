@@ -261,3 +261,12 @@ class UpdatePurchaseInputDTO(BaseModel):
     model_config = ConfigDict(
         use_enum_values=True,
     )
+
+
+class UpdateInstallmentInputDTO(BaseModel):
+    amount: Decimal | None = Field(None, description="Installment amount")
+    manually_assigned_statement_id: int | None = Field(None, description="Manually assigned statement ID")
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+    )
