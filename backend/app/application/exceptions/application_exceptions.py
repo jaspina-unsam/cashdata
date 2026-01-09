@@ -9,3 +9,11 @@ class UserAlreadyExistsError(ApplicationError):
 class UserNotFoundError(ApplicationError):
     def __init__(self, *args):
         super().__init__(*args)
+
+class CreditCardNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class CreditCardOwnerMismatchError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
