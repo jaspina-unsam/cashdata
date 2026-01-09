@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { usePurchaseInstallments, usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
-import { useStatementsByCard } from '../../application/hooks/useStatements';
+import { useStatements } from '../../application/hooks/useStatements';
 
 type Props = {
   purchaseId: number;
   userId: number;
-  creditCardId: number;
 };
 
-export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
+export function InstallmentEditor({ purchaseId, userId }: Props) {
   const { data: installments, isLoading } = usePurchaseInstallments(purchaseId, userId);
-  const statementsQuery = useStatementsByCard(creditCardId, userId);
+  const statementsQuery = useStatements(userId, true);
   const updateMutation = usePurchaseInstallmentsMutation();
 
   const [local, setLocal] = useState<Record<number, { amount: string; statementId?: number | null }>>({});
@@ -61,7 +60,7 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
         <div key={inst.id} className="bg-white p-3 rounded shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div>
             <div className="text-sm text-gray-700">Cuota {inst.installment_number}/{inst.total_installments}</div>
-            <div className="text-sm text-gray-500">Período: {inst.billing_period}</div>
+            <div className="text-sm text-gray-500">Período {inst.billing_period}</div>
           </div>
 
           <div>
@@ -69,29 +68,29 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
             <input
               type="number"
               step="0.01"
-              className="mt-1 w-full px-3 py-2 border rounded"
+              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               value={local[inst.id]?.amount ?? String(inst.amount)}
               onChange={(e) => handleChange(inst.id, 'amount', e.target.value)}
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
             <div className="flex-1">
               <label className="block text-xs text-gray-600">Asignación de resumen</label>
               <select
-                className="mt-1 w-full px-3 py-2 border rounded"
+                className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={local[inst.id]?.statementId ?? ''}
                 onChange={(e) => handleChange(inst.id, 'statementId', e.target.value ? Number(e.target.value) : null)}
               >
                 <option value="">Automático</option>
                 {statementsQuery.data?.map((st: any) => (
-                  <option key={st.id} value={st.id}>{st.start_date} → {st.due_date}</option>
+                  <option key={st.id} value={st.id}>Asignar a Venc.: {st.due_date}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <button onClick={() => handleSave(inst.id)} className="px-3 py-2 bg-blue-600 text-white rounded">Guardar</button>
+              <button onClick={() => handleSave(inst.id)} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Guardar</button>
             </div>
           </div>
         </div>
