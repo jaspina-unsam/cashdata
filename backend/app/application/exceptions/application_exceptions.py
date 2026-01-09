@@ -17,3 +17,11 @@ class CreditCardNotFoundError(ApplicationError):
 class CreditCardOwnerMismatchError(ApplicationError):
     def __init__(self, *args):
         super().__init__(*args)
+
+class PurchaseNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+class CategoryNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
