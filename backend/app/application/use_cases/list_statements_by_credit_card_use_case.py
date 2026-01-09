@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import List
 
+from app.application.dtos.monthly_statement_dto import MonthlyStatementResponseDTO
 from app.application.exceptions.application_exceptions import (
     CreditCardNotFoundError,
     CreditCardOwnerMismatchError,
 )
-from app.domain.entities.monthly_statement import MonthlyStatement
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 
@@ -19,7 +19,7 @@ class ListStatementByCreditCardUseCase:
     def __init__(self, uow: IUnitOfWork):
         self._uow = uow
 
-    def execute(self, query: ListStatementByCreditCardQuery) -> List[MonthlyStatement]:
+    def execute(self, query: ListStatementByCreditCardQuery) -> List[MonthlyStatementResponseDTO]:
         """
         Loads the credit card and verifies the user owns it
 
@@ -29,7 +29,7 @@ class ListStatementByCreditCardUseCase:
             query: containing user_id and credit_card_id
 
         Returns:
-            List[Statement]
+            List[MonthlyStatementResponseDTO]
 
         Raises:
             CreditCardNotFoundError, CreditCardNotFoundError
@@ -48,4 +48,18 @@ class ListStatementByCreditCardUseCase:
 
             statements = uow.monthly_statements.find_by_credit_card_id(query.credit_card_id)
 
-            return sorted(statements, key=lambda x: x.due_date)
+            # Convert to DTOs
+            result = []
+            for statement in sorted(statements, key=lambda x: x.due_date):
+                result.append(
+                    MonthlyStatementResponseDTO(
+                        id=statement.id,
+                        credit_card_id=statement.credit_card_id,
+                        credit_card_name=credit_card.name,
+                        start_date=statement.start_date,
+                        closing_date=statement.closing_date,
+                        due_date=statement.due_date,
+                    )
+                )
+
+            return result

@@ -12,6 +12,7 @@ from app.application.exceptions.application_exceptions import (
 )
 from app.application.mappers.purchase_dto_mapper import PurchaseDTOMapper
 from app.domain.entities.purchase import Purchase
+from app.domain.entities.installment import Installment
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.money import Money
 
@@ -64,7 +65,7 @@ class UpdatePurchaseUseCase:
                 raise PurchaseNotFoundError(f"Purchase with ID {command.purchase_id} not found")
 
             if purchase.user_id != command.user_id:
-                raise PurchaseNotFoundError(f"Purchase {command.purchase_id} does not belong to user {command.user_id}")
+                raise PurchaseNotFoundError(f"Purchase with ID {command.purchase_id} not found")
 
             # Validate credit card if provided
             credit_card_id = command.credit_card_id if command.credit_card_id is not None else purchase.credit_card_id
@@ -82,10 +83,33 @@ class UpdatePurchaseUseCase:
                 if not category:
                     raise CategoryNotFoundError(f"Category with ID {command.category_id} not found")
 
-            # For now, only update basic fields. Complex updates (credit_card, date, amount) require
+            # For now, only update basic fields. Complex updates (credit_card, date) require
             # regenerating installments and statements, which is not implemented.
-            if command.credit_card_id is not None or command.purchase_date is not None or command.total_amount is not None:
-                raise ValueError("Updating credit_card_id, purchase_date, or total_amount is not yet supported")
+            # Amount updates are allowed for single-installment purchases only.
+            if command.credit_card_id is not None or command.purchase_date is not None:
+                raise ValueError("Updating credit_card_id or purchase_date is not yet supported")
+
+            if command.total_amount is not None and purchase.installments_count > 1:
+                raise ValueError("Updating total_amount is not supported for multi-installment purchases")
+
+            # Handle amount update for single-installment purchases
+            total_amount = command.total_amount if command.total_amount is not None else purchase.total_amount.amount
+            total_amount_money = Money(amount=total_amount, currency=purchase.total_amount.currency) if command.total_amount is not None else purchase.total_amount
+            if command.total_amount is not None and purchase.installments_count == 1:
+                # Update the single installment amount
+                installments = self._uow.installments.find_by_purchase_id(purchase.id)
+                if len(installments) == 1:
+                    installment = installments[0]
+                    updated_installment = Installment(
+                        id=installment.id,
+                        purchase_id=installment.purchase_id,
+                        installment_number=installment.installment_number,
+                        total_installments=installment.total_installments,
+                        amount=Money(amount=command.total_amount, currency=installment.amount.currency),
+                        billing_period=installment.billing_period,
+                        manually_assigned_statement_id=installment.manually_assigned_statement_id,
+                    )
+                    self._uow.installments.save(updated_installment)
 
             # Create updated purchase
             updated_purchase = Purchase(
@@ -95,7 +119,7 @@ class UpdatePurchaseUseCase:
                 category_id=category_id,
                 purchase_date=purchase.purchase_date,  # Not updating yet
                 description=command.description if command.description is not None else purchase.description,
-                total_amount=purchase.total_amount,  # Not updating yet
+                total_amount=total_amount_money,
                 installments_count=purchase.installments_count,
             )
 

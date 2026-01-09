@@ -241,15 +241,11 @@ class CreditCardSummaryResponseDTO(BaseModel):
 
 
 class UpdatePurchaseInputDTO(BaseModel):
-    credit_card_id: int = Field(gt=0, description="Credit card ID")
-    category_id: int | None = Field(gt=0, description="Category ID")
-    purchase_date: date | None = Field(description="Date of purchase")
-    description: str | None = Field(
-        min_length=1, max_length=500, description="Purchase description"
-    )
-    total_amount: Decimal = Field(
-        description="Total purchase amount (positive for purchases, negative for credits)"
-    )
+    credit_card_id: int | None = Field(None, gt=0, description="Credit card ID")
+    category_id: int | None = Field(None, gt=0, description="Category ID")
+    purchase_date: date | None = Field(None, description="Date of purchase")
+    description: str | None = Field(None, min_length=1, max_length=500, description="Purchase description")
+    total_amount: Decimal | None = Field(None, description="Total purchase amount (positive for purchases, negative for credits)")
 
     @field_validator("description")
     @classmethod

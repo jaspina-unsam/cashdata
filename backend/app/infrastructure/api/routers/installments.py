@@ -18,7 +18,7 @@ from app.application.exceptions.application_exceptions import (
 )
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 
 router = APIRouter(prefix="/api/v1/installments", tags=["installments"])
@@ -98,7 +98,7 @@ def delete_installment(
             user_id=user_id,
         )
         use_case.execute(command)
-        return {"message": "Installment deleted successfully"}
+        return Response(status_code=204)
     except InstallmentNotFoundError:
         raise HTTPException(status_code=404, detail="Installment not found")
     except PurchaseNotFoundError:

@@ -19,7 +19,7 @@ class CreatePurchaseCommand:
     purchase_date: date
     description: str
     total_amount: Decimal
-    currency: Currency
+    currency: str  # Currency as string from DTO
     installments_count: int
 
 
@@ -83,7 +83,7 @@ class CreatePurchaseUseCase:
                 category_id=command.category_id,
                 purchase_date=command.purchase_date,
                 description=command.description,
-                total_amount=Money(command.total_amount, command.currency),
+                total_amount=Money(command.total_amount, Currency(command.currency)),
                 installments_count=command.installments_count,
             )
 

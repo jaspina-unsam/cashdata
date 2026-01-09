@@ -10,6 +10,7 @@ from app.application.exceptions.application_exceptions import (
 )
 from app.application.mappers.purchase_dto_mapper import InstallmentDTOMapper
 from app.domain.entities.installment import Installment
+from app.domain.entities.purchase import Purchase
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.money import Money
 
@@ -90,7 +91,16 @@ class UpdateInstallmentUseCase:
             if command.amount is not None:
                 all_installments = self._uow.installments.find_by_purchase_id(purchase.id)
                 new_total = sum(inst.amount.amount for inst in all_installments)
-                updated_purchase = purchase._replace(total_amount=Money(amount=new_total, currency=purchase.total_amount.currency))
+                updated_purchase = Purchase(
+                    id=purchase.id,
+                    user_id=purchase.user_id,
+                    credit_card_id=purchase.credit_card_id,
+                    category_id=purchase.category_id,
+                    purchase_date=purchase.purchase_date,
+                    description=purchase.description,
+                    total_amount=Money(amount=new_total, currency=purchase.total_amount.currency),
+                    installments_count=purchase.installments_count,
+                )
                 self._uow.purchases.save(updated_purchase)
 
             self._uow.commit()

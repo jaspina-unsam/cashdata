@@ -124,7 +124,12 @@ class TestListStatementByCreditCardUseCaseIntegration:
 
         uow_mock.credit_cards.find_by_id.assert_called_once_with(1)
         uow_mock.monthly_statements.find_by_credit_card_id.assert_called_once_with(1)
-        assert result == [statement1, statement2, statement3]  # Sorted by due_date
+        
+        # Check that statements are sorted by due_date
+        assert len(result) == 3
+        assert result[0].due_date == date(2025, 2, 15)
+        assert result[1].due_date == date(2025, 3, 15)
+        assert result[2].due_date == date(2025, 4, 15)
 
     def test_returns_empty_list_when_no_statements_exist(
         self, uow_mock, make_credit_card, use_case
@@ -187,4 +192,7 @@ class TestListStatementByCreditCardUseCaseIntegration:
         query = ListStatementByCreditCardQuery(user_id=1, credit_card_id=1)
         result = use_case.execute(query)
 
-        assert result == [statement1, statement2, statement3]  # Sorted by due_date
+        assert len(result) == 3
+        assert result[0].due_date == date(2025, 2, 10)
+        assert result[1].due_date == date(2025, 3, 10)
+        assert result[2].due_date == date(2025, 4, 10)
