@@ -14,6 +14,7 @@ class TestCreditCardEntity:
         """Default valid card data"""
         return {
             "id": 1,
+            "payment_method_id": 1,
             "user_id": 1,
             "name": "Visa HSBC",
             "bank": "HSBC",
@@ -30,6 +31,7 @@ class TestCreditCardEntity:
         card = CreditCard(**valid_card_data)
 
         assert card.id == 1
+        assert card.payment_method_id == 1
         assert card.user_id == 1
         assert card.name == "Visa HSBC"
         assert card.bank == "HSBC"
