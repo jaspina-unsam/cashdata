@@ -1,5 +1,6 @@
 # backend/cashdata/infrastructure/persistence/repositories/sqlalchemy_unit_of_work.py
 from app.domain.repositories import IUnitOfWork
+from app.infrastructure.persistence.repositories.sqlalchemy_payment_method_repository import SQLAlchemyPaymentMethodRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_user_repository import (
     SQLAlchemyUserRepository,
 )
@@ -37,6 +38,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.purchases = SQLAlchemyPurchaseRepository(self.session)
         self.installments = SQLAlchemyInstallmentRepository(self.session)
         self.monthly_statements = SQLAlchemyMonthlyStatementRepository(self.session)
+        self.payment_methods = SQLAlchemyPaymentMethodRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

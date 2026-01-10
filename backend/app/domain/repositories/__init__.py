@@ -5,3 +5,4 @@ from app.domain.repositories.icredit_card_repository import ICreditCardRepositor
 from app.domain.repositories.ipurchase_repository import IPurchaseRepository
 from app.domain.repositories.iinstallment_repository import IInstallmentRepository
 from app.domain.repositories.iunit_of_work import IUnitOfWork
+from app.domain.repositories.ipayment_method_repository import IPaymentMethodRepository

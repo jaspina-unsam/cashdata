@@ -8,6 +8,7 @@ from app.infrastructure.persistence.models.category_model import CategoryModel
 from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.purchase_model import PurchaseModel
 from app.infrastructure.persistence.models.installment_model import InstallmentModel
+from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 
 __all__ = [
     "Base",
@@ -17,4 +18,5 @@ __all__ = [
     "CreditCardModel",
     "PurchaseModel",
     "InstallmentModel",
+    "PaymentMethodModel",
 ]
