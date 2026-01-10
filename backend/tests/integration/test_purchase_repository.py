@@ -75,7 +75,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         new_purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Supermarket shopping",
@@ -92,7 +92,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Electronics",
@@ -104,7 +104,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         updated_purchase = Purchase(
             id=saved.id,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Electronics Updated",
@@ -122,7 +122,7 @@ class TestSQLAlchemyPurchaseRepositoryFindById:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Test Purchase",
@@ -144,7 +144,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByUserId:
         p1 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="P1",
@@ -154,7 +154,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByUserId:
         p2 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 16),
             description="P2",
@@ -174,7 +174,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByCreditCardId:
         p1 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="P1",
@@ -193,7 +193,7 @@ class TestSQLAlchemyPurchaseRepositoryDelete:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Purchase to delete",
@@ -231,7 +231,7 @@ class TestSQLAlchemyPurchaseRepositoryDelete:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Purchase with installments to delete",

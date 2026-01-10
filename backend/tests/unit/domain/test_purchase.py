@@ -22,7 +22,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Laptop Dell",
@@ -33,7 +33,7 @@ class TestPurchaseEntity:
         # Assert
         assert purchase.id == 1
         assert purchase.user_id == 10
-        assert purchase.credit_card_id == 5
+        assert purchase.payment_method_id == 5
         assert purchase.category_id == 3
         assert purchase.purchase_date == date(2025, 1, 15)
         assert purchase.description == "Laptop Dell"
@@ -51,7 +51,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=None,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Smart TV 55 pulgadas",
@@ -74,7 +74,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=None,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Supermercado",
@@ -95,7 +95,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="  Cena en restaurante  ",
@@ -116,7 +116,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Amazon purchase",
@@ -140,7 +140,7 @@ class TestPurchaseEntity:
             Purchase(
                 id=None,
                 user_id=10,
-                credit_card_id=5,
+                payment_method_id=5,
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
@@ -159,7 +159,7 @@ class TestPurchaseEntity:
             Purchase(
                 id=None,
                 user_id=10,
-                credit_card_id=5,
+                payment_method_id=5,
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
@@ -178,7 +178,7 @@ class TestPurchaseEntity:
             Purchase(
                 id=None,
                 user_id=10,
-                credit_card_id=5,
+                payment_method_id=5,
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
@@ -196,7 +196,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=None,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Credit",
@@ -218,7 +218,7 @@ class TestPurchaseEntity:
             Purchase(
                 id=None,
                 user_id=10,
-                credit_card_id=5,
+                payment_method_id=5,
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="",
@@ -237,7 +237,7 @@ class TestPurchaseEntity:
             Purchase(
                 id=None,
                 user_id=10,
-                credit_card_id=5,
+                payment_method_id=5,
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="   ",
@@ -257,7 +257,7 @@ class TestPurchaseEntity:
         purchase1 = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -267,7 +267,7 @@ class TestPurchaseEntity:
         purchase2 = Purchase(
             id=1,
             user_id=99,
-            credit_card_id=99,
+            payment_method_id=99,
             category_id=99,
             purchase_date=date(2025, 12, 31),
             description="Purchase B",
@@ -288,7 +288,7 @@ class TestPurchaseEntity:
         purchase1 = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -298,7 +298,7 @@ class TestPurchaseEntity:
         purchase2 = Purchase(
             id=2,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -319,7 +319,7 @@ class TestPurchaseEntity:
         purchase1 = Purchase(
             id=None,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -329,7 +329,7 @@ class TestPurchaseEntity:
         purchase2 = Purchase(
             id=None,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -350,7 +350,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -373,7 +373,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -395,7 +395,7 @@ class TestPurchaseEntity:
         purchase1 = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
@@ -405,7 +405,7 @@ class TestPurchaseEntity:
         purchase2 = Purchase(
             id=2,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase B",
@@ -415,7 +415,7 @@ class TestPurchaseEntity:
         purchase3 = Purchase(
             id=1,
             user_id=99,
-            credit_card_id=99,
+            payment_method_id=99,
             category_id=99,
             purchase_date=date(2025, 12, 31),
             description="Purchase C",
@@ -441,7 +441,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Expensive item",
@@ -462,7 +462,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Long term financing",
@@ -483,7 +483,7 @@ class TestPurchaseEntity:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=5,
+            payment_method_id=5,
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Small purchase",

@@ -68,7 +68,7 @@ class UpdatePurchaseUseCase:
                 raise PurchaseNotFoundError(f"Purchase with ID {command.purchase_id} not found")
 
             # Validate credit card if provided
-            credit_card_id = command.credit_card_id if command.credit_card_id is not None else purchase.credit_card_id
+            credit_card_id = command.credit_card_id if command.credit_card_id is not None else purchase.payment_method_id
             if command.credit_card_id is not None:
                 credit_card = self._uow.credit_cards.find_by_id(command.credit_card_id)
                 if not credit_card:
@@ -115,7 +115,7 @@ class UpdatePurchaseUseCase:
             updated_purchase = Purchase(
                 id=purchase.id,
                 user_id=purchase.user_id,
-                credit_card_id=credit_card_id,
+                payment_method_id=credit_card_id,
                 category_id=category_id,
                 purchase_date=purchase.purchase_date,  # Not updating yet
                 description=command.description if command.description is not None else purchase.description,

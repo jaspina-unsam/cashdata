@@ -38,7 +38,7 @@ class TestPurchaseDTOMapper:
         purchase = Purchase(
             id=1,
             user_id=10,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=2,
             purchase_date=date(2025, 1, 15),
             description="Laptop",

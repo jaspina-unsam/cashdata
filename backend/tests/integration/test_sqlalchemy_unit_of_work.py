@@ -181,7 +181,7 @@ class TestSQLAlchemyUnitOfWork:
             uow.commit()
             
             purchase = Purchase(
-                id=None, user_id=saved_user.id, credit_card_id=saved_card.id,
+                id=None, user_id=saved_user.id, payment_method_id=saved_card.id,
                 category_id=saved_category.id, purchase_date=date(2025, 1, 15),
                 description="Laptop", total_amount=Money(Decimal("120000.00"), Currency.ARS),
                 installments_count=12

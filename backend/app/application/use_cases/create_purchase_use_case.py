@@ -79,7 +79,7 @@ class CreatePurchaseUseCase:
             purchase = Purchase(
                 id=None,
                 user_id=command.user_id,
-                credit_card_id=command.credit_card_id,
+                payment_method_id=command.credit_card_id,
                 category_id=command.category_id,
                 purchase_date=command.purchase_date,
                 description=command.description,
@@ -91,7 +91,7 @@ class CreatePurchaseUseCase:
             purchase = Purchase(
                 id=purchase.id,
                 user_id=purchase.user_id,
-                credit_card_id=purchase.credit_card_id,
+                payment_method_id=purchase.payment_method_id,
                 category_id=purchase.category_id,
                 purchase_date=purchase.purchase_date,
                 description=purchase.description,

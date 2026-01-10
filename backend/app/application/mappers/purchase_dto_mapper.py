@@ -23,7 +23,7 @@ class PurchaseDTOMapper:
         return PurchaseResponseDTO(
             id=purchase.id,
             user_id=purchase.user_id,
-            credit_card_id=purchase.credit_card_id,
+            credit_card_id=purchase.payment_method_id,
             category_id=purchase.category_id,
             purchase_date=purchase.purchase_date,
             description=purchase.description,
