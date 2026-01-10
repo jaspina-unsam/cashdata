@@ -1,4 +1,8 @@
 from typing import List
+from app.application.use_cases.create_credit_card_use_case import (
+    CreateCreditCardQuery,
+    CreateCreditCardUseCase,
+)
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.application.use_cases.get_credit_card_summary_use_case import (
@@ -63,34 +67,19 @@ def create_credit_card(
     - **credit_limit_currency**: Optional credit limit currency
     """
     try:
-        # Create credit limit Money object if provided
-        credit_limit = None
-        if (
-            card_data.credit_limit_amount is not None
-            and card_data.credit_limit_currency is not None
-        ):
-            credit_limit = Money(
-                card_data.credit_limit_amount, card_data.credit_limit_currency
-            )
-
-        # Create entity
-        credit_card = CreditCard(
-            id=None,
+        query = CreateCreditCardQuery(
             user_id=user_id,
             name=card_data.name,
             bank=card_data.bank,
             last_four_digits=card_data.last_four_digits,
             billing_close_day=card_data.billing_close_day,
             payment_due_day=card_data.payment_due_day,
-            credit_limit=credit_limit,
+            credit_limit_amount=card_data.credit_limit_amount,
+            credit_limit_currency=card_data.credit_limit_currency,
         )
-
-        # Save using UoW
-        with uow:
-            saved_card = uow.credit_cards.save(credit_card)
-            uow.commit()
-
-        return CreditCardDTOMapper.to_response_dto(saved_card)
+        use_case = CreateCreditCardUseCase(uow)
+        credit_card = use_case.execute(query)
+        return CreditCardDTOMapper.to_response_dto(credit_card)
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
