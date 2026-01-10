@@ -8,7 +8,7 @@ from app.domain.value_objects.money import Currency
 class CreatePurchaseInputDTO(BaseModel):
     """Input DTO for purchase creation"""
 
-    credit_card_id: int = Field(gt=0, description="Credit card ID")
+    payment_method_id: int = Field(gt=0, description="Credit card ID")
     category_id: int = Field(gt=0, description="Category ID")
     purchase_date: date = Field(description="Date of purchase")
     description: str = Field(
@@ -33,7 +33,7 @@ class CreatePurchaseInputDTO(BaseModel):
         use_enum_values=True,
         json_schema_extra={
             "example": {
-                "credit_card_id": 1,
+                "payment_method_id": 1,
                 "category_id": 2,
                 "purchase_date": "2025-01-15",
                 "description": "Laptop Dell XPS 15",
@@ -50,7 +50,7 @@ class PurchaseResponseDTO(BaseModel):
 
     id: int
     user_id: int
-    credit_card_id: int
+    payment_method_id: int
     category_id: int
     purchase_date: date
     description: str
@@ -65,7 +65,7 @@ class PurchaseResponseDTO(BaseModel):
             "example": {
                 "id": 1,
                 "user_id": 10,
-                "credit_card_id": 1,
+                "payment_method_id": 1,
                 "category_id": 2,
                 "purchase_date": "2025-01-15",
                 "description": "Laptop Dell XPS 15",
@@ -241,7 +241,7 @@ class CreditCardSummaryResponseDTO(BaseModel):
 
 
 class UpdatePurchaseInputDTO(BaseModel):
-    credit_card_id: int | None = Field(None, gt=0, description="Credit card ID")
+    payment_method_id: int | None = Field(None, gt=0, description="Payment Method ID")
     category_id: int | None = Field(None, gt=0, description="Category ID")
     purchase_date: date | None = Field(None, description="Date of purchase")
     description: str | None = Field(None, min_length=1, max_length=500, description="Purchase description")
