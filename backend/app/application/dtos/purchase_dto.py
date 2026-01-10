@@ -154,6 +154,7 @@ class CreditCardResponseDTO(BaseModel):
     """Response DTO for Credit Card"""
 
     id: int
+    payment_method_id: int
     user_id: int
     name: str
     bank: str
@@ -169,6 +170,7 @@ class CreditCardResponseDTO(BaseModel):
         json_schema_extra={
             "example": {
                 "id": 1,
+                "payment_method_id": 1,
                 "user_id": 10,
                 "name": "Visa Gold",
                 "bank": "HSBC",

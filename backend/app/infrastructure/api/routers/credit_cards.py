@@ -13,9 +13,9 @@ from app.application.use_cases.list_credit_cards_by_user_use_case import (
     ListCreditCardsByUserUseCase,
     ListCreditCardsByUserQuery,
 )
-from app.application.use_cases.list_purchases_by_credit_card_use_case import (
-    ListPurchasesByCreditCardUseCase,
-    ListPurchasesByCreditCardQuery,
+from app.application.use_cases.list_purchases_by_payment_method_use_case import (
+    ListPurchasesByPaymentMethodUseCase,
+    ListPurchasesByPaymentMethodQuery,
 )
 from app.application.use_cases.delete_credit_card_use_case import (
     DeleteCreditCardUseCase,
@@ -218,8 +218,18 @@ def list_purchases_by_card(
     Only returns purchases if card belongs to the authenticated user.
     """
     try:
-        query = ListPurchasesByCreditCardQuery(credit_card_id=card_id, user_id=user_id)
-        use_case = ListPurchasesByCreditCardUseCase(uow)
+        # First verify credit card exists and belongs to user
+        credit_card = uow.credit_cards.find_by_id(card_id)
+        if not credit_card:
+            raise ValueError(f"Credit card with ID {card_id} not found")
+        if credit_card.user_id != user_id:
+            raise ValueError(f"Credit card {card_id} does not belong to user {user_id}")
+
+        # Use the payment method ID to list purchases
+        query = ListPurchasesByPaymentMethodQuery(
+            payment_method_id=credit_card.payment_method_id, user_id=user_id
+        )
+        use_case = ListPurchasesByPaymentMethodUseCase(uow)
         purchases = use_case.execute(query)
 
         # Apply pagination

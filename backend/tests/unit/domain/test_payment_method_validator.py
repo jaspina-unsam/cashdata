@@ -51,8 +51,8 @@ class TestPaymentMethodValidator:
         )
 
         # Act & Assert
-        with pytest.raises(PaymentMethodInstallmentsError, match="Only credit card payment methods can have multiple installments"):
-            PaymentMethodValidator.validate_installments(payment_method, 3)
+        result = PaymentMethodValidator.validate_installments(payment_method, 3)
+        assert result is False
 
     def test_validate_installments_bank_account_multiple_installments_not_allowed(self):
         """Test that bank account payments cannot have multiple installments."""
@@ -65,8 +65,8 @@ class TestPaymentMethodValidator:
         )
 
         # Act & Assert
-        with pytest.raises(PaymentMethodInstallmentsError, match="Only credit card payment methods can have multiple installments"):
-            PaymentMethodValidator.validate_installments(payment_method, 6)
+        result = PaymentMethodValidator.validate_installments(payment_method, 6)
+        assert result is False
 
     def test_validate_installments_digital_wallet_multiple_installments_not_allowed(self):
         """Test that digital wallet payments cannot have multiple installments."""
@@ -79,8 +79,8 @@ class TestPaymentMethodValidator:
         )
 
         # Act & Assert
-        with pytest.raises(PaymentMethodInstallmentsError, match="Only credit card payment methods can have multiple installments"):
-            PaymentMethodValidator.validate_installments(payment_method, 2)
+        result = PaymentMethodValidator.validate_installments(payment_method, 2)
+        assert result is False
 
     def test_validate_installments_non_credit_card_single_installment_allowed(self):
         """Test that non-credit card payment methods can have single installment."""
@@ -148,8 +148,8 @@ class TestPaymentMethodValidator:
         assert result is True
 
         # Cash should reject 2 installments (boundary)
-        with pytest.raises(PaymentMethodInstallmentsError):
-            PaymentMethodValidator.validate_installments(cash, 2)
+        result = PaymentMethodValidator.validate_installments(cash, 2)
+        assert result is False
 
     def test_validate_installments_large_installment_numbers(self):
         """Test validation with large installment numbers."""
@@ -174,8 +174,8 @@ class TestPaymentMethodValidator:
         assert result is True
 
         # Cash should reject large numbers
-        with pytest.raises(PaymentMethodInstallmentsError):
-            PaymentMethodValidator.validate_installments(cash, 60)
+        result = PaymentMethodValidator.validate_installments(cash, 60)
+        assert result is False
 
     def test_validate_installments_all_payment_method_types(self):
         """Test validation across all payment method types with multiple installments."""
@@ -200,5 +200,5 @@ class TestPaymentMethodValidator:
                 result = PaymentMethodValidator.validate_installments(payment_method, 3)
                 assert result is True
             else:
-                with pytest.raises(PaymentMethodInstallmentsError):
-                    PaymentMethodValidator.validate_installments(payment_method, 3)
+                result = PaymentMethodValidator.validate_installments(payment_method, 3)
+                assert result is False

@@ -6,8 +6,8 @@ from decimal import Decimal
 from app.application.dtos.purchase_dto import UpdatePurchaseInputDTO, PurchaseResponseDTO
 from app.application.exceptions.application_exceptions import (
     PurchaseNotFoundError,
-    CreditCardNotFoundError,
-    CreditCardOwnerMismatchError,
+    PaymentMethodNotFoundError,
+    PaymentMethodOwnershipError,
     CategoryNotFoundError,
 )
 from app.application.mappers.purchase_dto_mapper import PurchaseDTOMapper
@@ -23,7 +23,7 @@ class UpdatePurchaseCommand:
 
     purchase_id: int
     user_id: int
-    credit_card_id: Optional[int] = None
+    payment_method_id: Optional[int] = None
     category_id: Optional[int] = None
     purchase_date: Optional[date] = None
     description: Optional[str] = None
@@ -54,8 +54,8 @@ class UpdatePurchaseUseCase:
 
         Raises:
             PurchaseNotFoundError: If purchase doesn't exist
-            CreditCardNotFoundError: If credit card doesn't exist
-            CreditCardOwnerMismatchError: If credit card doesn't belong to user
+            PaymentMethodNotFoundError: If payment method doesn't exist
+            PaymentMethodOwnershipError: If payment method doesn't belong to user
             CategoryNotFoundError: If category doesn't exist
         """
         with self._uow:
@@ -67,14 +67,14 @@ class UpdatePurchaseUseCase:
             if purchase.user_id != command.user_id:
                 raise PurchaseNotFoundError(f"Purchase with ID {command.purchase_id} not found")
 
-            # Validate credit card if provided
-            credit_card_id = command.credit_card_id if command.credit_card_id is not None else purchase.payment_method_id
-            if command.credit_card_id is not None:
-                credit_card = self._uow.credit_cards.find_by_id(command.credit_card_id)
-                if not credit_card:
-                    raise CreditCardNotFoundError(f"Credit card with ID {command.credit_card_id} not found")
-                if credit_card.user_id != command.user_id:
-                    raise CreditCardOwnerMismatchError(f"Credit card {command.credit_card_id} does not belong to user {command.user_id}")
+            # Validate payment method if provided
+            payment_method_id = command.payment_method_id if command.payment_method_id is not None else purchase.payment_method_id
+            if command.payment_method_id is not None:
+                payment_method = self._uow.payment_methods.find_by_id(command.payment_method_id)
+                if not payment_method:
+                    raise PaymentMethodNotFoundError(f"Payment method with ID {command.payment_method_id} not found")
+                if payment_method.user_id != command.user_id:
+                    raise PaymentMethodOwnershipError(f"Payment method {command.payment_method_id} does not belong to user {command.user_id}")
 
             # Validate category if provided
             category_id = command.category_id if command.category_id is not None else purchase.category_id
@@ -83,11 +83,11 @@ class UpdatePurchaseUseCase:
                 if not category:
                     raise CategoryNotFoundError(f"Category with ID {command.category_id} not found")
 
-            # For now, only update basic fields. Complex updates (credit_card, date) require
+            # For now, only update basic fields. Complex updates (payment_method, date) require
             # regenerating installments and statements, which is not implemented.
             # Amount updates are allowed for single-installment purchases only.
-            if command.credit_card_id is not None or command.purchase_date is not None:
-                raise ValueError("Updating credit_card_id or purchase_date is not yet supported")
+            if command.payment_method_id is not None or command.purchase_date is not None:
+                raise ValueError("Updating payment_method_id or purchase_date is not yet supported")
 
             if command.total_amount is not None and purchase.installments_count > 1:
                 raise ValueError("Updating total_amount is not supported for multi-installment purchases")

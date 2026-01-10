@@ -7,9 +7,9 @@ from app.application.use_cases.list_installments_by_purchase_use_case import (
     ListInstallmentsByPurchaseUseCase,
     ListInstallmentsByPurchaseQuery,
 )
-from app.application.use_cases.list_purchases_by_credit_card_use_case import (
-    ListPurchasesByCreditCardUseCase,
-    ListPurchasesByCreditCardQuery,
+from app.application.use_cases.list_purchases_by_payment_method_use_case import (
+    ListPurchasesByPaymentMethodUseCase,
+    ListPurchasesByPaymentMethodQuery,
 )
 from app.application.use_cases.list_purchases_by_date_range_use_case import (
     ListPurchasesByDateRangeUseCase,
@@ -22,7 +22,9 @@ from app.application.use_cases.list_credit_cards_by_user_use_case import (
 from app.domain.entities.purchase import Purchase
 from app.domain.entities.installment import Installment
 from app.domain.entities.credit_card import CreditCard
+from app.domain.entities.payment_method import PaymentMethod
 from app.domain.value_objects.money import Money, Currency
+from app.domain.value_objects.payment_method_type import PaymentMethodType
 
 
 @pytest.fixture
@@ -112,23 +114,22 @@ class TestListInstallmentsByPurchaseUseCase:
             use_case.execute(query)
 
 
-class TestListPurchasesByCreditCardUseCase:
+class TestListPurchasesByPaymentMethodUseCase:
 
     def test_should_return_purchases_sorted_by_date(self, mock_unit_of_work):
         """
-        GIVEN: Credit card with multiple purchases
+        GIVEN: Payment method with multiple purchases
         WHEN: Execute query
         THEN: Returns purchases sorted by date descending
         """
-        credit_card = CreditCard(
+        payment_method = PaymentMethod(
             id=1,
             user_id=10,
+            type=PaymentMethodType.CREDIT_CARD,
             name="Visa",
-            bank="HSBC",
-            last_four_digits="1234",
-            billing_close_day=10,
-            payment_due_day=20,
-            credit_limit=None,
+            is_active=True,
+            created_at=None,
+            updated_at=None,
         )
         purchases = [
             Purchase(
@@ -153,11 +154,11 @@ class TestListPurchasesByCreditCardUseCase:
             ),
         ]
 
-        mock_unit_of_work.credit_cards.find_by_id.return_value = credit_card
-        mock_unit_of_work.purchases.find_by_credit_card_id.return_value = purchases
+        mock_unit_of_work.payment_methods.find_by_id.return_value = payment_method
+        mock_unit_of_work.purchases.find_by_payment_method_id.return_value = purchases
 
-        query = ListPurchasesByCreditCardQuery(credit_card_id=1, user_id=10)
-        use_case = ListPurchasesByCreditCardUseCase(mock_unit_of_work)
+        query = ListPurchasesByPaymentMethodQuery(payment_method_id=1, user_id=10)
+        use_case = ListPurchasesByPaymentMethodUseCase(mock_unit_of_work)
 
         result = use_case.execute(query)
 

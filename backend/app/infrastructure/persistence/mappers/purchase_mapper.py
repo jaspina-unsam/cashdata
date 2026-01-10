@@ -28,7 +28,7 @@ class PurchaseMapper:
         return PurchaseModel(
             id=entity.id,
             user_id=entity.user_id,
-            credit_card_id=entity.payment_method_id,
+            payment_method_id=entity.payment_method_id,
             category_id=entity.category_id,
             purchase_date=entity.purchase_date,
             description=entity.description,

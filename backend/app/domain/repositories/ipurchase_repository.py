@@ -16,8 +16,8 @@ class IPurchaseRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_credit_card_id(self, card_id: int) -> List[Purchase]:
-        """Retrieve all purchases for a specific credit card"""
+    def find_by_payment_method_id(self, payment_method_id: int) -> List[Purchase]:
+        """Retrieve all purchases for a specific payment method"""
         pass
 
     @abstractmethod

@@ -11,6 +11,7 @@ from app.domain.repositories import (
 from app.domain.repositories.imonthly_statement_repository import (
     IMonthlyStatementRepository,
 )
+from app.domain.repositories.ipayment_method_repository import IPaymentMethodRepository
 
 
 class IUnitOfWork(ABC):
@@ -20,6 +21,7 @@ class IUnitOfWork(ABC):
     credit_cards: ICreditCardRepository
     purchases: IPurchaseRepository
     installments: IInstallmentRepository
+    payment_methods: IPaymentMethodRepository
     monthly_statements: IMonthlyStatementRepository
 
     @abstractmethod
