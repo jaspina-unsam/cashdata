@@ -36,3 +36,8 @@ class InvalidStatementDateRange(DomainException):
 class PaymentMethodNameError(DomainException):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class PaymentMethodInstallmentsError(DomainException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
