@@ -34,7 +34,7 @@ class TestListPurchasesByUserUseCase:
             Purchase(
                 id=1,
                 user_id=10,
-                credit_card_id=1,
+                payment_method_id=1,
                 category_id=1,
                 purchase_date=date(2025, 1, 10),
                 description="Old",
@@ -44,7 +44,7 @@ class TestListPurchasesByUserUseCase:
             Purchase(
                 id=2,
                 user_id=10,
-                credit_card_id=1,
+                payment_method_id=1,
                 category_id=1,
                 purchase_date=date(2025, 1, 20),
                 description="Recent",
@@ -54,7 +54,7 @@ class TestListPurchasesByUserUseCase:
             Purchase(
                 id=3,
                 user_id=10,
-                credit_card_id=1,
+                payment_method_id=1,
                 category_id=1,
                 purchase_date=date(2025, 1, 15),
                 description="Middle",

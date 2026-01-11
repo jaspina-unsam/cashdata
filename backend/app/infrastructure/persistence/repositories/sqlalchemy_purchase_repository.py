@@ -26,10 +26,10 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
         ).all()
         return [PurchaseMapper.to_entity(p) for p in purchases]
 
-    def find_by_credit_card_id(self, card_id: int) -> List[Purchase]:
-        """Retrieve all purchases for a specific credit card"""
+    def find_by_payment_method_id(self, payment_method_id: int) -> List[Purchase]:
+        """Retrieve all purchases for a specific payment method"""
         purchases = self.session.scalars(
-            select(PurchaseModel).where(PurchaseModel.credit_card_id == card_id)
+            select(PurchaseModel).where(PurchaseModel.payment_method_id == payment_method_id)
         ).all()
         return [PurchaseMapper.to_entity(p) for p in purchases]
 
@@ -40,7 +40,7 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
             existing = self.session.get(PurchaseModel, purchase.id)
             if existing:
                 existing.user_id = purchase.user_id
-                existing.credit_card_id = purchase.credit_card_id
+                existing.payment_method_id = purchase.payment_method_id
                 existing.category_id = purchase.category_id
                 existing.purchase_date = purchase.purchase_date
                 existing.description = purchase.description

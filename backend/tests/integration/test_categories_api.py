@@ -124,7 +124,7 @@ class TestListPurchasesByCategory:
         # Create multiple purchases
         for i in range(3):
             purchase_data = {
-                "credit_card_id": test_credit_card["id"],
+                "payment_method_id": test_credit_card["id"],
                 "category_id": category_id,
                 "purchase_date": f"2025-01-{15+i}",
                 "description": f"Food Purchase {i+1}",
@@ -216,7 +216,7 @@ class TestListPurchasesByCategory:
 
         # Create purchases for both users in same category
         purchase1_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["id"],
             "category_id": category_id,
             "purchase_date": "2025-01-15",
             "description": "User 1 Purchase",
@@ -231,7 +231,7 @@ class TestListPurchasesByCategory:
         )
 
         purchase2_data = {
-            "credit_card_id": card2["id"],
+            "payment_method_id": card2["id"],
             "category_id": category_id,
             "purchase_date": "2025-01-16",
             "description": "User 2 Purchase",

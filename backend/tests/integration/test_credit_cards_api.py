@@ -183,7 +183,7 @@ class TestGetCreditCardSummary:
 
         # Create purchase with installments
         purchase_data = {
-            "credit_card_id": card_id,
+            "payment_method_id": card_id,
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -254,7 +254,7 @@ class TestListPurchasesByCreditCard:
         # Create multiple purchases
         for i in range(3):
             purchase_data = {
-                "credit_card_id": card_id,
+                "payment_method_id": card_id,
                 "category_id": test_category["id"],
                 "purchase_date": f"2025-01-{15+i}",
                 "description": f"Purchase {i+1}",
@@ -308,7 +308,7 @@ class TestListPurchasesByCreditCard:
         # Create 10 purchases
         for i in range(10):
             purchase_data = {
-                "credit_card_id": card_id,
+                "payment_method_id": card_id,
                 "category_id": test_category["id"],
                 "purchase_date": f"2025-01-{10+i:02d}",
                 "description": f"Purchase {i+1}",

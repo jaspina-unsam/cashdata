@@ -3,6 +3,7 @@ from datetime import date
 from decimal import Decimal
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 
 from app.application.use_cases.create_purchase_use_case import (
     CreatePurchaseUseCase,
@@ -14,6 +15,7 @@ from app.infrastructure.persistence.models.category_model import CategoryModel
 from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.purchase_model import PurchaseModel
 from app.infrastructure.persistence.models.installment_model import InstallmentModel
+from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
@@ -25,6 +27,7 @@ def session_factory():
     engine = create_engine("sqlite:///:memory:")
     UserModel.metadata.create_all(engine)
     CategoryModel.metadata.create_all(engine)
+    PaymentMethodModel.metadata.create_all(engine)
     CreditCardModel.metadata.create_all(engine)
     PurchaseModel.metadata.create_all(engine)
     InstallmentModel.metadata.create_all(engine)
@@ -43,8 +46,17 @@ def session_factory():
     test_category = CategoryModel(
         id=1, name="Electronics", color="#FF5733", icon="laptop"
     )
+    test_payment_method = PaymentMethodModel(
+        id=1,
+        user_id=1,
+        type="credit_card",
+        name="Visa",
+        is_active=True,
+        created_at=datetime.now(),
+    )
     test_card = CreditCardModel(
         id=1,
+        payment_method_id=1,
         user_id=1,
         name="Visa",
         bank="HSBC",
@@ -52,7 +64,7 @@ def session_factory():
         billing_close_day=10,
         payment_due_day=20,
     )
-    session.add_all([test_user, test_category, test_card])
+    session.add_all([test_user, test_category, test_payment_method, test_card])
     session.commit()
     session.close()
 
@@ -84,7 +96,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Laptop",
@@ -122,7 +134,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="TV 4K",
@@ -158,7 +170,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Phone",
@@ -194,7 +206,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=999,
+            payment_method_id=999,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Should fail",
@@ -204,7 +216,7 @@ class TestCreatePurchaseUseCaseIntegration:
         )
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Credit card with ID 999 not found"):
+        with pytest.raises(Exception, match="Payment method with ID 999 not found"):
             use_case.execute(command)
 
     def test_raises_error_when_credit_card_belongs_to_different_user(
@@ -225,8 +237,17 @@ class TestCreatePurchaseUseCaseIntegration:
             wage_currency="ARS",
             is_deleted=False,
         )
+        other_payment_method = PaymentMethodModel(
+            id=2,
+            user_id=2,
+            type="credit_card",
+            name="MasterCard",
+            is_active=True,
+            created_at=datetime.now(),
+        )
         other_card = CreditCardModel(
             id=2,
+            payment_method_id=2,
             user_id=2,
             name="MasterCard",
             bank="Santander",
@@ -234,14 +255,14 @@ class TestCreatePurchaseUseCaseIntegration:
             billing_close_day=15,
             payment_due_day=25,
         )
-        session.add_all([other_user, other_card])
+        session.add_all([other_user, other_payment_method, other_card])
         session.commit()
         session.close()
 
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,  # User 1 trying to use card from user 2
-            credit_card_id=2,
+            payment_method_id=2,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Should fail",
@@ -251,7 +272,7 @@ class TestCreatePurchaseUseCaseIntegration:
         )
 
         # Act & Assert
-        with pytest.raises(ValueError, match="does not belong to user 1"):
+        with pytest.raises(Exception, match="does not belong to user 1"):
             use_case.execute(command)
 
     def test_raises_error_when_category_not_found(self, use_case):
@@ -263,7 +284,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=999,
             purchase_date=date(2025, 1, 15),
             description="Should fail",
@@ -290,7 +311,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),  # After closing day 10
             description="Multi-month purchase",
@@ -319,7 +340,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Arrange
         command = CreatePurchaseCommand(
             user_id=1,
-            credit_card_id=999,  # Invalid card
+            payment_method_id=999,  # Invalid card
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Should rollback",
@@ -331,7 +352,7 @@ class TestCreatePurchaseUseCaseIntegration:
         # Act
         try:
             use_case.execute(command)
-        except ValueError:
+        except Exception:
             pass
 
         # Assert - Verify nothing was persisted

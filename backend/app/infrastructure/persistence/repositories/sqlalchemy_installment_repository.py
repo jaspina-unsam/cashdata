@@ -44,12 +44,12 @@ class SQLAlchemyInstallmentRepository(IInstallmentRepository):
         self, card_id: int, period: str
     ) -> List[Installment]:
         """Retrieve installments for a credit card in a specific period"""
-        # Join with purchases to filter by credit_card_id
+        # Join with purchases to filter by payment_method_id
         installments = self.session.scalars(
             select(InstallmentModel)
             .join(PurchaseModel, InstallmentModel.purchase_id == PurchaseModel.id)
             .where(
-                PurchaseModel.credit_card_id == card_id,
+                PurchaseModel.payment_method_id == card_id,
                 InstallmentModel.billing_period == period,
             )
         ).all()

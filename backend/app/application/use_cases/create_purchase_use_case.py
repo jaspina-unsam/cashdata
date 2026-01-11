@@ -2,11 +2,19 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
+from app.application.exceptions.application_exceptions import (
+    CreditCardNotFoundError,
+    PaymentMethodInstallmentError,
+    PaymentMethodNotFoundError,
+    PaymentMethodOwnershipError,
+)
 from app.domain.entities.purchase import Purchase
 from app.domain.value_objects.money import Money, Currency
 from app.domain.services.installment_generator import InstallmentGenerator
 from app.domain.repositories import IUnitOfWork
 from app.application.services.statement_factory import StatementFactory
+from app.domain.services.payment_method_validator import PaymentMethodValidator
+from app.domain.value_objects.payment_method_type import PaymentMethodType
 
 
 @dataclass(frozen=True)
@@ -14,7 +22,7 @@ class CreatePurchaseCommand:
     """Command to create a new purchase"""
 
     user_id: int
-    credit_card_id: int
+    payment_method_id: int
     category_id: int
     purchase_date: date
     description: str
@@ -28,47 +36,54 @@ class CreatePurchaseResult:
     """Result of creating a purchase"""
 
     purchase_id: int
+    payment_type: PaymentMethodType
     installments_count: int
 
 
 class CreatePurchaseUseCase:
-    """
-    Use case to create a purchase and its installments.
-
-    This use case:
-    1. Creates a Purchase entity
-    2. Generates installments using InstallmentGenerator
-    3. Persists everything using UnitOfWork
-    """
-
     def __init__(self, unit_of_work: IUnitOfWork):
         self.unit_of_work = unit_of_work
 
     def execute(self, command: CreatePurchaseCommand) -> CreatePurchaseResult:
         """
-        Execute the use case to create a purchase with its installments.
+        Create a new purchase and its associated installments if applicable
 
         Args:
-            command: The command containing purchase data
+            command (CreatePurchaseCommand): The command containing purchase details
 
         Returns:
-            CreatePurchaseResult with the created purchase ID and installment count
+            CreatePurchaseResult: The result containing purchase ID and details
 
         Raises:
-            ValueError: If credit card doesn't exist or doesn't belong to user
-            ValueError: If category doesn't exist
+            PaymentMethodNotFoundError: If the payment method does not exist
+            PaymentMethodOwnershipError: If the payment method does not belong to the user
+            PaymentMethodInstallmentError: If the installments are invalid for the payment method
+            CreditCardNotFoundError: If the credit card for the payment method is not found
         """
         with self.unit_of_work as uow:
-            # Validate credit card exists and belongs to user
-            credit_card = uow.credit_cards.find_by_id(command.credit_card_id)
-            if not credit_card:
-                raise ValueError(
-                    f"Credit card with ID {command.credit_card_id} not found"
+            paymethod = uow.payment_methods.find_by_id(command.payment_method_id)
+            if not paymethod:
+                raise PaymentMethodNotFoundError(
+                    f"Payment method with ID {command.payment_method_id} not found"
                 )
-            if credit_card.user_id != command.user_id:
-                raise ValueError(
-                    f"Credit card {command.credit_card_id} does not belong to user {command.user_id}"
+            if paymethod.user_id != command.user_id:
+                raise PaymentMethodOwnershipError(
+                    f"Payment method {command.payment_method_id} does not belong to user {command.user_id}"
                 )
+            if not PaymentMethodValidator.validate_installments(
+                paymethod, command.installments_count
+            ):
+                raise PaymentMethodInstallmentError(
+                    "Only credit card payment methods can have multiple installments"
+                )
+            if paymethod.type == PaymentMethodType.CREDIT_CARD:
+                credit_card = uow.credit_cards.find_by_payment_method_id(
+                    command.payment_method_id
+                )
+                if not credit_card:
+                    raise CreditCardNotFoundError(
+                        f"Credit card for payment method ID {command.payment_method_id} not found"
+                    )
 
             # Validate category exists
             category = uow.categories.find_by_id(command.category_id)
@@ -79,7 +94,7 @@ class CreatePurchaseUseCase:
             purchase = Purchase(
                 id=None,
                 user_id=command.user_id,
-                credit_card_id=command.credit_card_id,
+                payment_method_id=command.payment_method_id,
                 category_id=command.category_id,
                 purchase_date=command.purchase_date,
                 description=command.description,
@@ -91,7 +106,7 @@ class CreatePurchaseUseCase:
             purchase = Purchase(
                 id=purchase.id,
                 user_id=purchase.user_id,
-                credit_card_id=purchase.credit_card_id,
+                payment_method_id=purchase.payment_method_id,
                 category_id=purchase.category_id,
                 purchase_date=purchase.purchase_date,
                 description=purchase.description,
@@ -102,29 +117,32 @@ class CreatePurchaseUseCase:
             # Save purchase
             saved_purchase = uow.purchases.save(purchase)
 
-            # Generate installments
-            installments = InstallmentGenerator.generate_installments(
-                purchase_id=saved_purchase.id,
-                total_amount=saved_purchase.total_amount,
-                installments_count=saved_purchase.installments_count,
-                purchase_date=saved_purchase.purchase_date,
-                credit_card=credit_card,
-            )
-
-            # Save all installments
-            uow.installments.save_all(installments)
-
-            # Automatically create statements for all installment billing periods
-            for installment in installments:
-                StatementFactory.get_or_create_statement_for_period(
+            if paymethod.type == PaymentMethodType.CREDIT_CARD:
+                # Generate installments
+                installments = InstallmentGenerator.generate_installments(
+                    purchase_id=saved_purchase.id,
+                    total_amount=saved_purchase.total_amount,
+                    installments_count=saved_purchase.installments_count,
+                    purchase_date=saved_purchase.purchase_date,
                     credit_card=credit_card,
-                    billing_period=installment.billing_period,
-                    statement_repository=uow.monthly_statements,
                 )
+
+                # Save all installments
+                uow.installments.save_all(installments)
+
+                # Automatically create statements for all installment billing periods
+                for installment in installments:
+                    StatementFactory.get_or_create_statement_for_period(
+                        credit_card=credit_card,
+                        billing_period=installment.billing_period,
+                        statement_repository=uow.monthly_statements,
+                    )
 
             # Commit transaction
             uow.commit()
 
             return CreatePurchaseResult(
-                purchase_id=saved_purchase.id, installments_count=len(installments)
+                purchase_id=saved_purchase.id,
+                payment_type=paymethod.type,
+                installments_count=command.installments_count,
             )

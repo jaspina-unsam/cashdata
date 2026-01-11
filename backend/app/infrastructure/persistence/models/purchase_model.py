@@ -9,7 +9,7 @@ class PurchaseModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    credit_card_id = Column(Integer, ForeignKey("credit_cards.id"), nullable=False)
+    payment_method_id = Column(Integer, ForeignKey("payment_methods.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     purchase_date = Column(Date, nullable=False)
     description = Column(String(200), nullable=False)

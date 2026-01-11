@@ -12,7 +12,7 @@ class PurchaseMapper:
         return Purchase(
             id=model.id,
             user_id=model.user_id,
-            credit_card_id=model.credit_card_id,
+            payment_method_id=model.payment_method_id,
             category_id=model.category_id,
             purchase_date=model.purchase_date,
             description=model.description,
@@ -28,7 +28,7 @@ class PurchaseMapper:
         return PurchaseModel(
             id=entity.id,
             user_id=entity.user_id,
-            credit_card_id=entity.credit_card_id,
+            payment_method_id=entity.payment_method_id,
             category_id=entity.category_id,
             purchase_date=entity.purchase_date,
             description=entity.description,

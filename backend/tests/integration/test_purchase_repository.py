@@ -2,15 +2,17 @@ import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
-from datetime import date
+from datetime import datetime, date
 
 from app.domain.entities.purchase import Purchase
-from app.domain.value_objects.money import Money, Currency
+
 from app.infrastructure.persistence.models.purchase_model import PurchaseModel
+from app.domain.value_objects.money import Money, Currency
 from app.infrastructure.persistence.models.user_model import UserModel
-from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.installment_model import InstallmentModel
+from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
     SQLAlchemyPurchaseRepository,
 )
@@ -27,6 +29,7 @@ def db_session():
 
     UserModel.metadata.create_all(engine)
     CategoryModel.metadata.create_all(engine)
+    PaymentMethodModel.metadata.create_all(engine)
     CreditCardModel.metadata.create_all(engine)
     PurchaseModel.metadata.create_all(engine)
     InstallmentModel.metadata.create_all(engine)  # Add installments table
@@ -49,8 +52,20 @@ def db_session():
     session.add(test_category)
     session.commit()
 
+    test_payment_method = PaymentMethodModel(
+        id=1,
+        user_id=1,
+        type="credit_card",
+        name="Test Card",
+        is_active=True,
+        created_at=datetime.now(),
+    )
+    session.add(test_payment_method)
+    session.commit()
+
     test_card = CreditCardModel(
         id=1,
+        payment_method_id=1,
         user_id=1,
         name="Visa",
         bank="HSBC",
@@ -75,7 +90,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         new_purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Supermarket shopping",
@@ -92,7 +107,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Electronics",
@@ -104,7 +119,7 @@ class TestSQLAlchemyPurchaseRepositorySave:
         updated_purchase = Purchase(
             id=saved.id,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Electronics Updated",
@@ -122,7 +137,7 @@ class TestSQLAlchemyPurchaseRepositoryFindById:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Test Purchase",
@@ -144,7 +159,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByUserId:
         p1 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="P1",
@@ -154,7 +169,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByUserId:
         p2 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 16),
             description="P2",
@@ -169,12 +184,12 @@ class TestSQLAlchemyPurchaseRepositoryFindByUserId:
         assert len(purchases) == 2
 
 
-class TestSQLAlchemyPurchaseRepositoryFindByCreditCardId:
-    def test_should_return_all_purchases_for_card(self, purchase_repository):
+class TestSQLAlchemyPurchaseRepositoryFindByPaymentMethodId:
+    def test_should_return_all_purchases_for_payment_method(self, purchase_repository):
         p1 = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="P1",
@@ -183,7 +198,7 @@ class TestSQLAlchemyPurchaseRepositoryFindByCreditCardId:
         )
         purchase_repository.save(p1)
 
-        purchases = purchase_repository.find_by_credit_card_id(1)
+        purchases = purchase_repository.find_by_payment_method_id(1)
         assert len(purchases) >= 1
 
 
@@ -193,7 +208,7 @@ class TestSQLAlchemyPurchaseRepositoryDelete:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Purchase to delete",
@@ -231,7 +246,7 @@ class TestSQLAlchemyPurchaseRepositoryDelete:
         purchase = Purchase(
             id=None,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date=date(2025, 1, 15),
             description="Purchase with installments to delete",

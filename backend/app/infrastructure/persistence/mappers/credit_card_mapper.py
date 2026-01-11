@@ -1,5 +1,4 @@
 from decimal import Decimal
-from typing import Optional
 
 from app.domain.entities.credit_card import CreditCard
 from app.domain.value_objects.money import Money, Currency
@@ -19,6 +18,7 @@ class CreditCardMapper:
 
         return CreditCard(
             id=model.id,
+            payment_method_id=model.payment_method_id,
             user_id=model.user_id,
             name=model.name,
             bank=model.bank,
@@ -40,6 +40,7 @@ class CreditCardMapper:
 
         return CreditCardModel(
             id=entity.id,
+            payment_method_id=entity.payment_method_id,
             user_id=entity.user_id,
             name=entity.name,
             bank=entity.bank,

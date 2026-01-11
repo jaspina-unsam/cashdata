@@ -59,8 +59,8 @@ class GetStatementDetailUseCase:
         if not credit_card or credit_card.user_id != user_id:
             return None
 
-        # Get purchases that were assigned to this statement (FK)
-        all_purchases = self._purchase_repo.find_by_credit_card_id(credit_card.id)
+        # Get purchases that were made with this credit card's payment method
+        all_purchases = self._purchase_repo.find_by_payment_method_id(credit_card.payment_method_id)
 
         # Get period identifier
         period = statement.get_period_identifier()

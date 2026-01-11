@@ -18,7 +18,7 @@ class Purchase:
 
     id: int | None
     user_id: int
-    credit_card_id: int
+    payment_method_id: int
     category_id: int
     purchase_date: date
     description: str

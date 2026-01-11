@@ -44,7 +44,7 @@ class TestCreatePurchase:
     ):
         """Should create purchase and generate installments"""
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -62,18 +62,18 @@ class TestCreatePurchase:
         assert data["description"] == "Test Purchase"
         assert data["total_amount"] == "3000.00"
         assert data["installments_count"] == 3
-        assert data["credit_card_id"] == test_credit_card["id"]
+        assert data["payment_method_id"] == test_credit_card["payment_method_id"]
         assert data["category_id"] == test_category["id"]
 
     def test_should_return_400_for_invalid_data(self, client, test_user):
         """Should return 400 for invalid purchase data"""
         invalid_data = {
-            "credit_card_id": 999,  # Non-existent card
+            "payment_method_id": 999,  # Non-existent payment method
             "category_id": 999,  # Non-existent category
             "purchase_date": "2025-01-15",
             "description": "Test",
             "total_amount": 1000.00,
-            "total_currency": "ARS",
+            "currency": "ARS",
             "installments_count": 3,
         }
 
@@ -93,7 +93,7 @@ class TestGetPurchaseById:
         """Should retrieve purchase by ID"""
         # Create purchase
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -135,7 +135,7 @@ class TestListPurchases:
         # Create multiple purchases
         for i in range(3):
             purchase_data = {
-                "credit_card_id": test_credit_card["id"],
+                "payment_method_id": test_credit_card["payment_method_id"],
                 "category_id": test_category["id"],
                 "purchase_date": f"2025-01-{15+i}",
                 "description": f"Purchase {i+1}",
@@ -168,7 +168,7 @@ class TestListPurchases:
         dates = ["2025-01-10", "2025-01-15", "2025-01-20"]
         for i, purchase_date in enumerate(dates):
             purchase_data = {
-                "credit_card_id": test_credit_card["id"],
+                "payment_method_id": test_credit_card["payment_method_id"],
                 "category_id": test_category["id"],
                 "purchase_date": purchase_date,
                 "description": f"Purchase {i+1}",
@@ -217,7 +217,7 @@ class TestListPurchases:
         # Create 10 purchases
         for i in range(10):
             purchase_data = {
-                "credit_card_id": test_credit_card["id"],
+                "payment_method_id": test_credit_card["payment_method_id"],
                 "category_id": test_category["id"],
                 "purchase_date": f"2025-01-{10+i:02d}",
                 "description": f"Purchase {i+1}",
@@ -251,7 +251,7 @@ class TestListInstallmentsByPurchase:
         """Should list all installments for a purchase"""
         # Create purchase with 3 installments
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -298,7 +298,7 @@ class TestUpdatePurchase:
         """Should update purchase description successfully"""
         # Create purchase
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Original Description",
@@ -341,7 +341,7 @@ class TestUpdatePurchase:
         """Should return 404 when user doesn't own the purchase"""
         # Create purchase for test_user
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -372,7 +372,7 @@ class TestUpdatePurchase:
         """Should update both purchase total and single installment amount"""
         # Create single installment purchase
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",
@@ -415,7 +415,7 @@ class TestUpdatePurchase:
         """Should return 400 when trying to update amount for multi-installment purchase"""
         # Create multi-installment purchase
         purchase_data = {
-            "credit_card_id": test_credit_card["id"],
+            "payment_method_id": test_credit_card["payment_method_id"],
             "category_id": test_category["id"],
             "purchase_date": "2025-01-15",
             "description": "Test Purchase",

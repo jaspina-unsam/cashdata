@@ -28,6 +28,13 @@ class SQLAlchemyCreditCardRepository(ICreditCardRepository):
         ).all()
         return [CreditCardMapper.to_entity(c) for c in cards]
 
+    def find_by_payment_method_id(self, payment_method_id: int) -> Optional[CreditCard]:
+        """Retrieve credit card by payment method ID"""
+        card = self.session.scalars(
+            select(CreditCardModel).where(CreditCardModel.payment_method_id == payment_method_id)
+        ).first()
+        return CreditCardMapper.to_entity(card) if card else None
+
     def save(self, card: CreditCard) -> CreditCard:
         """Insert or update credit card"""
         if card.id is not None:

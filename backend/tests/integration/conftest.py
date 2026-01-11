@@ -16,6 +16,7 @@ from app.infrastructure.persistence.models import (
     MonthlyIncomeModel,
     CategoryModel,
     CreditCardModel,
+    PaymentMethodModel,  # noqa: F401
     PurchaseModel,
     InstallmentModel,
 )

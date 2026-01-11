@@ -19,7 +19,7 @@ class TestDeletePurchaseUseCase:
         purchase = Purchase(
             id=1,
             user_id=1,
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date="2025-01-01",
             description="Test purchase",
@@ -65,7 +65,7 @@ class TestDeletePurchaseUseCase:
         purchase = Purchase(
             id=1,
             user_id=2,  # Different user
-            credit_card_id=1,
+            payment_method_id=1,
             category_id=1,
             purchase_date="2025-01-01",
             description="Test purchase",

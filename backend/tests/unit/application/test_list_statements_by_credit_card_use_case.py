@@ -31,6 +31,7 @@ def make_credit_card():
     def _make(id, user_id, name="Test Card"):
         return CreditCard(
             id=id,
+            payment_method_id=id,  # Use same id for simplicity in unit tests
             user_id=user_id,
             name=name,
             bank="Test Bank",

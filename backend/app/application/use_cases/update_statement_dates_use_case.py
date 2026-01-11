@@ -154,7 +154,7 @@ class UpdateStatementDatesUseCase:
         # Get all purchases for this user and card
         all_purchases = self._purchase_repository.find_by_user_id(user_id)
         card_purchases = [
-            p for p in all_purchases if p.credit_card_id == credit_card.id
+            p for p in all_purchases if p.payment_method_id == credit_card.id
         ]
 
         # For each purchase, update installments that were in the old period

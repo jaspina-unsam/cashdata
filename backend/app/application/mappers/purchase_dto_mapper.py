@@ -23,7 +23,7 @@ class PurchaseDTOMapper:
         return PurchaseResponseDTO(
             id=purchase.id,
             user_id=purchase.user_id,
-            credit_card_id=purchase.credit_card_id,
+            payment_method_id=purchase.payment_method_id,
             category_id=purchase.category_id,
             purchase_date=purchase.purchase_date,
             description=purchase.description,
@@ -59,6 +59,7 @@ class CreditCardDTOMapper:
         """Convert CreditCard entity to response DTO"""
         return CreditCardResponseDTO(
             id=credit_card.id,
+            payment_method_id=credit_card.payment_method_id,
             user_id=credit_card.user_id,
             name=credit_card.name,
             bank=credit_card.bank,

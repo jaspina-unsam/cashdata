@@ -169,7 +169,7 @@ class TestSQLAlchemyUnitOfWork:
         user = make_user(1, "Juan", "juan@mail.com", 100000)
         category = Category(id=None, name="Electronics", color="#FF5733", icon="laptop")
         credit_card = CreditCard(
-            id=None, user_id=1, name="Visa", bank="HSBC",
+            id=None, payment_method_id=1, user_id=1, name="Visa", bank="HSBC",
             last_four_digits="1234", billing_close_day=10,
             payment_due_day=20, credit_limit=None
         )
@@ -181,7 +181,7 @@ class TestSQLAlchemyUnitOfWork:
             uow.commit()
             
             purchase = Purchase(
-                id=None, user_id=saved_user.id, credit_card_id=saved_card.id,
+                id=None, user_id=saved_user.id, payment_method_id=saved_card.id,
                 category_id=saved_category.id, purchase_date=date(2025, 1, 15),
                 description="Laptop", total_amount=Money(Decimal("120000.00"), Currency.ARS),
                 installments_count=12

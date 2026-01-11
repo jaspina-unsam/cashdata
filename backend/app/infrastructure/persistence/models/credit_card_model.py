@@ -8,6 +8,7 @@ class CreditCardModel(Base):
     __tablename__ = "credit_cards"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    payment_method_id = Column(Integer, ForeignKey("payment_methods.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(100), nullable=False)
     bank = Column(String(100), nullable=False)

@@ -31,17 +31,17 @@ class TestListPurchasesByCategoryUseCase:
         # Arrange
         all_purchases = [
             Purchase(
-                id=1, user_id=10, credit_card_id=1, category_id=1,
+                id=1, user_id=10, payment_method_id=1, category_id=1,
                 purchase_date=date(2025, 1, 10), description="Old Electronics",
                 total_amount=Money(Decimal("1000.00"), Currency.ARS), installments_count=1
             ),
             Purchase(
-                id=2, user_id=10, credit_card_id=1, category_id=2,  # Different category
+                id=2, user_id=10, payment_method_id=1, category_id=2,  # Different category
                 purchase_date=date(2025, 1, 15), description="Food",
                 total_amount=Money(Decimal("500.00"), Currency.ARS), installments_count=1
             ),
             Purchase(
-                id=3, user_id=10, credit_card_id=1, category_id=1,
+                id=3, user_id=10, payment_method_id=1, category_id=1,
                 purchase_date=date(2025, 1, 20), description="Recent Electronics",
                 total_amount=Money(Decimal("2000.00"), Currency.ARS), installments_count=1
             ),
@@ -69,7 +69,7 @@ class TestListPurchasesByCategoryUseCase:
         # Arrange
         all_purchases = [
             Purchase(
-                id=1, user_id=10, credit_card_id=1, category_id=2,
+                id=1, user_id=10, payment_method_id=1, category_id=2,
                 purchase_date=date(2025, 1, 10), description="Food",
                 total_amount=Money(Decimal("500.00"), Currency.ARS), installments_count=1
             ),

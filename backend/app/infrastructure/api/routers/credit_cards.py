@@ -1,4 +1,8 @@
 from typing import List
+from app.application.use_cases.create_credit_card_use_case import (
+    CreateCreditCardQuery,
+    CreateCreditCardUseCase,
+)
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.application.use_cases.get_credit_card_summary_use_case import (
@@ -9,9 +13,9 @@ from app.application.use_cases.list_credit_cards_by_user_use_case import (
     ListCreditCardsByUserUseCase,
     ListCreditCardsByUserQuery,
 )
-from app.application.use_cases.list_purchases_by_credit_card_use_case import (
-    ListPurchasesByCreditCardUseCase,
-    ListPurchasesByCreditCardQuery,
+from app.application.use_cases.list_purchases_by_payment_method_use_case import (
+    ListPurchasesByPaymentMethodUseCase,
+    ListPurchasesByPaymentMethodQuery,
 )
 from app.application.use_cases.delete_credit_card_use_case import (
     DeleteCreditCardUseCase,
@@ -63,34 +67,19 @@ def create_credit_card(
     - **credit_limit_currency**: Optional credit limit currency
     """
     try:
-        # Create credit limit Money object if provided
-        credit_limit = None
-        if (
-            card_data.credit_limit_amount is not None
-            and card_data.credit_limit_currency is not None
-        ):
-            credit_limit = Money(
-                card_data.credit_limit_amount, card_data.credit_limit_currency
-            )
-
-        # Create entity
-        credit_card = CreditCard(
-            id=None,
+        query = CreateCreditCardQuery(
             user_id=user_id,
             name=card_data.name,
             bank=card_data.bank,
             last_four_digits=card_data.last_four_digits,
             billing_close_day=card_data.billing_close_day,
             payment_due_day=card_data.payment_due_day,
-            credit_limit=credit_limit,
+            credit_limit_amount=card_data.credit_limit_amount,
+            credit_limit_currency=card_data.credit_limit_currency,
         )
-
-        # Save using UoW
-        with uow:
-            saved_card = uow.credit_cards.save(credit_card)
-            uow.commit()
-
-        return CreditCardDTOMapper.to_response_dto(saved_card)
+        use_case = CreateCreditCardUseCase(uow)
+        credit_card = use_case.execute(query)
+        return CreditCardDTOMapper.to_response_dto(credit_card)
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -229,14 +218,25 @@ def list_purchases_by_card(
     Only returns purchases if card belongs to the authenticated user.
     """
     try:
-        query = ListPurchasesByCreditCardQuery(credit_card_id=card_id, user_id=user_id)
-        use_case = ListPurchasesByCreditCardUseCase(uow)
-        purchases = use_case.execute(query)
+        with uow:
+            # First verify credit card exists and belongs to user
+            credit_card = uow.credit_cards.find_by_id(card_id)
+            if not credit_card:
+                raise ValueError(f"Credit card with ID {card_id} not found")
+            if credit_card.user_id != user_id:
+                raise ValueError(f"Credit card {card_id} does not belong to user {user_id}")
 
-        # Apply pagination
-        paginated_purchases = purchases[skip : skip + limit]
+            # Use the payment method ID to list purchases
+            query = ListPurchasesByPaymentMethodQuery(
+                payment_method_id=credit_card.payment_method_id, user_id=user_id
+            )
+            use_case = ListPurchasesByPaymentMethodUseCase(uow)
+            purchases = use_case.execute(query)
 
-        return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+            # Apply pagination
+            paginated_purchases = purchases[skip : skip + limit]
+
+            return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
 
     except ValueError as e:
         if "not found" in str(e):

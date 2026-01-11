@@ -18,6 +18,10 @@ from app.application.use_cases.list_purchases_by_date_range_use_case import (
     ListPurchasesByDateRangeUseCase,
     ListPurchasesByDateRangeQuery,
 )
+from app.application.use_cases.list_purchases_by_payment_method_use_case import (
+    ListPurchasesByPaymentMethodUseCase,
+    ListPurchasesByPaymentMethodQuery,
+)
 from app.application.use_cases.list_installments_by_purchase_use_case import (
     ListInstallmentsByPurchaseUseCase,
     ListInstallmentsByPurchaseQuery,
@@ -39,6 +43,7 @@ from app.application.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
     InstallmentDTOMapper,
 )
+from app.application.exceptions.application_exceptions import ApplicationError
 from app.domain.repositories import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
@@ -65,7 +70,7 @@ def create_purchase(
     """
     Create a new purchase with automatic installment generation.
 
-    - **credit_card_id**: ID of the credit card to use
+    - **payment_method_id**: ID of the payment method to use
     - **category_id**: ID of the category for this purchase
     - **purchase_date**: Date of the purchase
     - **description**: Description of the purchase
@@ -74,14 +79,14 @@ def create_purchase(
     - **installments_count**: Number of installments (minimum 1)
 
     The system will automatically generate installments based on:
-    - Credit card billing cycle
+    - Payment method type and billing cycle
     - Purchase date
     - Total amount divided evenly (first installment absorbs remainder)
     """
     try:
         command = CreatePurchaseCommand(
             user_id=user_id,
-            credit_card_id=purchase_data.credit_card_id,
+            payment_method_id=purchase_data.payment_method_id,
             category_id=purchase_data.category_id,
             purchase_date=purchase_data.purchase_date,
             description=purchase_data.description,
@@ -106,6 +111,8 @@ def create_purchase(
 
         return PurchaseDTOMapper.to_response_dto(purchase)
 
+    except ApplicationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -130,9 +137,9 @@ def update_purchase(
     Update an existing purchase.
 
     Only basic fields can be updated currently (description, category).
-    Updating credit_card_id, purchase_date, or total_amount is not yet supported.
+    Updating payment_method_id, purchase_date, or total_amount is not yet supported.
 
-    - **credit_card_id**: ID of the credit card (not yet supported)
+    - **payment_method_id**: ID of the payment method (not yet supported)
     - **category_id**: ID of the category
     - **purchase_date**: Date of purchase (not yet supported)
     - **description**: Description of the purchase
@@ -142,7 +149,7 @@ def update_purchase(
         command = UpdatePurchaseCommand(
             purchase_id=purchase_id,
             user_id=user_id,
-            credit_card_id=purchase_data.credit_card_id,
+            payment_method_id=purchase_data.payment_method_id,
             category_id=purchase_data.category_id,
             purchase_date=purchase_data.purchase_date,
             description=purchase_data.description,
@@ -247,6 +254,39 @@ def list_purchases(
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get(
+    "/by-payment-method/{payment_method_id}",
+    response_model=List[PurchaseResponseDTO],
+    summary="List purchases by payment method",
+    responses={
+        200: {"description": "List of purchases for the payment method"},
+        404: {"description": "Payment method not found"},
+    },
+)
+def list_purchases_by_payment_method(
+    payment_method_id: int,
+    user_id: int = Query(..., description="User ID (from auth context)"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    List all purchases for a specific payment method.
+
+    Only returns purchases if the payment method belongs to the authenticated user.
+    Returns purchases sorted by date (most recent first).
+    """
+    try:
+        query = ListPurchasesByPaymentMethodQuery(
+            payment_method_id=payment_method_id, user_id=user_id
+        )
+        use_case = ListPurchasesByPaymentMethodUseCase(uow)
+        purchases = use_case.execute(query)
+
+        return [PurchaseDTOMapper.to_response_dto(p) for p in purchases]
+
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.get(

@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import date
-from calendar import monthrange
 from dateutil.relativedelta import relativedelta
 
 from app.domain.value_objects.money import Money
@@ -22,6 +21,7 @@ class CreditCard:
     """
 
     id: int | None
+    payment_method_id: int
     user_id: int
     name: str
     bank: str
@@ -71,7 +71,7 @@ class CreditCard:
         - Card closes on day 10
         - Purchase on Jan 5 (before close) → Jan 10 statement → Period "202501"
         - Purchase on Jan 15 (after close) → Feb 10 statement → Period "202502"
-        
+
         Real example:
         - Close day 30, Purchase Nov 26 → Nov 30 statement → Period "202511"
         """
