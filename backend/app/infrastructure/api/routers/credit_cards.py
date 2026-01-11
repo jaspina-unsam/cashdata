@@ -218,24 +218,25 @@ def list_purchases_by_card(
     Only returns purchases if card belongs to the authenticated user.
     """
     try:
-        # First verify credit card exists and belongs to user
-        credit_card = uow.credit_cards.find_by_id(card_id)
-        if not credit_card:
-            raise ValueError(f"Credit card with ID {card_id} not found")
-        if credit_card.user_id != user_id:
-            raise ValueError(f"Credit card {card_id} does not belong to user {user_id}")
+        with uow:
+            # First verify credit card exists and belongs to user
+            credit_card = uow.credit_cards.find_by_id(card_id)
+            if not credit_card:
+                raise ValueError(f"Credit card with ID {card_id} not found")
+            if credit_card.user_id != user_id:
+                raise ValueError(f"Credit card {card_id} does not belong to user {user_id}")
 
-        # Use the payment method ID to list purchases
-        query = ListPurchasesByPaymentMethodQuery(
-            payment_method_id=credit_card.payment_method_id, user_id=user_id
-        )
-        use_case = ListPurchasesByPaymentMethodUseCase(uow)
-        purchases = use_case.execute(query)
+            # Use the payment method ID to list purchases
+            query = ListPurchasesByPaymentMethodQuery(
+                payment_method_id=credit_card.payment_method_id, user_id=user_id
+            )
+            use_case = ListPurchasesByPaymentMethodUseCase(uow)
+            purchases = use_case.execute(query)
 
-        # Apply pagination
-        paginated_purchases = purchases[skip : skip + limit]
+            # Apply pagination
+            paginated_purchases = purchases[skip : skip + limit]
 
-        return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+            return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
 
     except ValueError as e:
         if "not found" in str(e):

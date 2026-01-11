@@ -28,6 +28,7 @@ def mock_credit_card():
     """Mock credit card"""
     return CreditCard(
         id=1,
+        payment_method_id=1,
         user_id=10,
         name="Visa",
         bank="HSBC",

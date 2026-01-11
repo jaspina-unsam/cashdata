@@ -53,7 +53,7 @@ class TestPurchaseDTOMapper:
         assert isinstance(dto, PurchaseResponseDTO)
         assert dto.id == 1
         assert dto.user_id == 10
-        assert dto.credit_card_id == 1
+        assert dto.payment_method_id == 1
         assert dto.category_id == 2
         assert dto.purchase_date == date(2025, 1, 15)
         assert dto.description == "Laptop"
@@ -107,6 +107,7 @@ class TestCreditCardDTOMapper:
         # Arrange
         credit_card = CreditCard(
             id=1,
+            payment_method_id=1,
             user_id=10,
             name="Visa Gold",
             bank="HSBC",
@@ -140,6 +141,7 @@ class TestCreditCardDTOMapper:
         # Arrange
         credit_card = CreditCard(
             id=1,
+            payment_method_id=1,
             user_id=10,
             name="Visa",
             bank="HSBC",

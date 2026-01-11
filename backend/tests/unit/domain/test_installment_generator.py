@@ -21,6 +21,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -61,6 +62,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -98,6 +100,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -138,6 +141,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -177,6 +181,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -211,6 +216,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -245,6 +251,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -278,6 +285,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -314,6 +322,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -341,6 +350,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -368,6 +378,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -395,6 +406,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -427,6 +439,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -466,6 +479,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -500,6 +514,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -532,6 +547,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",
@@ -570,6 +586,7 @@ class TestInstallmentGenerator:
         """
         # Arrange
         credit_card = CreditCard(
+            payment_method_id=1,
             id=1,
             user_id=10,
             name="Visa",

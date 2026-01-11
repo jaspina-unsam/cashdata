@@ -66,7 +66,7 @@ class TestCompletePurchaseFlow:
 
         # 4. Create purchase with 6 installments
         purchase_data = {
-            "credit_card_id": card_id,
+            "payment_method_id": card_id,
             "category_id": category_id,
             "purchase_date": "2025-01-10",
             "description": "New Laptop",
@@ -187,7 +187,7 @@ class TestMultiplePurchasesFlow:
 
         for p in purchases_data:
             purchase_data = {
-                "credit_card_id": card_id,
+                "payment_method_id": card_id,
                 "category_id": p["category_id"],
                 "purchase_date": p["date"],
                 "description": p["description"],
@@ -262,7 +262,7 @@ class TestInstallmentGenerationFlow:
 
         # Create purchase with 12 installments
         purchase_data = {
-            "credit_card_id": card_id,
+            "payment_method_id": card_id,
             "category_id": category_id,
             "purchase_date": "2025-01-10",
             "description": "Annual subscription",

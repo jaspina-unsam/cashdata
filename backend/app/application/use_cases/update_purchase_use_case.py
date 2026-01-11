@@ -115,7 +115,7 @@ class UpdatePurchaseUseCase:
             updated_purchase = Purchase(
                 id=purchase.id,
                 user_id=purchase.user_id,
-                payment_method_id=credit_card_id,
+                payment_method_id=payment_method_id,
                 category_id=category_id,
                 purchase_date=purchase.purchase_date,  # Not updating yet
                 description=command.description if command.description is not None else purchase.description,

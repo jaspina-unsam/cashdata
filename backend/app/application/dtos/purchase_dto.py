@@ -8,7 +8,7 @@ from app.domain.value_objects.money import Currency
 class CreatePurchaseInputDTO(BaseModel):
     """Input DTO for purchase creation"""
 
-    payment_method_id: int = Field(gt=0, description="Credit card ID")
+    payment_method_id: int = Field(gt=0, description="Payment method ID")
     category_id: int = Field(gt=0, description="Category ID")
     purchase_date: date = Field(description="Date of purchase")
     description: str = Field(

@@ -2,11 +2,13 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
+from datetime import datetime
 
 from app.domain.entities.credit_card import CreditCard
 from app.domain.value_objects.money import Money, Currency
-from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.user_model import UserModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 from app.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import (
     SQLAlchemyCreditCardRepository,
 )
@@ -17,6 +19,7 @@ def db_session():
     """In-memory SQLite for tests"""
     engine = create_engine("sqlite:///:memory:")
     UserModel.metadata.create_all(engine)
+    PaymentMethodModel.metadata.create_all(engine)
     CreditCardModel.metadata.create_all(engine)
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
@@ -31,6 +34,33 @@ def db_session():
         is_deleted=False,
     )
     session.add(test_user)
+
+    # Create test payment methods
+    payment_method1 = PaymentMethodModel(
+        id=1,
+        user_id=1,
+        type="credit_card",
+        name="Test Payment Method 1",
+        is_active=True,
+        created_at=datetime.now(),
+    )
+    payment_method2 = PaymentMethodModel(
+        id=2,
+        user_id=1,
+        type="credit_card",
+        name="Test Payment Method 2",
+        is_active=True,
+        created_at=datetime.now(),
+    )
+    payment_method3 = PaymentMethodModel(
+        id=3,
+        user_id=1,
+        type="credit_card",
+        name="Test Payment Method 3",
+        is_active=True,
+        created_at=datetime.now(),
+    )
+    session.add_all([test_user, payment_method1, payment_method2, payment_method3])
     session.commit()
 
     yield session
@@ -47,6 +77,7 @@ class TestSQLAlchemyCreditCardRepositorySave:
         # Arrange
         new_card = CreditCard(
             id=None,
+            payment_method_id=1,
             user_id=1,
             name="Visa Gold",
             bank="HSBC",
@@ -78,6 +109,7 @@ class TestSQLAlchemyCreditCardRepositorySave:
         # Arrange
         new_card = CreditCard(
             id=None,
+            payment_method_id=2,
             user_id=1,
             name="Visa Basic",
             bank="Santander",
@@ -98,6 +130,7 @@ class TestSQLAlchemyCreditCardRepositorySave:
         # Arrange - Create and save
         card = CreditCard(
             id=None,
+            payment_method_id=3,
             user_id=1,
             name="Mastercard",
             bank="Galicia",
@@ -112,6 +145,7 @@ class TestSQLAlchemyCreditCardRepositorySave:
         # Act - Update
         updated_card = CreditCard(
             id=original_id,
+            payment_method_id=3,
             user_id=1,
             name="Mastercard Platinum",
             bank="Galicia",
@@ -137,6 +171,7 @@ class TestSQLAlchemyCreditCardRepositoryFindById:
         # Arrange
         card = CreditCard(
             id=None,
+            payment_method_id=1,
             user_id=1,
             name="Amex",
             bank="American Express",
@@ -167,6 +202,7 @@ class TestSQLAlchemyCreditCardRepositoryFindByUserId:
         # Arrange
         card1 = CreditCard(
             id=None,
+            payment_method_id=1,
             user_id=1,
             name="Card 1",
             bank="Bank 1",
@@ -176,6 +212,7 @@ class TestSQLAlchemyCreditCardRepositoryFindByUserId:
         )
         card2 = CreditCard(
             id=None,
+            payment_method_id=2,
             user_id=1,
             name="Card 2",
             bank="Bank 2",
@@ -185,6 +222,7 @@ class TestSQLAlchemyCreditCardRepositoryFindByUserId:
         )
         card3 = CreditCard(
             id=None,
+            payment_method_id=3,
             user_id=1,
             name="Card 3",
             bank="Bank 3",

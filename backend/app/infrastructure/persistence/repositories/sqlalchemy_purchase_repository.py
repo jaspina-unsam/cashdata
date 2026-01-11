@@ -40,7 +40,7 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
             existing = self.session.get(PurchaseModel, purchase.id)
             if existing:
                 existing.user_id = purchase.user_id
-                existing.credit_card_id = purchase.payment_method_id
+                existing.payment_method_id = purchase.payment_method_id
                 existing.category_id = purchase.category_id
                 existing.purchase_date = purchase.purchase_date
                 existing.description = purchase.description

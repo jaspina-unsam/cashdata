@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from decimal import Decimal
-from datetime import date
+from datetime import datetime, date
 
 from app.domain.entities.installment import Installment
 from app.domain.value_objects.money import Money, Currency
@@ -11,8 +11,9 @@ from app.infrastructure.persistence.models.installment_model import (
 )
 from app.infrastructure.persistence.models.purchase_model import PurchaseModel
 from app.infrastructure.persistence.models.user_model import UserModel
-from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
 from app.infrastructure.persistence.models.category_model import CategoryModel
+from app.infrastructure.persistence.models.credit_card_model import CreditCardModel
+from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 from app.infrastructure.persistence.repositories.sqlalchemy_installment_repository import (
     SQLAlchemyInstallmentRepository,
 )
@@ -24,6 +25,7 @@ def db_session():
     engine = create_engine("sqlite:///:memory:")
     UserModel.metadata.create_all(engine)
     CategoryModel.metadata.create_all(engine)
+    PaymentMethodModel.metadata.create_all(engine)
     CreditCardModel.metadata.create_all(engine)
     PurchaseModel.metadata.create_all(engine)
     InstallmentModel.metadata.create_all(engine)
@@ -40,8 +42,17 @@ def db_session():
         is_deleted=False,
     )
     test_category = CategoryModel(id=1, name="Groceries")
+    test_payment_method = PaymentMethodModel(
+        id=1,
+        user_id=1,
+        type="credit_card",
+        name="Visa",
+        is_active=True,
+        created_at=datetime.now(),
+    )
     test_card = CreditCardModel(
         id=1,
+        payment_method_id=1,
         user_id=1,
         name="Visa",
         bank="HSBC",
@@ -52,7 +63,7 @@ def db_session():
     test_purchase = PurchaseModel(
         id=1,
         user_id=1,
-        credit_card_id=1,
+        payment_method_id=1,
         category_id=1,
         purchase_date=date(2025, 1, 15),
         description="Test Purchase",

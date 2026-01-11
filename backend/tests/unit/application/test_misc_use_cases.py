@@ -248,6 +248,7 @@ class TestListCreditCardsByUserUseCase:
         cards = [
             CreditCard(
                 id=1,
+                payment_method_id=1,
                 user_id=10,
                 name="Visa",
                 bank="HSBC",
@@ -258,6 +259,7 @@ class TestListCreditCardsByUserUseCase:
             ),
             CreditCard(
                 id=2,
+                payment_method_id=2,
                 user_id=10,
                 name="MasterCard",
                 bank="Santander",

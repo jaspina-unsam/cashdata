@@ -40,7 +40,7 @@ def test_credit_card(client, test_user):
 def test_purchase(client, test_user, test_credit_card, test_category):
     """Create a test purchase with installments"""
     purchase_data = {
-        "credit_card_id": test_credit_card["id"],
+        "payment_method_id": test_credit_card["id"],
         "category_id": test_category["id"],
         "purchase_date": "2025-01-15",
         "description": "Test Purchase",
@@ -60,7 +60,7 @@ def test_purchase(client, test_user, test_credit_card, test_category):
 def test_single_installment_purchase(client, test_user, test_credit_card, test_category):
     """Create a test purchase with single installment"""
     purchase_data = {
-        "credit_card_id": test_credit_card["id"],
+        "payment_method_id": test_credit_card["id"],
         "category_id": test_category["id"],
         "purchase_date": "2025-01-15",
         "description": "Single Installment Purchase",

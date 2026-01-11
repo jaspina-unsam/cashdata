@@ -63,12 +63,12 @@ def two_users_setup(client, db_session):
 
     # Purchase for User 1
     purchase1_data = {
-        "credit_card_id": card1["id"],
+        "payment_method_id": card1["payment_method_id"],
         "category_id": category["id"],
         "purchase_date": "2025-01-15",
         "description": "User 1 Purchase",
         "total_amount": 1000.00,
-        "total_currency": "ARS",
+        "currency": "ARS",
         "installments_count": 3,
     }
     purchase1_response = client.post(
@@ -78,12 +78,12 @@ def two_users_setup(client, db_session):
 
     # Purchase for User 2
     purchase2_data = {
-        "credit_card_id": card2["id"],
+        "payment_method_id": card2["payment_method_id"],
         "category_id": category["id"],
         "purchase_date": "2025-01-16",
         "description": "User 2 Purchase",
         "total_amount": 2000.00,
-        "total_currency": "ARS",
+        "currency": "ARS",
         "installments_count": 2,
     }
     purchase2_response = client.post(
