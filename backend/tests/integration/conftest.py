@@ -19,6 +19,7 @@ from app.infrastructure.persistence.models import (
     PaymentMethodModel,  # noqa: F401
     PurchaseModel,
     InstallmentModel,
+    CashAccountModel,
 )
 
 

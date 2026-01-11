@@ -29,3 +29,18 @@ class ICashAccountRepository(ABC):
     def exists_by_payment_method_id(self, payment_method_id: int) -> bool:
         """Check if a cash account exists for the given payment method ID"""
         pass
+
+    @abstractmethod
+    def find_all(self) -> List[CashAccount]:
+        """Retrieve all cash accounts"""
+        pass
+
+    @abstractmethod
+    def exists_by_user_id_and_currency(self, user_id: int, currency: str) -> bool:
+        """Check if a cash account exists for the given user and currency"""
+        pass
+
+    @abstractmethod
+    def exists_by_user_id_and_currency(self, user_id: int, currency: str) -> bool:
+        """Check if a cash account with the given name exists for the user"""
+        pass

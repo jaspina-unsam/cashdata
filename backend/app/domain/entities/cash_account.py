@@ -38,7 +38,7 @@ class CashAccount:
 
         # Validate currency
         if not isinstance(self.currency, Currency):
-            raise ValueError("Currency must be a valid Currency enum value")
+            object.__setattr__(self, "currency", Currency(self.currency))
 
     def __eq__(self, other):
         """CashAccounts are equal if they have the same ID"""

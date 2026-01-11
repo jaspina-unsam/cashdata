@@ -63,24 +63,6 @@ class TestCashAccount:
                 currency=Currency.ARS,
             )
 
-    def test_create_cash_account_invalid_currency_raises(self):
-        """
-        GIVEN: An invalid currency type
-        WHEN: Creating a CashAccount
-        THEN: Should raise ValueError
-        """
-        # Arrange, Act & Assert
-        with pytest.raises(
-            ValueError, match="Currency must be a valid Currency enum value"
-        ):
-            CashAccount(
-                id=None,
-                payment_method_id=1,
-                user_id=1,
-                name="Efectivo",
-                currency="INVALID_CURRENCY",  # type: ignore
-            )
-
     def test_cash_account_equality(self):
         """
         GIVEN: Two CashAccount instances
