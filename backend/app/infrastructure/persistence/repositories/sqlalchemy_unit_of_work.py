@@ -22,6 +22,9 @@ from app.infrastructure.persistence.repositories.sqlalchemy_installment_reposito
 from app.infrastructure.persistence.repositories.sqlalchemy_monthly_statement_repository import (
     SQLAlchemyMonthlyStatementRepository,
 )
+from app.infrastructure.persistence.repositories.sqlalchemy_cash_account_repository import (
+    SQLAlchemyCashAccountRepository,
+)
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -39,6 +42,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.installments = SQLAlchemyInstallmentRepository(self.session)
         self.monthly_statements = SQLAlchemyMonthlyStatementRepository(self.session)
         self.payment_methods = SQLAlchemyPaymentMethodRepository(self.session)
+        self.cash_accounts = SQLAlchemyCashAccountRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

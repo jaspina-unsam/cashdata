@@ -9,6 +9,8 @@ from app.infrastructure.persistence.models.credit_card_model import CreditCardMo
 from app.infrastructure.persistence.models.purchase_model import PurchaseModel
 from app.infrastructure.persistence.models.installment_model import InstallmentModel
 from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
+from app.infrastructure.persistence.models.cash_account_model import CashAccountModel
+from app.infrastructure.persistence.models.monthly_statement_model import MonthlyStatementModel
 
 __all__ = [
     "Base",
@@ -19,4 +21,6 @@ __all__ = [
     "PurchaseModel",
     "InstallmentModel",
     "PaymentMethodModel",
+    "CashAccountModel",
+    "MonthlyStatementModel",
 ]

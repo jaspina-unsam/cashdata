@@ -8,6 +8,7 @@ from app.domain.repositories import (
     IPurchaseRepository,
     IInstallmentRepository,
 )
+from app.domain.repositories.icash_account_repository import ICashAccountRepository
 from app.domain.repositories.imonthly_statement_repository import (
     IMonthlyStatementRepository,
 )
@@ -23,6 +24,7 @@ class IUnitOfWork(ABC):
     installments: IInstallmentRepository
     payment_methods: IPaymentMethodRepository
     monthly_statements: IMonthlyStatementRepository
+    cash_accounts: ICashAccountRepository
 
     @abstractmethod
     def __enter__(self):
