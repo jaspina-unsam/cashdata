@@ -79,13 +79,3 @@ class SQLAlchemyCashAccountRepository(ICashAccountRepository):
             )
         ).first()
         return exists is not None
-
-    def exists_by_user_id_and_currency(self, user_id: int, currency: str) -> bool:
-        """Check if a cash account with the given name exists for the user"""
-        exists = self.session.scalars(
-            select(CashAccountModel).where(
-                (CashAccountModel.user_id == user_id)
-                & (CashAccountModel.currency == currency)
-            )
-        ).first()
-        return exists is not None

@@ -32,6 +32,7 @@ class CashAccountResponseDTO(BaseModel):
     """Response DTO for CashAccount"""
 
     id: int
+    payment_method_id: int
     user_id: int
     name: str
     currency: Currency
@@ -42,6 +43,7 @@ class CashAccountResponseDTO(BaseModel):
         json_schema_extra={
             "example": {
                 "id": 1,
+                "payment_method_id": 1,
                 "user_id": 1,
                 "name": "My Cash Wallet",
                 "currency": "USD",

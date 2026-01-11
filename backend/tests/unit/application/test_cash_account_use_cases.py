@@ -55,7 +55,7 @@ class TestCreateCashAccountUseCase:
         mock_uow.cash_accounts.save.assert_called_once()
         mock_uow.commit.assert_called_once()
         assert result == CashAccountResponseDTO(
-            id=1, user_id=1, name="Test Account", currency="ARS"
+            id=1, payment_method_id=1, user_id=1, name="Test Account", currency="ARS"
         )
 
     def test_should_raise_error_when_cash_account_already_exists_for_currency(self):

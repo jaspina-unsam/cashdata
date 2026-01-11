@@ -10,6 +10,7 @@ class CashAccountDTOMapper:
         """Convert domain entity to response DTO"""
         return CashAccountResponseDTO(
             id=cash_account.id,
+            payment_method_id=cash_account.payment_method_id,
             user_id=cash_account.user_id,
             name=cash_account.name,
             currency=cash_account.currency,

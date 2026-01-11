@@ -39,8 +39,3 @@ class ICashAccountRepository(ABC):
     def exists_by_user_id_and_currency(self, user_id: int, currency: str) -> bool:
         """Check if a cash account exists for the given user and currency"""
         pass
-
-    @abstractmethod
-    def exists_by_user_id_and_currency(self, user_id: int, currency: str) -> bool:
-        """Check if a cash account with the given name exists for the user"""
-        pass
