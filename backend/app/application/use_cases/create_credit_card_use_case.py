@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from app.domain.entities.credit_card import CreditCard
 from app.domain.entities.payment_method import PaymentMethod
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.payment_method_type import PaymentMethodType
 from app.domain.value_objects.money import Money, Currency
 

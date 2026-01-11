@@ -1,30 +1,15 @@
 # backend/cashdata/infrastructure/persistence/repositories/sqlalchemy_unit_of_work.py
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
+from app.infrastructure.persistence.repositories.sqlalchemy_bank_account_repository import SQLAlchemyBankAccountRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_payment_method_repository import SQLAlchemyPaymentMethodRepository
-from app.infrastructure.persistence.repositories.sqlalchemy_user_repository import (
-    SQLAlchemyUserRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import (
-    SQLAlchemyMonthlyIncomeRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_category_repository import (
-    SQLAlchemyCategoryRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import (
-    SQLAlchemyCreditCardRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import (
-    SQLAlchemyPurchaseRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_installment_repository import (
-    SQLAlchemyInstallmentRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_monthly_statement_repository import (
-    SQLAlchemyMonthlyStatementRepository,
-)
-from app.infrastructure.persistence.repositories.sqlalchemy_cash_account_repository import (
-    SQLAlchemyCashAccountRepository,
-)
+from app.infrastructure.persistence.repositories.sqlalchemy_user_repository import SQLAlchemyUserRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_monthly_income_repository import SQLAlchemyMonthlyIncomeRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_category_repository import SQLAlchemyCategoryRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_credit_card_repository import SQLAlchemyCreditCardRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository import SQLAlchemyPurchaseRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_installment_repository import SQLAlchemyInstallmentRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_monthly_statement_repository import SQLAlchemyMonthlyStatementRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_cash_account_repository import SQLAlchemyCashAccountRepository
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -43,6 +28,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.monthly_statements = SQLAlchemyMonthlyStatementRepository(self.session)
         self.payment_methods = SQLAlchemyPaymentMethodRepository(self.session)
         self.cash_accounts = SQLAlchemyCashAccountRepository(self.session)
+        self.bank_accounts = SQLAlchemyBankAccountRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

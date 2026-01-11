@@ -1,5 +1,5 @@
 # backend/cashdata/application/use_cases/create_user_use_case.py
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.entities.user import User
 from app.domain.value_objects.money import Money, Currency
 from app.application.dtos.user_dto import CreateUserInputDTO, UserResponseDTO

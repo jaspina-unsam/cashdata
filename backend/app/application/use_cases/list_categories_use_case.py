@@ -1,5 +1,5 @@
 from app.domain.entities.category import Category
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 
 class ListCategoriesUseCase:

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.infrastructure.persistence.database import SessionLocal
 from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import SQLAlchemyUnitOfWork
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 
 def get_session() -> Generator[Session, None, None]:

@@ -11,7 +11,7 @@ from app.application.exceptions.application_exceptions import (
 from app.domain.entities.purchase import Purchase
 from app.domain.value_objects.money import Money, Currency
 from app.domain.services.installment_generator import InstallmentGenerator
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.application.services.statement_factory import StatementFactory
 from app.domain.services.payment_method_validator import PaymentMethodValidator
 from app.domain.value_objects.payment_method_type import PaymentMethodType

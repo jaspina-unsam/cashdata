@@ -33,7 +33,7 @@ from app.application.mappers.purchase_dto_mapper import (
 )
 from app.domain.entities.credit_card import CreditCard
 from app.domain.value_objects.money import Money
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 
