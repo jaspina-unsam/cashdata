@@ -41,3 +41,13 @@ class PaymentMethodNameError(DomainException):
 class PaymentMethodInstallmentsError(DomainException):
     def __init__(self, message: str) -> None:
         super().__init__(message)
+
+
+class BankAccountNameError(DomainException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
+class BankAccountUserError(DomainException):
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
