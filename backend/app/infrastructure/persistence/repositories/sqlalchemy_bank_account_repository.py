@@ -65,3 +65,7 @@ class SQLAlchemyBankAccountRepository(IBankAccountRepository):
             select(BankAccountModel).where(BankAccountModel.id == account_id)
         ).first()
         return BankAccountMapper.to_entity(account) if account else None
+
+    def find_all(self) -> List[BankAccount]:
+        accounts = self.session.scalars(select(BankAccountModel)).all()
+        return [BankAccountMapper.to_entity(a) for a in accounts]
