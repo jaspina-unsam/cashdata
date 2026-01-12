@@ -23,6 +23,7 @@ from app.infrastructure.persistence.models import (
     BankAccountModel,
     MonthlyBudgetModel,
     BudgetExpenseModel,
+    BudgetParticipantModel,
 )
 
 
