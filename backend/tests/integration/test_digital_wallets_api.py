@@ -23,3 +23,18 @@ def test_create_and_list_digital_wallets(client, test_user):
     assert isinstance(arr, list)
     assert len(arr) >= 1
     assert any(w["provider"] == "mercadopago" for w in arr)
+
+
+def test_should_return_404_for_nonexistent_user(client):
+    """Should return 404 when user_id does not exist"""
+    payload = {
+        "user_id": 999999,  # Non-existent user
+        "name": "Test Wallet",
+        "provider": "mercadopago",
+        "currency": "ARS"
+    }
+    
+    response = client.post("/api/v1/digital-wallets", json=payload)
+    
+    assert response.status_code == 404
+    assert "does not exist" in response.json()["detail"]

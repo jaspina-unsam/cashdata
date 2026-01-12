@@ -3,11 +3,31 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CreateCashAccountInputDTO(BaseModel):
-    user_id: int = Field(gt=0, description="User ID")
-    name: str = Field(
-        min_length=1, max_length=100, description="Name of the cash account"
+    """
+    Input DTO for creating a cash account.
+    
+    The user_id field specifies the owner/titular of the cash account.
+    This explicit specification allows for scenarios where someone manages
+    finances for another person (e.g., parents for children, accountants
+    for clients, or financial tutors).
+    
+    Note: In production with authentication, ensure proper authorization
+    checks to verify the requesting user has permission to create accounts
+    for the specified user_id.
+    """
+    user_id: int = Field(
+        gt=0, 
+        description="ID of the user who will own this cash account (titular)"
     )
-    currency: Currency = Field(default=Currency.ARS, description="Currency of the cash account")
+    name: str = Field(
+        min_length=1, 
+        max_length=100, 
+        description="Descriptive name for the cash account (e.g., 'Efectivo - Juan', 'Cash Wallet USD')"
+    )
+    currency: Currency = Field(
+        default=Currency.ARS, 
+        description="Currency of the cash account (ARS, USD, etc.)"
+    )
 
     @field_validator("name")
     @classmethod

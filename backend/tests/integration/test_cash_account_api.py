@@ -62,6 +62,19 @@ class TestCreateCashAccount:
         assert response2.status_code == 400
         assert "already exists" in response2.json()["detail"]
 
+    def test_should_return_404_for_nonexistent_user(self, client):
+        """Should return 404 when user_id does not exist"""
+        account_data = {
+            "user_id": 999999,  # Non-existent user
+            "name": "Test Account",
+            "currency": "ARS",
+        }
+        
+        response = client.post("/api/v1/cash-accounts", json=account_data)
+        
+        assert response.status_code == 404
+        assert "does not exist" in response.json()["detail"]
+
 
 class TestListCashAccounts:
     """Test GET /api/v1/cash-accounts"""

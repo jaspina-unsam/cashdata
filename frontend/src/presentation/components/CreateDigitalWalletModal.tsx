@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { useCreateDigitalWallet } from '../../application/hooks/useDigitalWallets';
+import { useUsers } from '../../application/hooks/useUsers';
 import type { DigitalWallet } from '../../domain';
 
 interface CreateDigitalWalletModalProps {
@@ -13,10 +14,13 @@ export const CreateDigitalWalletModal: React.FC<CreateDigitalWalletModalProps> =
   onClose,
 }) => {
   const [formData, setFormData] = useState({
+    owner_user_id: userId, // Usuario titular de la billetera
     name: '',
     provider: '',
     currency: 'ARS',
   });
+
+  const { data: users } = useUsers();
 
   const createDigitalWallet = useCreateDigitalWallet();
 
@@ -36,7 +40,8 @@ export const CreateDigitalWalletModal: React.FC<CreateDigitalWalletModalProps> =
         identifier: '', // Optional field, can be empty
       };
 
-      await createDigitalWallet.mutateAsync({ userId, data: walletData });
+      // Usar el usuario titular seleccionado en lugar del userId prop
+      await createDigitalWallet.mutateAsync({ userId: formData.owner_user_id, data: walletData });
       onClose();
     } catch (error: any) {
       console.error('Error creating digital wallet:', error);
@@ -58,6 +63,27 @@ export const CreateDigitalWalletModal: React.FC<CreateDigitalWalletModalProps> =
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Titular de la billetera *
+            </label>
+            <select
+              value={formData.owner_user_id}
+              onChange={(e) => setFormData({ ...formData, owner_user_id: Number(e.target.value) })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              required
+            >
+              {users?.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              Selecciona quién será el dueño de esta billetera digital
+            </p>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Nombre de la billetera *

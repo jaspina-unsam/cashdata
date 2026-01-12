@@ -29,11 +29,23 @@ def test_payment_method(db_session, test_user):
 class TestCreateBankAccount:
     """Test POST /api/v1/bank-accounts"""
 
-    def test_should_create_bank_account_successfully(self, client, test_user, test_payment_method):
+    def test_should_create_bank_account_successfully(self, client, test_user, db_session, test_payment_method):
         """Should create a bank account with all required fields"""
+        # Create a second user for testing dual ownership
+        from app.domain.entities.user import User
+        from app.domain.value_objects.money import Money, Currency
+        from app.infrastructure.persistence.mappers.user_mapper import UserMapper
+        
+        user2 = User(id=None, name="Second User", email="second@test.com", wage=Money(50000, Currency.ARS))
+        user2_model = UserMapper.to_model(user2)
+        db_session.add(user2_model)
+        db_session.flush()  # Use flush instead of commit
+        second_user_id = user2_model.id  # Capture ID before commit
+        db_session.commit()
+        
         account_data = {
             "primary_user_id": test_user["id"],
-            "secondary_user_id": test_user["id"] + 1,  # Different user
+            "secondary_user_id": second_user_id,  # Use the captured ID
             "name": "Main Savings Account",
             "bank": "Test Bank",
             "account_type": "SAVINGS",
@@ -46,7 +58,7 @@ class TestCreateBankAccount:
         assert response.status_code == 201
         data = response.json()
         assert data["primary_user_id"] == test_user["id"]
-        assert data["secondary_user_id"] == test_user["id"] + 1
+        assert data["secondary_user_id"] == second_user_id
         assert data["name"] == "Main Savings Account"
         assert data["bank"] == "Test Bank"
         assert data["account_type"] == "SAVINGS"
@@ -138,6 +150,39 @@ class TestCreateBankAccount:
         response = client.post("/api/v1/bank-accounts", json=account_data)
 
         assert response.status_code == 422  # Pydantic validation error
+
+    def test_should_return_404_for_nonexistent_primary_user(self, client):
+        """Should return 404 when primary_user_id does not exist"""
+        account_data = {
+            "primary_user_id": 999999,  # Non-existent user
+            "name": "Test Account",
+            "bank": "Test Bank",
+            "account_type": "SAVINGS",
+            "last_four_digits": "1234",
+            "currency": "ARS",
+        }
+        
+        response = client.post("/api/v1/bank-accounts", json=account_data)
+        
+        assert response.status_code == 404
+        assert "does not exist" in response.json()["detail"]
+
+    def test_should_return_404_for_nonexistent_secondary_user(self, client, test_user):
+        """Should return 404 when secondary_user_id does not exist"""
+        account_data = {
+            "primary_user_id": test_user["id"],
+            "secondary_user_id": 999999,  # Non-existent user
+            "name": "Test Account",
+            "bank": "Test Bank",
+            "account_type": "SAVINGS",
+            "last_four_digits": "1234",
+            "currency": "ARS",
+        }
+        
+        response = client.post("/api/v1/bank-accounts", json=account_data)
+        
+        assert response.status_code == 404
+        assert "does not exist" in response.json()["detail"]
 
 
 class TestListBankAccountsByUserId:
