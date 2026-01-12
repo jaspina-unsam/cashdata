@@ -66,6 +66,15 @@ class SQLAlchemyBankAccountRepository(IBankAccountRepository):
         ).first()
         return BankAccountMapper.to_entity(account) if account else None
 
+    def find_by_payment_method_id(self, payment_method_id: int) -> Optional[BankAccount]:
+        """Retrieve bank account by payment method ID"""
+        account = self.session.scalars(
+            select(BankAccountModel).where(
+                BankAccountModel.payment_method_id == payment_method_id
+            )
+        ).first()
+        return BankAccountMapper.to_entity(account) if account else None
+
     def find_all(self) -> List[BankAccount]:
         accounts = self.session.scalars(select(BankAccountModel)).all()
         return [BankAccountMapper.to_entity(a) for a in accounts]

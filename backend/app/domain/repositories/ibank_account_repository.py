@@ -16,6 +16,11 @@ class IBankAccountRepository(ABC):
         pass
 
     @abstractmethod
+    def find_by_payment_method_id(self, payment_method_id: int) -> BankAccount | None:
+        """Retrieve bank account by payment method ID"""
+        pass
+
+    @abstractmethod
     def save(self, bank_account: BankAccount) -> BankAccount:
         """Insert or update bank account"""
         pass

@@ -10,6 +10,10 @@ from app.application.use_cases.create_bank_account_use_case import (
 from app.application.use_cases.list_bank_accounts_by_user_id import (
     ListBankAccountsUseCase,
 )
+from app.domain.exceptions.domain_exceptions import (
+    BankAccountNameError,
+    BankAccountUserError,
+)
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 from fastapi import (
@@ -47,7 +51,7 @@ def create_bank_account(
         use_case = CreateBankAccountUseCase(uow)
         bank_account = use_case.execute(bank_account_data)
         return BankAccountDTOMapper.to_response_dto(bank_account)
-    except ValueError as e:
+    except (ValueError, BankAccountNameError, BankAccountUserError) as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
