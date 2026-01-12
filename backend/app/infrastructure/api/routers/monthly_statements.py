@@ -27,7 +27,7 @@ from app.application.exceptions.application_exceptions import (
     CreditCardNotFoundError,
     CreditCardOwnerMismatchError,
 )
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 router = APIRouter(prefix="/api/v1/statements", tags=["statements"])

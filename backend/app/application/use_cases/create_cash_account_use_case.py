@@ -2,7 +2,7 @@ from app.application.dtos.cash_account_dto import CreateCashAccountInputDTO, Cas
 from app.application.mappers.cash_account_mapper import CashAccountDTOMapper
 from app.domain.entities.cash_account import CashAccount
 from app.domain.entities.payment_method import PaymentMethod
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.money import Currency
 from app.domain.value_objects.payment_method_type import PaymentMethodType
 

@@ -11,7 +11,7 @@ from app.application.exceptions.application_exceptions import (
 from app.domain.entities.purchase import Purchase
 from app.domain.value_objects.money import Money, Currency
 from app.domain.services.installment_generator import InstallmentGenerator
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.application.services.statement_factory import StatementFactory
 from app.domain.services.payment_method_validator import PaymentMethodValidator
 from app.domain.value_objects.payment_method_type import PaymentMethodType
@@ -66,7 +66,9 @@ class CreatePurchaseUseCase:
                 raise PaymentMethodNotFoundError(
                     f"Payment method with ID {command.payment_method_id} not found"
                 )
-            if paymethod.user_id != command.user_id:
+            # For bank account payment methods, skip payment method ownership check
+            # since bank account access validation will be performed later
+            if paymethod.user_id != command.user_id and paymethod.type != PaymentMethodType.BANK_ACCOUNT:
                 raise PaymentMethodOwnershipError(
                     f"Payment method {command.payment_method_id} does not belong to user {command.user_id}"
                 )
@@ -83,6 +85,17 @@ class CreatePurchaseUseCase:
                 if not credit_card:
                     raise CreditCardNotFoundError(
                         f"Credit card for payment method ID {command.payment_method_id} not found"
+                    )
+
+            # - Si payment_method es bank_account, validar que user tenga acceso
+            # - Llamar a `bank_account.has_access(user_id)`
+            if paymethod.type == PaymentMethodType.BANK_ACCOUNT:
+                bank_account = uow.bank_accounts.find_by_payment_method_id(
+                    command.payment_method_id
+                )
+                if not bank_account.has_access(command.user_id):
+                    raise PaymentMethodOwnershipError(
+                        f"User {command.user_id} does not have access to bank account with payment method ID {command.payment_method_id}"
                     )
 
             # Validate category exists

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app.domain.entities.purchase import Purchase
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 
 @dataclass(frozen=True)

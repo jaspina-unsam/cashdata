@@ -25,7 +25,7 @@ from app.application.mappers.purchase_dto_mapper import (
     CategoryDTOMapper,
     PurchaseDTOMapper,
 )
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 

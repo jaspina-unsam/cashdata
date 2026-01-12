@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from app.domain.entities.installment import Installment
 from app.domain.value_objects.money import Money, Currency
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 
 
 @dataclass(frozen=True)

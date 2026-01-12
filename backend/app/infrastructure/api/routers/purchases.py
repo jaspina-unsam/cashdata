@@ -44,7 +44,7 @@ from app.application.mappers.purchase_dto_mapper import (
     InstallmentDTOMapper,
 )
 from app.application.exceptions.application_exceptions import ApplicationError
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 

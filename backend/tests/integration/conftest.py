@@ -20,6 +20,7 @@ from app.infrastructure.persistence.models import (
     PurchaseModel,
     InstallmentModel,
     CashAccountModel,
+    BankAccountModel,
 )
 
 

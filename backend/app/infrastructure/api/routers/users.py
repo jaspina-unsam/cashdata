@@ -11,7 +11,7 @@ from app.application.dtos.user_dto import (
     UpdateUserInputDTO,
     UserResponseDTO,
 )
-from app.domain.repositories import IUnitOfWork
+from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 
