@@ -164,7 +164,7 @@ class TestListBankAccountsUseCase:
                 currency=Currency.USD,
             ),
         ]
-        mock_uow.users.exists_by_id.return_value = True
+        mock_uow.users.find_by_id.return_value = Mock()  # Mock user exists
         mock_uow.bank_accounts.find_by_user_id.return_value = mock_bank_accounts
         mock_uow.__enter__ = Mock(return_value=mock_uow)
         mock_uow.__exit__ = Mock(return_value=None)
@@ -175,7 +175,7 @@ class TestListBankAccountsUseCase:
         result = use_case.execute(user_id=1)
 
         # Assert
-        mock_uow.users.exists_by_id.assert_called_once_with(1)
+        mock_uow.users.find_by_id.assert_called_once_with(1)
         mock_uow.bank_accounts.find_by_user_id.assert_called_once_with(1)
         assert len(result) == 2
         assert all(isinstance(dto, BankAccountResponseDTO) for dto in result)
@@ -225,7 +225,7 @@ class TestListBankAccountsUseCase:
     def test_should_raise_error_when_user_does_not_exist(self):
         # Arrange
         mock_uow = Mock()
-        mock_uow.users.exists_by_id.return_value = False
+        mock_uow.users.find_by_id.return_value = None  # User doesn't exist
         mock_uow.__enter__ = Mock(return_value=mock_uow)
         mock_uow.__exit__ = Mock(return_value=None)
 
@@ -235,13 +235,13 @@ class TestListBankAccountsUseCase:
         with pytest.raises(ValueError, match="User does not exist."):
             use_case.execute(user_id=999)
 
-        mock_uow.users.exists_by_id.assert_called_once_with(999)
+        mock_uow.users.find_by_id.assert_called_once_with(999)
         mock_uow.bank_accounts.find_by_user_id.assert_not_called()
 
     def test_should_return_empty_list_when_no_accounts_for_user(self):
         # Arrange
         mock_uow = Mock()
-        mock_uow.users.exists_by_id.return_value = True
+        mock_uow.users.find_by_id.return_value = Mock()  # User exists
         mock_uow.bank_accounts.find_by_user_id.return_value = []
         mock_uow.__enter__ = Mock(return_value=mock_uow)
         mock_uow.__exit__ = Mock(return_value=None)
@@ -252,7 +252,7 @@ class TestListBankAccountsUseCase:
         result = use_case.execute(user_id=1)
 
         # Assert
-        mock_uow.users.exists_by_id.assert_called_once_with(1)
+        mock_uow.users.find_by_id.assert_called_once_with(1)
         mock_uow.bank_accounts.find_by_user_id.assert_called_once_with(1)
         assert result == []
 

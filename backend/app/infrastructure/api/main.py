@@ -10,6 +10,7 @@ from app.infrastructure.api.routers import (
     installments,
     payment_methods,
     cash_accounts,
+    bank_accounts
 )
 
 app = FastAPI(
@@ -36,13 +37,14 @@ app.include_router(monthly_statements.router)
 app.include_router(installments.router)
 app.include_router(payment_methods.router)
 app.include_router(cash_accounts.router)
+app.include_router(bank_accounts.router)
 
 @app.get("/health")
 def health():
     return {
         "status": "ok",
         "app": "CashData",
-        "version": "3.0.0"
+        "version": "0.2.0"
     }
 
 @app.get("/")

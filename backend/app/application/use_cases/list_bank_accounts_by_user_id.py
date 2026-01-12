@@ -28,7 +28,7 @@ class ListBankAccountsUseCase:
         """
         with self._uow as uow:
             if user_id is not None:
-                if not uow.users.exists_by_id(user_id):
+                if not uow.users.find_by_id(user_id):
                     raise ValueError("User does not exist.")
 
                 bank_accounts = uow.bank_accounts.find_by_user_id(user_id)
