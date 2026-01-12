@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Numeric, Date, ForeignKey
+from sqlalchemy.orm import relationship
 from app.infrastructure.persistence.models.base import Base
 
 
@@ -16,6 +17,9 @@ class PurchaseModel(Base):
     total_amount = Column(Numeric(precision=12, scale=2), nullable=False)
     total_currency = Column(String(3), nullable=False)
     installments_count = Column(Integer, nullable=False)
+
+    # Relationships
+    budget_expenses = relationship("BudgetExpenseModel", back_populates="purchase")
 
     def __repr__(self):
         return f"<PurchaseModel(id={self.id}, description='{self.description}', amount={self.total_amount})>"

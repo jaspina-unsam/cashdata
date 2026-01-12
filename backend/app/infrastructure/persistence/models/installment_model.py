@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Numeric, Date, ForeignKey
+from sqlalchemy.orm import relationship
 from app.infrastructure.persistence.models.base import Base
 
 
@@ -16,6 +17,9 @@ class InstallmentModel(Base):
     billing_period = Column(String(6), nullable=False)
     manually_assigned_statement_id = Column(Integer, ForeignKey("monthly_statements.id"))
 
+
+    # Relationships
+    budget_expenses = relationship("BudgetExpenseModel", back_populates="installment")
 
     def __repr__(self):
         return f"<InstallmentModel(id={self.id}, purchase_id={self.purchase_id}, {self.installment_number}/{self.total_installments})>"
