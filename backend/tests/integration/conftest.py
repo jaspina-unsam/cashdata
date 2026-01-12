@@ -21,6 +21,8 @@ from app.infrastructure.persistence.models import (
     InstallmentModel,
     CashAccountModel,
     BankAccountModel,
+    MonthlyBudgetModel,
+    BudgetExpenseModel,
 )
 
 

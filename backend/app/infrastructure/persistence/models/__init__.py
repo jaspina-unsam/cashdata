@@ -11,6 +11,10 @@ from app.infrastructure.persistence.models.installment_model import InstallmentM
 from app.infrastructure.persistence.models.payment_method_model import PaymentMethodModel
 from app.infrastructure.persistence.models.cash_account_model import CashAccountModel
 from app.infrastructure.persistence.models.bank_account_model import BankAccountModel
+from app.infrastructure.persistence.models.monthly_budget_model import MonthlyBudgetModel
+from app.infrastructure.persistence.models.budget_expense_model import BudgetExpenseModel
+from app.infrastructure.persistence.models.budget_expense_responsibility_model import BudgetExpenseResponsibilityModel
+from app.infrastructure.persistence.models.budget_participant_model import BudgetParticipantModel
 
 __all__ = [
     "Base",
@@ -24,4 +28,8 @@ __all__ = [
     "CashAccountModel",
     "BankAccountModel",
     "MonthlyStatementModel",
+    "MonthlyBudgetModel",
+    "BudgetExpenseModel",
+    "BudgetExpenseResponsibilityModel",
+    "BudgetParticipantModel",
 ]
