@@ -10,6 +10,7 @@ from app.infrastructure.persistence.repositories.sqlalchemy_purchase_repository 
 from app.infrastructure.persistence.repositories.sqlalchemy_installment_repository import SQLAlchemyInstallmentRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_monthly_statement_repository import SQLAlchemyMonthlyStatementRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_cash_account_repository import SQLAlchemyCashAccountRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_digital_wallet_repository import SQLAlchemyDigitalWalletRepository
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -28,6 +29,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.monthly_statements = SQLAlchemyMonthlyStatementRepository(self.session)
         self.payment_methods = SQLAlchemyPaymentMethodRepository(self.session)
         self.cash_accounts = SQLAlchemyCashAccountRepository(self.session)
+        self.digital_wallets = SQLAlchemyDigitalWalletRepository(self.session)
         self.bank_accounts = SQLAlchemyBankAccountRepository(self.session)
         return self
 
