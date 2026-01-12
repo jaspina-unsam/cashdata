@@ -374,7 +374,7 @@ export function PurchasesPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-gray-900">
-                        {purchase.currency} {parseFloat(purchase.total_amount).toLocaleString()}
+                        {purchase.currency} {Number(purchase.total_amount).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-600">
                         {purchase.installments_count === 1
@@ -423,13 +423,13 @@ export function PurchasesPage() {
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Pago único</span>
                             <span className="font-semibold">
-                              {purchase.currency} {parseFloat(purchase.total_amount).toLocaleString()}
+                              {purchase.currency} {Number(purchase.total_amount).toLocaleString()}
                             </span>
                           </div>
                         </div>
                       ) : (
                         Array.from({ length: purchase.installments_count }, (_, i) => {
-                          const installmentAmount = parseFloat(purchase.total_amount) / purchase.installments_count;
+                          const installmentAmount = Number(purchase.total_amount) / purchase.installments_count;
                           return (
                             <div key={i} className="bg-white p-3 rounded-lg">
                               <div className="flex justify-between items-center">

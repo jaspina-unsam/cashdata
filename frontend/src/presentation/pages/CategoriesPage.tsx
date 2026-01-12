@@ -20,7 +20,7 @@ export function CategoriesPage() {
     if (!newCategoryName.trim()) return;
 
     try {
-      await createCategory.mutateAsync({ name: newCategoryName.trim() });
+      await createCategory.mutateAsync({ name: newCategoryName.trim(), color: '#3B82F6' });
       setNewCategoryName('');
       setShowForm(false);
     } catch (err) {
