@@ -8,6 +8,7 @@ import {
   CreditCardsPage, 
   PurchasesPage, 
   EditPurchasePage,
+  PaymentMethodsPage,
 } from './presentation';
 import { StatementsPage } from './presentation/pages/StatementsPage';
 import { StatementDetailPage } from './presentation/pages/StatementDetailPage';
@@ -20,6 +21,9 @@ function HomePage() {
       </Link>
       <Link to="/categories">
         <Card title="🏷️ Categorías" subtitle="Organizá tus gastos" />
+      </Link>
+      <Link to="/payment-methods">
+        <Card title="💳 Métodos de Pago" subtitle="Tarjetas, cuentas y billeteras" />
       </Link>
       <Link to="/credit-cards">
         <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
@@ -73,6 +77,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/payment-methods" element={<PaymentMethodsPage />} />
             <Route path="/credit-cards" element={<CreditCardsPage />} />
             <Route path="/purchases" element={<PurchasesPage />} />
             <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />

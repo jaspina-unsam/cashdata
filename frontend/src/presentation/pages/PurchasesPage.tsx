@@ -6,9 +6,10 @@
 
 import { useState } from 'react';
 import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit } from 'lucide-react';
-import { usePurchases, useCreatePurchase, useDeletePurchase } from '../../application/hooks/usePurchases';
-import { useCreditCards } from '../../application/hooks/useCreditCards';
+import { usePurchases, useCreatePurchase } from '../../application/hooks/usePurchases';
 import { useCategories } from '../../application/hooks/useCategories';
+import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
+import { PaymentMethodSelector } from '../components/PaymentMethodSelector';
 import type { Purchase } from '../../domain/entities';
 import { useNavigate } from 'react-router-dom';
 import DeletePurchaseModal from '../components/DeletePurchaseModal';
@@ -31,7 +32,7 @@ export function PurchasesPage() {
   const [showForm, setShowForm] = useState(false);
   const [expandedPurchase, setExpandedPurchase] = useState<number | null>(null);
   const [formData, setFormData] = useState({
-    credit_card_id: '',
+    payment_method_id: '',
     category_id: '',
     purchase_date: new Date().toISOString().split('T')[0],
     description: '',
@@ -41,10 +42,9 @@ export function PurchasesPage() {
   });
 
   const { data: purchases, isLoading, error } = usePurchases(CURRENT_USER_ID);
-  const { data: creditCards } = useCreditCards(CURRENT_USER_ID);
   const { data: categories } = useCategories();
+  const { data: paymentMethods } = usePaymentMethods(CURRENT_USER_ID);
   const createPurchase = useCreatePurchase();
-  const deletePurchase = useDeletePurchase();
 
   const navigate = useNavigate();
 
@@ -64,14 +64,17 @@ export function PurchasesPage() {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.credit_card_id || !formData.category_id || 
+    if (!formData.payment_method_id || !formData.category_id || 
         !formData.description.trim() || !formData.total_amount) {
       alert('Por favor completá todos los campos obligatorios');
       return;
     }
 
+    const selectedPaymentMethod = paymentMethods?.find(pm => pm.id === parseInt(formData.payment_method_id));
+    const isCreditCard = selectedPaymentMethod?.type === 'credit_card';
+
     const installments = parseInt(formData.installments_count);
-    if (installments < 1) {
+    if (isCreditCard && installments < 1) {
       alert('Las cuotas deben ser al menos 1');
       return;
     }
@@ -84,20 +87,20 @@ export function PurchasesPage() {
 
     try {
       const purchaseData: Omit<Purchase, 'id' | 'user_id'> = {
-        credit_card_id: parseInt(formData.credit_card_id),
+        payment_method_id: parseInt(formData.payment_method_id),
         category_id: parseInt(formData.category_id),
         purchase_date: formData.purchase_date,
         description: formData.description.trim(),
         total_amount: parseFloat(formData.total_amount),
         currency: formData.currency,
-        installments_count: installments,
+        installments_count: isCreditCard ? installments : 1, // Force 1 for non-credit cards
       };
 
       await createPurchase.mutateAsync({ userId: CURRENT_USER_ID, data: purchaseData });
       
       // Reset form
       setFormData({
-        credit_card_id: '',
+        payment_method_id: '',
         category_id: '',
         purchase_date: new Date().toISOString().split('T')[0],
         description: '',
@@ -114,7 +117,7 @@ export function PurchasesPage() {
 
   const handleCancel = () => {
     setFormData({
-      credit_card_id: '',
+      payment_method_id: '',
       category_id: '',
       purchase_date: new Date().toISOString().split('T')[0],
       description: '',
@@ -145,10 +148,27 @@ export function PurchasesPage() {
     );
   }
 
-  // Get card and category names for display
-  const getCardName = (cardId: number) => {
-    const card = creditCards?.find(c => c.id === cardId);
-    return card ? `${card.name} •••• ${card.last_four_digits}` : 'Tarjeta desconocida';
+  // Get payment method and category names for display
+  const getPaymentMethodName = (paymentMethodId: number) => {
+    const method = paymentMethods?.find(pm => pm.id === paymentMethodId);
+    if (!method) return 'Método desconocido';
+
+    const getIcon = (type: string) => {
+      switch (type) {
+        case 'credit_card':
+          return '💳';
+        case 'cash':
+          return '💵';
+        case 'bank_account':
+          return '🏦';
+        case 'digital_wallet':
+          return '📱';
+        default:
+          return '💳';
+      }
+    };
+
+    return `${getIcon(method.type)} ${method.name}`;
   };
 
   const getCategoryName = (categoryId: number) => {
@@ -185,24 +205,16 @@ export function PurchasesPage() {
             <h2 className="text-xl font-semibold mb-4">Nueva Compra</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Credit Card */}
+                {/* Payment Method */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tarjeta de Crédito *
+                    Método de Pago *
                   </label>
-                  <select
-                    value={formData.credit_card_id}
-                    onChange={(e) => setFormData({ ...formData, credit_card_id: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Seleccioná una tarjeta</option>
-                    {creditCards?.map((card) => (
-                      <option key={card.id} value={card.id}>
-                        {card.name} - {card.bank} (•••• {card.last_four_digits})
-                      </option>
-                    ))}
-                  </select>
+                  <PaymentMethodSelector
+                    userId={CURRENT_USER_ID}
+                    value={formData.payment_method_id ? parseInt(formData.payment_method_id) : null}
+                    onChange={(paymentMethodId) => setFormData({ ...formData, payment_method_id: paymentMethodId.toString() })}
+                  />
                 </div>
 
                 {/* Category */}
@@ -280,24 +292,31 @@ export function PurchasesPage() {
                   </div>
                 </div>
 
-                {/* Installments Count */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cantidad de Cuotas *
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.installments_count}
-                    onChange={(e) => setFormData({ ...formData, installments_count: e.target.value })}
-                    placeholder="1"
-                    min="1"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    1 = pago único, N = cuotas
-                  </p>
-                </div>
+                {/* Installments Count - Only show for credit cards */}
+                {(() => {
+                  const selectedPaymentMethod = paymentMethods?.find(pm => pm.id === parseInt(formData.payment_method_id));
+                  const isCreditCard = selectedPaymentMethod?.type === 'credit_card';
+                  
+                  return isCreditCard ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cantidad de Cuotas *
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.installments_count}
+                        onChange={(e) => setFormData({ ...formData, installments_count: e.target.value })}
+                        placeholder="1"
+                        min="1"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        1 = pago único, N = cuotas
+                      </p>
+                    </div>
+                  ) : null;
+                })()}
               </div>
 
               {/* Action Buttons */}
@@ -347,7 +366,7 @@ export function PurchasesPage() {
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900">{purchase.description}</h3>
                       <p className="text-sm text-gray-600">
-                        {getCardName(purchase.credit_card_id)} • {getCategoryName(purchase.category_id)}
+                        {getPaymentMethodName(purchase.payment_method_id)} • {getCategoryName(purchase.category_id)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatLocalDate(purchase.purchase_date)}

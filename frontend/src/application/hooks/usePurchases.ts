@@ -102,9 +102,9 @@ export function useCreatePurchase() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.purchases.all(variables.userId, undefined),
       });
-      if (variables.data.credit_card_id) {
+      if (variables.data.payment_method_id) {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.purchases.byCard(variables.data.credit_card_id, variables.userId),
+          queryKey: queryKeys.purchases.byCard(variables.data.payment_method_id, variables.userId),
         });
       }
       if (variables.data.category_id) {
@@ -113,9 +113,9 @@ export function useCreatePurchase() {
         });
       }
       // Invalidate credit card summary to reflect new purchase
-      if (variables.data.credit_card_id) {
+      if (variables.data.payment_method_id) {
         queryClient.invalidateQueries({
-          queryKey: ['creditCards', variables.data.credit_card_id, 'summary'],
+          queryKey: ['creditCards', variables.data.payment_method_id, 'summary'],
         });
       }
       // Invalidate statements since creating a purchase creates statements
