@@ -1,21 +1,41 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
-from app.application.use_cases.list_credit_cards_by_user_use_case import (
-    ListCreditCardsByUserUseCase,
-    ListCreditCardsByUserQuery,
+from app.application.use_cases.list_payment_methods_by_user_id_use_case import (
+    ListPaymentMethodsByUserIdUseCase,
 )
-from app.application.dtos.purchase_dto import (
-    CreditCardResponseDTO,
+from app.application.dtos.payment_method_dto import (
+    PaymentMethodResponseDTO,
 )
-from app.application.mappers.purchase_dto_mapper import (
-    CreditCardDTOMapper,
+from app.application.mappers.payment_method_mapper import (
+    PaymentMethodDTOMapper,
 )
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
 
 
 router = APIRouter(prefix="/api/v1/payment-methods", tags=["payment-methods"])
+
+
+@router.get(
+    "",
+    response_model=List[PaymentMethodResponseDTO],
+    summary="List all payment methods for user",
+    responses={
+        200: {"description": "List of payment methods (may be empty)"},
+    },
+)
+def list_payment_methods(
+    user_id: int = Query(..., description="User ID (from auth context)"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    List all payment methods for the authenticated user.
+    """
+    use_case = ListPaymentMethodsByUserIdUseCase(uow)
+    payment_methods = use_case.execute(user_id)
+
+    return payment_methods
 
 
 @router.get(
