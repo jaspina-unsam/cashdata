@@ -10,6 +10,7 @@ from app.domain.repositories.ipayment_method_repository import IPaymentMethodRep
 from app.domain.repositories.ipurchase_repository import IPurchaseRepository
 from app.domain.repositories.iuser_repository import IUserRepository
 from app.domain.repositories.ibank_account_repository import IBankAccountRepository
+from app.domain.repositories.idigital_wallet_repository import IDigitalWalletRepository
 
 
 class IUnitOfWork(ABC):
@@ -23,6 +24,7 @@ class IUnitOfWork(ABC):
     monthly_statements: IMonthlyStatementRepository
     cash_accounts: ICashAccountRepository
     bank_accounts: IBankAccountRepository
+    digital_wallets: IDigitalWalletRepository
 
     @abstractmethod
     def __enter__(self):
