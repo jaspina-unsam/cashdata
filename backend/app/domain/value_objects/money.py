@@ -230,7 +230,7 @@ class Money:
         Returns:
             String en formato "amount CURRENCY" (ej: "100.50 ARS")
         """
-        return f"{self.amount} {self.currency.value}"
+        return f"{self.amount} {self.currency}"
 
     def __repr__(self) -> str:
         """Representación para debugging"""
