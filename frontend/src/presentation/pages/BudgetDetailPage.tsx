@@ -1,0 +1,225 @@
+import React from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Plus, Calendar, DollarSign } from 'lucide-react';
+import { useBudgetDetails } from '../../application/hooks/useBudgets';
+import { BudgetBalanceSummary } from '../components/BudgetBalanceSummary';
+
+export const BudgetDetailPage: React.FC = () => {
+  const { budgetId } = useParams<{ budgetId: string }>();
+  const currentUserId = 1; // TODO: Get from auth context
+
+  const { data: budgetDetails, isLoading } = useBudgetDetails(
+    budgetId ? parseInt(budgetId) : undefined,
+    currentUserId
+  );
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Cargando detalles del presupuesto...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!budgetDetails) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Presupuesto no encontrado</p>
+          <Link to="/budgets" className="text-blue-600 hover:underline mt-2 inline-block">
+            Volver a presupuestos
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { budget, expenses, responsibilities, balances, debt_summary } = budgetDetails;
+
+  const formatPeriod = (period: string) => {
+    const year = period.substring(0, 4);
+    const month = period.substring(4, 6);
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+  };
+
+  const getSplitTypeLabel = (splitType: string) => {
+    switch (splitType) {
+      case 'equal':
+        return '50/50 (Partes iguales)';
+      case 'proportional':
+        return 'Proporcional (según ingresos)';
+      case 'custom':
+        return 'Personalizado';
+      case 'full_single':
+        return '100% una persona';
+      default:
+        return splitType;
+    }
+  };
+
+  const totalAmount = expenses.reduce((sum, exp) => sum + exp.snapshot_amount, 0);
+
+  return (
+    <div className="max-w-6xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <Link
+          to="/budgets"
+          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Volver a presupuestos
+        </Link>
+
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{budget.name}</h1>
+            <p className="text-gray-600 mt-1">{formatPeriod(budget.period)}</p>
+            {budget.description && (
+              <p className="text-gray-600 text-sm mt-2">{budget.description}</p>
+            )}
+          </div>
+
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            onClick={() => {
+              alert('Add expense modal - TODO');
+            }}
+          >
+            <Plus className="w-5 h-5" />
+            Agregar Gasto
+          </button>
+        </div>
+      </div>
+
+      {/* Balance Summary */}
+      {balances.length > 0 && (
+        <div className="mb-8">
+          <BudgetBalanceSummary balances={balances} debts={debt_summary} />
+        </div>
+      )}
+
+      {/* Expenses List */}
+      <div className="bg-white rounded-lg shadow border border-gray-200">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Gastos del Presupuesto</h2>
+          <button
+            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            onClick={() => {
+              alert('Add expense modal - TODO');
+            }}
+          >
+            <Plus className="w-4 h-4" />
+            Agregar
+          </button>
+        </div>
+
+        {expenses.length === 0 ? (
+          <div className="p-8 text-center text-gray-600">
+            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+            <p>No hay gastos registrados en este presupuesto</p>
+            <p className="text-sm mt-1">Agrega tu primer gasto para comenzar</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {expenses.map((expense) => {
+              const expenseResponsibilities = responsibilities[expense.id] || [];
+
+              return (
+                <div key={expense.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-sm text-gray-500">
+                          {formatDate(expense.snapshot_date)}
+                        </span>
+                        <span className="font-medium text-gray-900">
+                          {expense.snapshot_description}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          Pagó: {expense.paid_by_user_name || `User ${expense.paid_by_user_id}`}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        División: {getSplitTypeLabel(expense.split_type)}
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-semibold text-lg text-gray-900">
+                        ${expense.snapshot_amount.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-500">{expense.snapshot_currency}</div>
+                    </div>
+                  </div>
+
+                  {/* Responsibilities breakdown */}
+                  {expenseResponsibilities.length > 0 && (
+                    <div className="mt-3 pl-4 border-l-2 border-gray-200 space-y-1">
+                      {expenseResponsibilities.map((resp) => (
+                        <div
+                          key={resp.id}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="text-gray-700">
+                            {resp.user_name || `User ${resp.user_id}`}: {resp.percentage}%
+                          </span>
+                          <span className="text-gray-900 font-medium">
+                            ${resp.responsible_amount.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                      onClick={() => {
+                        alert(`Edit expense ${expense.id} - TODO`);
+                      }}
+                    >
+                      Editar División
+                    </button>
+                    <button
+                      className="text-sm text-red-600 hover:text-red-800"
+                      onClick={() => {
+                        if (confirm('¿Eliminar este gasto del presupuesto?')) {
+                          alert(`Remove expense ${expense.id} - TODO`);
+                        }
+                      }}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Total */}
+        {expenses.length > 0 && (
+          <div className="p-4 bg-gray-50 border-t border-gray-200">
+            <div className="flex items-center justify-between font-semibold text-lg">
+              <span className="text-gray-900">TOTAL</span>
+              <div className="flex items-center gap-2 text-gray-900">
+                <DollarSign className="w-5 h-5" />
+                <span>${totalAmount.toFixed(2)} ARS</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

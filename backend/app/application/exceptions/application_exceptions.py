@@ -66,3 +66,13 @@ class PaymentMethodInstallmentError(ApplicationError):
 class CreditCardNotFoundError(ApplicationError):
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class BudgetNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
+class BudgetExpenseNotFoundError(ApplicationError):
+    def __init__(self, *args):
+        super().__init__(*args)

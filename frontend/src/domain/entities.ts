@@ -13,6 +13,73 @@ export interface User {
 }
 
 /**
+ * Domain Entity: Monthly Budget
+ * 
+ * Represents a monthly budget for tracking shared expenses.
+ */
+export interface MonthlyBudget {
+  id: number;
+  name: string;
+  period: string; // YYYYMM format
+  description?: string;
+  status: 'active' | 'closed' | 'archived';
+  created_by_user_id: number;
+  participant_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface BudgetExpense {
+  id: number;
+  budget_id: number;
+  purchase_id?: number;
+  installment_id?: number;
+  paid_by_user_id: number;
+  paid_by_user_name?: string;
+  snapshot_description: string;
+  snapshot_amount: number;
+  snapshot_currency: string;
+  snapshot_date: string;
+  split_type: 'equal' | 'proportional' | 'custom' | 'full_single';
+}
+
+export interface BudgetExpenseResponsibility {
+  id: number;
+  budget_expense_id: number;
+  user_id: number;
+  user_name?: string;
+  percentage: number;
+  responsible_amount: number;
+  currency: string;
+}
+
+export interface BudgetBalance {
+  user_id: number;
+  user_name: string;
+  paid: number;
+  responsible: number;
+  balance: number; // positive = owed, negative = owes
+  currency: string;
+}
+
+export interface BudgetDebt {
+  from_user_id: number;
+  from_user_name: string;
+  to_user_id: number;
+  to_user_name: string;
+  amount: number;
+  currency: string;
+}
+
+export interface BudgetDetails {
+  budget: MonthlyBudget;
+  expenses: BudgetExpense[];
+  responsibilities: Record<number, BudgetExpenseResponsibility[]>; // expense_id -> responsibilities[]
+  balances: BudgetBalance[];
+  debt_summary: BudgetDebt[];
+}
+
+/**
  * Domain Entity: Category
  * 
  * Represents a spending category for purchases.
@@ -175,4 +242,96 @@ export interface DigitalWallet {
   provider: string;
   identifier: string;
   currency: string;
+}
+
+/**
+ * Domain Entity: Monthly Budget
+ * 
+ * Represents a shared budget for a specific period.
+ */
+export interface MonthlyBudget {
+  id: number;
+  name: string;
+  period: string; // YYYYMM format
+  description?: string;
+  status: 'active' | 'closed' | 'archived';
+  created_by_user_id: number;
+  participant_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * Domain Entity: Budget Expense
+ * 
+ * Represents an expense assigned to a budget (purchase or installment).
+ */
+export interface BudgetExpense {
+  id: number;
+  budget_id: number;
+  purchase_id?: number;
+  installment_id?: number;
+  paid_by_user_id: number;
+  paid_by_user_name?: string;
+  snapshot_description: string;
+  snapshot_amount: number;
+  snapshot_currency: string;
+  snapshot_date: string;
+  split_type: 'equal' | 'proportional' | 'custom' | 'full_single';
+}
+
+/**
+ * Domain Entity: Budget Expense Responsibility
+ * 
+ * Represents how much each user is responsible for in an expense.
+ */
+export interface BudgetExpenseResponsibility {
+  id: number;
+  budget_expense_id: number;
+  user_id: number;
+  user_name?: string;
+  percentage: number;
+  responsible_amount: number;
+  currency: string;
+}
+
+/**
+ * Domain Entity: Budget Balance
+ * 
+ * Calculated balance for a user in a budget.
+ */
+export interface BudgetBalance {
+  user_id: number;
+  user_name: string;
+  paid: number;
+  responsible: number;
+  balance: number; // positive = owed, negative = owes
+  currency: string;
+}
+
+/**
+ * Domain Entity: Budget Debt
+ * 
+ * Represents a debt between two users in a budget.
+ */
+export interface BudgetDebt {
+  from_user_id: number;
+  from_user_name: string;
+  to_user_id: number;
+  to_user_name: string;
+  amount: number;
+  currency: string;
+}
+
+/**
+ * Domain Aggregate: Budget Details
+ * 
+ * Complete budget information with all related data.
+ */
+export interface BudgetDetails {
+  budget: MonthlyBudget;
+  expenses: BudgetExpense[];
+  responsibilities: Record<number, BudgetExpenseResponsibility[]>; // expense_id -> responsibilities[]
+  balances: BudgetBalance[];
+  debt_summary: BudgetDebt[];
 }
