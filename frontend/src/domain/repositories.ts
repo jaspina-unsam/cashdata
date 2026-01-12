@@ -1,18 +1,22 @@
 /**
  * Domain Repository Interfaces
- * 
+ *
  * Define contracts for data access without implementation details.
  * These interfaces ensure the domain layer is independent of infrastructure.
  */
 
-import type { 
-  Category, 
-  CreditCard, 
-  Purchase, 
-  Installment, 
+import type {
+  Category,
+  CreditCard,
+  Purchase,
+  Installment,
   CreditCardSummary,
   MonthlyStatement,
-  StatementDetail
+  StatementDetail,
+  PaymentMethod,
+  CashAccount,
+  BankAccount,
+  DigitalWallet
 } from './entities';
 
 /**
@@ -69,4 +73,40 @@ export interface IMonthlyStatementRepository {
     closing_date: string;
     due_date: string;
   }): Promise<MonthlyStatement>;
+}
+
+
+export interface IPaymentMethodRepository {
+  findByUserId(userId: number): Promise<PaymentMethod[]>;
+  findById(id: number, userId: number): Promise<PaymentMethod | null>;
+}
+
+
+export interface ICashAccountRepository {
+  findByUserId(userId: number): Promise<CashAccount[]>;
+  create(
+    userId: number,
+    data: Omit<CashAccount, "id" | "payment_method_id" | "user_id">
+  ): Promise<CashAccount>;
+  delete(id: number, userId: number): Promise<void>;
+}
+
+
+export interface IBankAccountRepository {
+  findByUserId(userId: number): Promise<BankAccount[]>;
+  create(
+    userId: number,
+    data: Omit<BankAccount, "id" | "payment_method_id">
+  ): Promise<BankAccount>;
+  delete(id: number, userId: number): Promise<void>;
+}
+
+
+export interface IDigitalWalletRepository {
+  findByUserId(userId: number): Promise<DigitalWallet[]>;
+  create(
+    userId: number,
+    data: Omit<DigitalWallet, "id" | "payment_method_id" | "user_id">
+  ): Promise<DigitalWallet>;
+  delete(id: number, userId: number): Promise<void>;
 }

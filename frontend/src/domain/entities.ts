@@ -49,7 +49,7 @@ export interface CreditCard {
 export interface Purchase {
   id: number;
   user_id: number;
-  credit_card_id: number;
+  payment_method_id: number;
   category_id: number;
   purchase_date: string;
   description: string;
@@ -134,5 +134,45 @@ export interface StatementDetail {
   period_end_date: string; // ISO date format (YYYY-MM-DD)
   purchases: PurchaseInStatement[];
   total_amount: number;
+  currency: string;
+}
+
+export interface PaymentMethod {
+  id: number;
+  user_id: number;
+  type: string;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CashAccount {
+  id: number;
+  payment_method_id: number;
+  user_id: number;
+  name: string;
+  currency: string;
+}
+
+export interface BankAccount {
+  id: number;
+  payment_method_id: number;
+  primary_user_id: number;
+  secondary_user_id: number | null;
+  name: string;
+  bank: string;
+  account_type: string;
+  last_four_digits: string;
+  currency: string;
+}
+
+export interface DigitalWallet {
+  id: number;
+  payment_method_id: number;
+  user_id: number;
+  name: string;
+  provider: string;
+  identifier: string;
   currency: string;
 }
