@@ -109,11 +109,9 @@ export const CreateDigitalWalletModal: React.FC<CreateDigitalWalletModalProps> =
               required
             >
               <option value="">Seleccionar proveedor</option>
-              <option value="Mercado Pago">Mercado Pago</option>
-              <option value="Ualá">Ualá</option>
-              <option value="Brubank">Brubank</option>
-              <option value="Naranja X">Naranja X</option>
-              <option value="Otro">Otro</option>
+              <option value="mercadopago">Mercado Pago</option>
+              <option value="personalpay">Personal Pay</option>
+              <option value="other">Otro</option>
             </select>
           </div>
 
