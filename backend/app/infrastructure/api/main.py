@@ -12,7 +12,8 @@ from app.infrastructure.api.routers import (
     cash_accounts,
     bank_accounts
     ,
-    digital_wallets
+    digital_wallets,
+    budgets
 )
 
 app = FastAPI(
@@ -41,6 +42,7 @@ app.include_router(payment_methods.router)
 app.include_router(cash_accounts.router)
 app.include_router(bank_accounts.router)
 app.include_router(digital_wallets.router)
+app.include_router(budgets.router)
 
 @app.get("/health")
 def health():
