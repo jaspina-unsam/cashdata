@@ -1,4 +1,3 @@
-import React from 'react';
 import ConfirmDialog from './ConfirmDialog';
 import { useDeletePurchase } from '../../application/hooks/usePurchases';
 

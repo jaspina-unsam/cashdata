@@ -11,6 +11,11 @@ class IPaymentMethodRepository(ABC):
         pass
 
     @abstractmethod
+    def find_all(self) -> List[PaymentMethod]:
+        """Find all payment methods from all users"""
+        pass
+
+    @abstractmethod
     def find_by_user_id(
         self, user_id: int, type: Optional[PaymentMethodType] = None
     ) -> List[PaymentMethod]:

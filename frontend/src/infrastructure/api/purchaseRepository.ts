@@ -13,17 +13,14 @@ export class PurchaseApiRepository implements IPurchaseRepository {
 
   async findByUserId(
     userId: number,
-    skip?: number,
-    limit?: number,
-    startDate?: string,
-    endDate?: string
+    filters?: { startDate?: string; endDate?: string; skip?: number; limit?: number }
   ): Promise<Purchase[]> {
     return httpClient.get<Purchase[]>(this.basePath, {
       user_id: userId,
-      start_date: startDate,
-      end_date: endDate,
-      skip: skip || 0,
-      limit: limit || 100,
+      start_date: filters?.startDate,
+      end_date: filters?.endDate,
+      skip: filters?.skip || 0,
+      limit: filters?.limit || 100,
     });
   }
 

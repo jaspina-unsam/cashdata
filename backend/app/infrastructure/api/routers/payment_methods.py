@@ -20,20 +20,32 @@ router = APIRouter(prefix="/api/v1/payment-methods", tags=["payment-methods"])
 @router.get(
     "",
     response_model=List[PaymentMethodResponseDTO],
-    summary="List all payment methods for user",
+    summary="List payment methods",
     responses={
         200: {"description": "List of payment methods (may be empty)"},
     },
 )
 def list_payment_methods(
-    user_id: int = Query(..., description="User ID (from auth context)"),
+    user_id: int = Query(None, description="User ID to filter by (omit to get all users' payment methods)"),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
-    List all payment methods for the authenticated user.
+    List payment methods.
+    
+    - If user_id is provided: returns only that user's payment methods
+    - If user_id is omitted: returns ALL payment methods from ALL users
     """
-    use_case = ListPaymentMethodsByUserIdUseCase(uow)
-    payment_methods = use_case.execute(user_id)
+    if user_id:
+        use_case = ListPaymentMethodsByUserIdUseCase(uow)
+        payment_methods = use_case.execute(user_id)
+    else:
+        # Return all payment methods from all users
+        with uow:
+            payment_methods_entities = uow.payment_methods.find_all()
+            payment_methods = [
+                PaymentMethodDTOMapper.to_response_dto(pm) 
+                for pm in payment_methods_entities
+            ]
 
     return payment_methods
 

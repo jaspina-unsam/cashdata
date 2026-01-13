@@ -23,6 +23,13 @@ class SQLAlchemyPaymentMethodRepository(IPaymentMethodRepository):
         ).first()
         return PaymentMethodMapper.to_entity(paymethod) if paymethod else None
 
+    def find_all(self) -> List[PaymentMethod]:
+        """Find all payment methods from all users"""
+        paymethods = self.session.scalars(
+            select(PaymentMethodModel).order_by(PaymentMethodModel.user_id, PaymentMethodModel.name)
+        ).all()
+        return [PaymentMethodMapper.to_entity(pm) for pm in paymethods]
+
     def find_by_user_id(
         self, user_id: int, type: Optional[PaymentMethodType] = None
     ) -> List[PaymentMethod]:

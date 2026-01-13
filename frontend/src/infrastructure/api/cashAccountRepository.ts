@@ -85,7 +85,7 @@ export class CashAccountApiRepository implements ICashAccountRepository {
    *
    * Backend endpoint: DELETE /api/v1/cash-accounts/{cash_account_id}
    */
-  async delete(id: number, userId: number): Promise<void> {
+  async delete(id: number, _userId: number): Promise<void> {
     try {
       const response = await fetch(
         `${this.baseUrl}/api/v1/cash-accounts/${id}`,

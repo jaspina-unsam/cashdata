@@ -33,6 +33,31 @@ export class PaymentMethodApiRepository implements IPaymentMethodRepository {
         }
     }
 
+    async findAll(): Promise<PaymentMethod[]> {
+        try {
+            const response = await fetch(
+                `${this.baseUrl}/api/v1/payment-methods`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Failed to fetch payment methods");
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error fetching all payment methods:", error);
+            throw error;
+        }
+    }
+
     async findById(id: number, userId: number): Promise<PaymentMethod | null> {
         try {
             const response = await fetch(

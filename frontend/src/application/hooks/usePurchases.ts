@@ -23,13 +23,7 @@ export function usePurchases(userId: number, filters?: PurchaseFilters) {
   return useQuery({
     queryKey: queryKeys.purchases.all(userId, filters),
     queryFn: () =>
-      purchaseRepository.findByUserId(
-        userId,
-        filters?.skip,
-        filters?.limit,
-        filters?.startDate,
-        filters?.endDate
-      ),
+      purchaseRepository.findByUserId(userId, filters),
     enabled: !!userId,
   });
 }

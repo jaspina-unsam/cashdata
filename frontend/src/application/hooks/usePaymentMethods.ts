@@ -11,3 +11,10 @@ export function usePaymentMethods(userId: number) {
     enabled: !!userId,
   });
 }
+
+export function useAllPaymentMethods() {
+  return useQuery<PaymentMethod[]>({
+    queryKey: ['paymentMethods', 'all'],
+    queryFn: () => paymentMethodRepository.findAll(),
+  });
+}

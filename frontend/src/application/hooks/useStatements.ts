@@ -14,7 +14,6 @@ export function useStatementsByCard(creditCardId: number, userId: number) {
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MonthlyStatement, StatementDetail } from '../../domain/entities';
 import { monthlyStatementRepository } from '../../infrastructure/api/monthlyStatementRepository';
 
 /**

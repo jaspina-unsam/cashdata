@@ -5,9 +5,9 @@ export function usePurchaseInstallmentsMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, userId, data }: { id: number; userId: number; data: any }) =>
+    mutationFn: ({ id, userId, purchaseId: _purchaseId, data }: { id: number; userId: number; purchaseId: number; data: any }) =>
       installmentRepository.update(id, userId, data),
-    onSuccess: (_, { id, userId }) => {
+    onSuccess: (_, variables) => {
       // Invalidate purchases and statements to refresh related data
       queryClient.invalidateQueries({ queryKey: ['purchases'] });
       queryClient.invalidateQueries({ queryKey: ['statements'] });

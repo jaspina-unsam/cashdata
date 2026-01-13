@@ -40,7 +40,7 @@ export class BankAccountApiRepository implements IBankAccountRepository {
    * Body: { primary_user_id, secondary_user_id?, name, bank, account_type, last_four_digits, currency }
    */
   async create(
-    userId: number,
+    _userId: number,
     data: Omit<BankAccount, 'id' | 'payment_method_id'>
   ): Promise<BankAccount> {
     try {
@@ -83,7 +83,7 @@ export class BankAccountApiRepository implements IBankAccountRepository {
    * 
    * Backend endpoint: DELETE /api/v1/bank-accounts/{bank_account_id}
    */
-  async delete(id: number, userId: number): Promise<void> {
+  async delete(id: number, _userId: number): Promise<void> {
     try {
       const response = await fetch(
         `${this.baseUrl}/api/v1/bank-accounts/${id}`,

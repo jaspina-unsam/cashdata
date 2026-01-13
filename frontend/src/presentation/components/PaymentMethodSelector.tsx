@@ -1,5 +1,6 @@
 import React from 'react';
-import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
+import { useAllPaymentMethods } from '../../application/hooks/usePaymentMethods';
+import { useUsers } from '../../application/hooks/useUsers';
 import type { PaymentMethod } from '../../domain';
 
 interface PaymentMethodSelectorProps {
@@ -10,12 +11,13 @@ interface PaymentMethodSelectorProps {
 }
 
 export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
-  userId,
+  userId: _userId,
   value,
   onChange,
   onlyTypes
 }) => {
-  const { data: paymentMethods, isLoading, error } = usePaymentMethods(userId);
+  const { data: allPaymentMethods, isLoading, error } = useAllPaymentMethods();
+  const { data: users } = useUsers();
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -49,11 +51,11 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
   // Filter and group payment methods by type
   const groupedMethods = React.useMemo(() => {
-    if (!paymentMethods) return {};
+    if (!allPaymentMethods) return {};
 
     const filtered = onlyTypes
-      ? paymentMethods.filter(pm => onlyTypes.includes(pm.type))
-      : paymentMethods;
+      ? allPaymentMethods.filter(pm => onlyTypes.includes(pm.type))
+      : allPaymentMethods;
 
     return filtered.reduce((groups, method) => {
       if (!groups[method.type]) {
@@ -62,7 +64,7 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       groups[method.type].push(method);
       return groups;
     }, {} as Record<string, PaymentMethod[]>);
-  }, [paymentMethods, onlyTypes]);
+  }, [allPaymentMethods, onlyTypes]);
 
   if (isLoading) {
     return (
@@ -90,11 +92,15 @@ export const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       <option value="">Seleccionar método de pago</option>
       {Object.entries(groupedMethods).map(([type, methods]) => (
         <optgroup key={type} label={getTypeLabel(type)}>
-          {methods.map((method) => (
-            <option key={method.id} value={method.id}>
-              {getIcon(method.type)} {method.name}
-            </option>
-          ))}
+          {methods.map((method) => {
+            const user = users?.find(u => u.id === method.user_id);
+            const userName = user ? ` (${user.name})` : '';
+            return (
+              <option key={method.id} value={method.id}>
+                {getIcon(method.type)} {method.name}{userName}
+              </option>
+            );
+          })}
         </optgroup>
       ))}
     </select>
