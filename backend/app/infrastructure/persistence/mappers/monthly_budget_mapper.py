@@ -1,6 +1,5 @@
 from datetime import datetime
 from app.domain.entities.monthly_budget import MonthlyBudget
-from app.domain.value_objects.period import Period
 from app.domain.value_objects.budget_status import BudgetStatus
 from app.infrastructure.persistence.models.monthly_budget_model import MonthlyBudgetModel
 
@@ -12,7 +11,6 @@ class MonthlyBudgetMapper:
         return MonthlyBudget(
             id=model.id,
             name=model.name,
-            period=Period.from_string(model.period),
             description=model.description,
             status=BudgetStatus(model.status),
             created_by_user_id=model.created_by_user_id,
@@ -26,7 +24,6 @@ class MonthlyBudgetMapper:
         return MonthlyBudgetModel(
             id=entity.id,
             name=entity.name,
-            period=entity.period.to_string(),
             description=entity.description,
             status=entity.status.value,
             created_by_user_id=entity.created_by_user_id,

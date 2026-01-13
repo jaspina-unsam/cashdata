@@ -1,52 +1,39 @@
 from typing import List
 
 from app.domain.repositories.iunit_of_work import IUnitOfWork
-from app.domain.entities.monthly_budget import MonthlyBudget
-from app.domain.value_objects.period import Period
 from app.application.dtos.monthly_budget_dto import MonthlyBudgetResponseDTO
 from app.application.mappers.monthly_budget_dto_mapper import MonthlyBudgetDTOMapper
 
 
-class ListBudgetsByPeriodUseCase:
-    """Use case for listing budgets by period that user participates in"""
+class ListBudgetsUseCase:
+    """Use case for listing all budgets that user participates in"""
 
     def __init__(self, uow: IUnitOfWork):
         self._uow = uow
 
-    def execute(self, period_str: str, user_id: int) -> List[MonthlyBudgetResponseDTO]:
+    def execute(self, user_id: int) -> List[MonthlyBudgetResponseDTO]:
         """
-        List all budgets for a specific period where user is a participant
+        List all budgets where user is a participant, ordered by created_at DESC
 
         Args:
-            period_str: Period in YYYYMM format
             user_id: ID of the user to filter budgets
 
         Returns:
             List[MonthlyBudgetResponseDTO]: List of budgets with participant counts
         """
         with self._uow:
-            # 1. Parse and validate period
-            try:
-                period = Period.from_string(period_str)
-            except Exception:
-                # Return empty list for invalid periods
-                return []
+            # 1. Find budgets where user is a participant (already sorted by created_at DESC in repository)
+            user_budgets = self._uow.monthly_budgets.find_by_user_participant(user_id)
 
-            # 2. Find budgets for the period
-            period_budgets = self._uow.monthly_budgets.find_by_period(period_str)
+            # 2. Get participant counts for each budget
+            budgets_with_counts = []
+            for budget in user_budgets:
+                participants = self._uow.budget_participants.find_by_budget_id(budget.id)
+                participant_count = len(participants)
+                budgets_with_counts.append((budget, participant_count))
 
-            # 3. Filter budgets where user is a participant
-            user_budgets = []
-            for budget in period_budgets:
-                is_participant = self._uow.budget_participants.find_by_budget_and_user(budget.id, user_id)
-                if is_participant:
-                    # Get participant count for this budget
-                    participants = self._uow.budget_participants.find_by_budget_id(budget.id)
-                    participant_count = len(participants)
-                    user_budgets.append((budget, participant_count))
-
-        # 4. Map to response DTOs
+        # 3. Map to response DTOs
         return [
             MonthlyBudgetDTOMapper.to_response_dto(budget, count)
-            for budget, count in user_budgets
+            for budget, count in budgets_with_counts
         ]

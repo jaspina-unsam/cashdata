@@ -1,5 +1,7 @@
-from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
+from datetime import date
+from decimal import Decimal
+from pydantic import BaseModel, Field
 
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.entities.budget_expense import BudgetExpense
@@ -13,20 +15,18 @@ from app.application.exceptions.application_exceptions import (
 )
 
 
-@dataclass(frozen=True)
-class AddExpenseToBudgetCommand:
+class AddExpenseToBudgetCommand(BaseModel):
     """Command to add an expense to a budget"""
-    budget_id: int
-    purchase_id: Optional[int]  # XOR with installment_id
-    installment_id: Optional[int]  # XOR with purchase_id
+    budget_id: int = Field(gt=0)
+    purchase_id: Optional[int] = Field(None, gt=0)  # XOR with installment_id
+    installment_id: Optional[int] = Field(None, gt=0)  # XOR with purchase_id
     split_type: str  # "equal", "proportional", "custom", "full_single"
-    custom_percentages: Optional[dict[int, float]] = None  # {user_id: percentage} for custom split
-    responsible_user_id: Optional[int] = None  # Required only for full_single
-    requesting_user_id: int = 0  # User making the request
+    custom_percentages: Optional[Dict[int, float]] = None  # {user_id: percentage} for custom split
+    responsible_user_id: Optional[int] = Field(None, gt=0)  # Required only for full_single
+    requesting_user_id: int = Field(gt=0)  # User making the request
 
 
-@dataclass(frozen=True)
-class AddExpenseToBudgetResult:
+class AddExpenseToBudgetResult(BaseModel):
     """Result of adding expense to budget"""
     budget_expense_id: int
     success: bool = True
@@ -86,7 +86,7 @@ class AddExpenseToBudgetUseCase:
             paid_by_user_id = None
             amount = None
             description = None
-            date = None
+            expense_date = None
 
             if command.purchase_id:
                 purchase = self._uow.purchases.find_by_id(command.purchase_id)
@@ -95,9 +95,9 @@ class AddExpenseToBudgetUseCase:
                         f"Purchase {command.purchase_id} not found"
                     )
                 paid_by_user_id = purchase.user_id
-                amount = purchase.amount
+                amount = purchase.total_amount
                 description = purchase.description
-                date = purchase.purchase_date
+                expense_date = purchase.purchase_date
 
                 # Check if this purchase is already in the budget
                 existing = self._uow.budget_expenses.find_by_purchase_id(command.purchase_id)
@@ -122,7 +122,7 @@ class AddExpenseToBudgetUseCase:
                 paid_by_user_id = parent_purchase.user_id
                 amount = installment.amount
                 description = parent_purchase.description
-                date = parent_purchase.purchase_date
+                expense_date = parent_purchase.purchase_date
 
                 # Check if this installment is already in the budget
                 existing = self._uow.budget_expenses.find_by_installment_id(command.installment_id)
@@ -150,6 +150,13 @@ class AddExpenseToBudgetUseCase:
             # 7. Get all participants for responsibility calculation
             participants = self._uow.budget_participants.find_by_budget_id(command.budget_id)
             participant_user_ids = [p.user_id for p in participants]
+            
+            # Get User entities for participants
+            participant_users = []
+            for user_id in participant_user_ids:
+                user = self._uow.users.find_by_id(user_id)
+                if user:
+                    participant_users.append(user)
 
             # 8. Validate full_single responsible user is a participant
             if split_type == SplitType.FULL_SINGLE:
@@ -159,14 +166,14 @@ class AddExpenseToBudgetUseCase:
                     )
 
             # 9. Create snapshot
-            snapshot = self._snapshot_service.create_snapshot_from_purchase(
-                purchase=purchase,
-                installment=installment,
-                paid_by_user_id=paid_by_user_id,
-                description=description,
-                amount=amount,
-                date=date,
-            )
+            if purchase:
+                snapshot = self._snapshot_service.create_snapshot_from_purchase(
+                    purchase=purchase
+                )
+            else:  # installment
+                snapshot = self._snapshot_service.create_snapshot_from_installment(
+                    installment=installment
+                )
 
             # 10. Create BudgetExpense entity
             budget_expense = BudgetExpense(
@@ -175,41 +182,29 @@ class AddExpenseToBudgetUseCase:
                 purchase_id=command.purchase_id,
                 installment_id=command.installment_id,
                 paid_by_user_id=paid_by_user_id,
-                snapshot_description=snapshot["description"],
-                snapshot_amount=snapshot["amount"],
-                snapshot_currency=snapshot["currency"],
-                snapshot_date=snapshot["date"],
+                description=snapshot.description,
+                amount=snapshot.amount,
+                currency=snapshot.currency,
+                date=snapshot.date,
+                payment_method_name=snapshot.payment_method_name,
                 split_type=split_type,
+                created_at=date.today(),
             )
 
             # 11. Save expense
             saved_expense = self._uow.budget_expenses.save(budget_expense)
-            self._uow.flush()
 
             # 12. Calculate responsibilities
-            # For proportional, get monthly_incomes
-            monthly_incomes_map = {}
-            if split_type == SplitType.PROPORTIONAL:
-                monthly_incomes = self._uow.monthly_incomes.find_by_period_and_users(
-                    budget.period, participant_user_ids
-                )
-                monthly_incomes_map = {mi.user_id: mi for mi in monthly_incomes}
-
-                # Validate all participants have income defined
-                for user_id in participant_user_ids:
-                    if user_id not in monthly_incomes_map:
-                        raise BusinessRuleViolationError(
-                            f"User {user_id} has no monthly_income defined for period {budget.period.to_string()}. "
-                            "All participants must have income defined to use proportional split."
-                        )
-
+            # For proportional split, use participant wages (ResponsibilityCalculator handles fallback logic)
             responsibilities = self._responsibility_calculator.calculate_responsibilities(
-                budget_expense_id=saved_expense.id,
-                participant_user_ids=participant_user_ids,
-                expense_amount=amount,
+                expense_id=saved_expense.id,
+                budget_id=command.budget_id,
+                amount=saved_expense.amount,
                 split_type=split_type,
-                monthly_incomes_map=monthly_incomes_map,
-                custom_percentages=command.custom_percentages,
+                participants=participant_users,
+                period=None,  # No longer needed - ResponsibilityCalculator will use wage fallback
+                incomes=[],  # Empty list - ResponsibilityCalculator will create synthetic incomes from wages
+                custom_percentages={int(k): Decimal(str(v)) for k, v in command.custom_percentages.items()} if command.custom_percentages else None,
                 full_single_user_id=command.responsible_user_id,
             )
 

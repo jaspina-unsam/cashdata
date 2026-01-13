@@ -20,7 +20,6 @@ export interface User {
 export interface MonthlyBudget {
   id: number;
   name: string;
-  period: string; // YYYYMM format
   description?: string;
   status: 'active' | 'closed' | 'archived';
   created_by_user_id: number;
@@ -252,7 +251,7 @@ export interface DigitalWallet {
 export interface MonthlyBudget {
   id: number;
   name: string;
-  period: string; // YYYYMM format
+
   description?: string;
   status: 'active' | 'closed' | 'archived';
   created_by_user_id: number;

@@ -3,8 +3,6 @@ import type { MonthlyBudget, BudgetDetails } from '../../domain/entities';
 
 export interface CreateBudgetData {
   name: string;
-  year: number;
-  month: number;
   description?: string;
   created_by_user_id: number;
   participant_user_ids: number[];
@@ -35,9 +33,8 @@ export class BudgetsApiRepository {
     return httpClient.post<MonthlyBudget>(this.baseUrl, data);
   }
 
-  async listByPeriod(period: string, userId: number): Promise<MonthlyBudget[]> {
+  async list(userId: number): Promise<MonthlyBudget[]> {
     return httpClient.get<MonthlyBudget[]>(this.baseUrl, {
-      period,
       user_id: userId,
     });
   }
@@ -69,7 +66,7 @@ export class BudgetsApiRepository {
   async removeExpense(budgetId: number, expenseId: number, userId: number): Promise<void> {
     return httpClient.delete(
       `${this.baseUrl}/${budgetId}/expenses/${expenseId}`,
-      { user_id: userId }
+      { requesting_user_id: userId }
     );
   }
 }

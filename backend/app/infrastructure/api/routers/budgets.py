@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.application.use_cases.create_monthly_budget_use_case import CreateMonthlyBudgetUseCase
 from app.application.use_cases.get_budget_details_use_case import GetBudgetDetailsUseCase
-from app.application.use_cases.list_budgets_by_period_use_case import ListBudgetsByPeriodUseCase
+from app.application.use_cases.list_budgets_by_period_use_case import ListBudgetsUseCase
 from app.application.use_cases.add_expense_to_budget_use_case import (
     AddExpenseToBudgetUseCase,
     AddExpenseToBudgetCommand,
@@ -21,6 +21,7 @@ from app.application.use_cases.remove_expense_from_budget_use_case import (
 from app.application.dtos.monthly_budget_dto import (
     CreateMonthlyBudgetCommand,
     MonthlyBudgetResponseDTO,
+    BudgetDetailsDTO,
 )
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
@@ -55,8 +56,6 @@ def create_budget(
     Create a new monthly budget with participants.
 
     - **name**: Budget name (1-100 characters)
-    - **year**: Budget year (2020-2030)
-    - **month**: Budget month (1-12)
     - **description**: Optional budget description (max 500 characters)
     - **created_by_user_id**: ID of user creating the budget
     - **participant_user_ids**: List of participant user IDs (creator must be included)
@@ -86,39 +85,36 @@ def create_budget(
 @router.get(
     "",
     response_model=List[MonthlyBudgetResponseDTO],
-    summary="List budgets by period for user",
+    summary="List all budgets for user",
     responses={
         200: {"description": "List of budgets returned successfully"},
-        400: {"description": "Invalid period format"},
     },
 )
 def list_budgets(
-    period: str = Query(..., description="Period in YYYYMM format", min_length=6, max_length=6),
     user_id: int = Query(..., description="User ID to filter budgets", gt=0),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
-    List all budgets for a specific period where the user is a participant.
+    List all budgets where the user is a participant, ordered by created_at DESC.
 
-    - **period**: Period in YYYYMM format (e.g., "202601")
     - **user_id**: ID of the user to filter budgets
     """
     try:
-        use_case = ListBudgetsByPeriodUseCase(uow)
-        result = use_case.execute(period, user_id)
+        use_case = ListBudgetsUseCase(uow)
+        result = use_case.execute(user_id)
         return result
 
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid period format: {str(e)}"
+            detail=f"Error listing budgets: {str(e)}"
         )
 
 
 @router.get(
     "/{budget_id}",
-    response_model=MonthlyBudgetResponseDTO,
-    summary="Get budget details",
+    response_model=BudgetDetailsDTO,
+    summary="Get budget details with expenses and balances",
     responses={
         200: {"description": "Budget details returned successfully"},
         404: {"description": "Budget not found"},
@@ -131,7 +127,7 @@ def get_budget_details(
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
-    Get complete details of a specific budget.
+    Get complete details of a specific budget including expenses, responsibilities, and balances.
 
     - **budget_id**: ID of the budget to retrieve
     - **user_id**: ID of the requesting user (must be a participant)

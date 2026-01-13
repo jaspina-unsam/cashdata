@@ -9,11 +9,10 @@ interface BudgetCardProps {
 }
 
 export const BudgetCard: React.FC<BudgetCardProps> = ({ budget, totalAmount }) => {
-  const formatPeriod = (period: string) => {
-    const year = period.substring(0, 4);
-    const month = period.substring(4, 6);
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+  const formatCreatedDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
   const getStatusColor = (status: string) => {
@@ -61,7 +60,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({ budget, totalAmount }) =
       <div className="flex items-center gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-1">
           <Calendar className="w-4 h-4" />
-          <span>{formatPeriod(budget.period)}</span>
+          <span>{formatCreatedDate(budget.created_at)}</span>
         </div>
 
         <div className="flex items-center gap-1">

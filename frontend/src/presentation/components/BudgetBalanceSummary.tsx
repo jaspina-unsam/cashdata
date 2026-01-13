@@ -44,13 +44,13 @@ export const BudgetBalanceSummary: React.FC<BudgetBalanceSummaryProps> = ({
                 <div className="flex justify-between text-gray-600">
                   <span>Pagó:</span>
                   <span className="font-medium">
-                    ${balance.paid.toFixed(2)} {balance.currency}
+                    ${(Number(balance.paid) || 0).toFixed(2)} {balance.currency}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Debe:</span>
                   <span className="font-medium">
-                    ${balance.responsible.toFixed(2)} {balance.currency}
+                    ${(Number(balance.responsible) || 0).toFixed(2)} {balance.currency}
                   </span>
                 </div>
                 <div
@@ -64,7 +64,7 @@ export const BudgetBalanceSummary: React.FC<BudgetBalanceSummaryProps> = ({
                 >
                   <span>Balance:</span>
                   <span>
-                    {isOwed ? '+' : ''}${Math.abs(balance.balance).toFixed(2)}{' '}
+                    {isOwed ? '+' : ''}${(Math.abs(Number(balance.balance)) || 0).toFixed(2)}{' '}
                     {balance.currency}
                   </span>
                 </div>
@@ -88,7 +88,7 @@ export const BudgetBalanceSummary: React.FC<BudgetBalanceSummaryProps> = ({
                   <span className="font-medium">{debt.to_user_name}</span>
                 </span>
                 <span className="font-semibold text-red-700">
-                  ${debt.amount.toFixed(2)} {debt.currency}
+                  ${(Number(debt.amount) || 0).toFixed(2)} {debt.currency}
                 </span>
               </div>
             ))}

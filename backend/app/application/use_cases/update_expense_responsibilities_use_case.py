@@ -1,5 +1,6 @@
-from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
+from decimal import Decimal
+from pydantic import BaseModel, Field
 
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.services.responsibility_calculator import ResponsibilityCalculator
@@ -11,18 +12,16 @@ from app.application.exceptions.application_exceptions import (
 )
 
 
-@dataclass(frozen=True)
-class UpdateExpenseResponsibilitiesCommand:
+class UpdateExpenseResponsibilitiesCommand(BaseModel):
     """Command to update expense responsibilities (change split type/percentages)"""
-    budget_expense_id: int
+    budget_expense_id: int = Field(gt=0)
     split_type: str  # "equal", "proportional", "custom", "full_single"
-    custom_percentages: Optional[dict[int, float]] = None  # {user_id: percentage}
-    responsible_user_id: Optional[int] = None  # Required only for full_single
-    requesting_user_id: int = 0  # User making the request
+    custom_percentages: Optional[Dict[int, float]] = None  # {user_id: percentage}
+    responsible_user_id: Optional[int] = Field(None, gt=0)  # Required only for full_single
+    requesting_user_id: int = Field(gt=0)  # User making the request
 
 
-@dataclass(frozen=True)
-class UpdateExpenseResponsibilitiesResult:
+class UpdateExpenseResponsibilitiesResult(BaseModel):
     """Result of updating expense responsibilities"""
     success: bool = True
 
@@ -94,6 +93,13 @@ class UpdateExpenseResponsibilitiesUseCase:
             # 6. Get all participants
             participants = self._uow.budget_participants.find_by_budget_id(budget.id)
             participant_user_ids = [p.user_id for p in participants]
+            
+            # Get User entities for participants
+            participant_users = []
+            for user_id in participant_user_ids:
+                user = self._uow.users.find_by_id(user_id)
+                if user:
+                    participant_users.append(user)
 
             # 7. Validate full_single responsible user is a participant
             if split_type == SplitType.FULL_SINGLE:
@@ -114,38 +120,26 @@ class UpdateExpenseResponsibilitiesUseCase:
                 purchase_id=expense.purchase_id,
                 installment_id=expense.installment_id,
                 paid_by_user_id=expense.paid_by_user_id,
-                snapshot_description=expense.snapshot_description,
-                snapshot_amount=expense.snapshot_amount,
-                snapshot_currency=expense.snapshot_currency,
-                snapshot_date=expense.snapshot_date,
+                description=expense.description,
+                amount=expense.amount,
+                currency=expense.currency,
+                date=expense.date,
+                payment_method_name=expense.payment_method_name,
                 split_type=split_type,
+                created_at=expense.created_at,
             )
             self._uow.budget_expenses.save(updated_expense)
 
-            # 10. Calculate new responsibilities
-            # For proportional, get monthly_incomes
-            monthly_incomes_map = {}
-            if split_type == SplitType.PROPORTIONAL:
-                monthly_incomes = self._uow.monthly_incomes.find_by_period_and_users(
-                    budget.period, participant_user_ids
-                )
-                monthly_incomes_map = {mi.user_id: mi for mi in monthly_incomes}
-
-                # Validate all participants have income defined
-                for user_id in participant_user_ids:
-                    if user_id not in monthly_incomes_map:
-                        raise BusinessRuleViolationError(
-                            f"User {user_id} has no monthly_income defined for period {budget.period.to_string()}. "
-                            "All participants must have income defined to use proportional split."
-                        )
-
+            # 10. Calculate new responsibilities (use wage fallback for proportional split)
             responsibilities = self._responsibility_calculator.calculate_responsibilities(
-                budget_expense_id=expense.id,
-                participant_user_ids=participant_user_ids,
-                expense_amount=expense.snapshot_amount,
+                expense_id=expense.id,
+                budget_id=expense.budget_id,
+                amount=expense.amount,
                 split_type=split_type,
-                monthly_incomes_map=monthly_incomes_map,
-                custom_percentages=command.custom_percentages,
+                participants=participant_users,
+                period=None,  # No longer needed - ResponsibilityCalculator handles fallback
+                incomes=[],  # Empty list - ResponsibilityCalculator will use wage fallback
+                custom_percentages={int(k): Decimal(str(v)) for k, v in command.custom_percentages.items()} if command.custom_percentages else None,
                 full_single_user_id=command.responsible_user_id,
             )
 

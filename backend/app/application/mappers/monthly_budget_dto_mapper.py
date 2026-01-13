@@ -11,7 +11,6 @@ class MonthlyBudgetDTOMapper:
         return MonthlyBudgetResponseDTO(
             id=budget.id,
             name=budget.name,
-            period=budget.period.to_string(),
             description=budget.description,
             status=budget.status.value,
             created_by_user_id=budget.created_by_user_id,

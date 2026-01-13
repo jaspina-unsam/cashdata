@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Calendar, DollarSign } from 'lucide-react';
-import { useBudgetDetails } from '../../application/hooks/useBudgets';
+import { useBudgetDetails, useRemoveExpense } from '../../application/hooks/useBudgets';
 import { BudgetBalanceSummary } from '../components/BudgetBalanceSummary';
+import { AddExpenseToBudgetModal } from '../components/AddExpenseToBudgetModal';
+import { EditExpenseModal } from '../components/EditExpenseModal';
+import { DeleteExpenseConfirmation } from '../components/DeleteExpenseConfirmation';
 
 export const BudgetDetailPage: React.FC = () => {
   const { budgetId } = useParams<{ budgetId: string }>();
   const currentUserId = 1; // TODO: Get from auth context
 
-  const { data: budgetDetails, isLoading } = useBudgetDetails(
+  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<{ id: number; splitType: string; description: string } | null>(null);
+  const [deletingExpense, setDeletingExpense] = useState<{ id: number; description: string } | null>(null);
+
+  const { data: budgetDetails, isLoading, error } = useBudgetDetails(
     budgetId ? parseInt(budgetId) : undefined,
     currentUserId
   );
+  
+  const removeExpenseMutation = useRemoveExpense();
 
   if (isLoading) {
     return (
@@ -24,7 +33,27 @@ export const BudgetDetailPage: React.FC = () => {
     );
   }
 
+  if (error) {
+    console.error('Error loading budget details:', error);
+  }
+
   if (!budgetDetails) {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Presupuesto no encontrado</p>
+          {error && <p className="text-red-600 text-sm mt-2">Error: {String(error)}</p>}
+          <Link to="/budgets" className="text-blue-600 hover:underline mt-2 inline-block">
+            Volver a presupuestos
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { budget, expenses = [], responsibilities = [], balances = [], debt_summary = [] } = budgetDetails;
+
+  if (!budget) {
     return (
       <div className="max-w-6xl mx-auto p-6">
         <div className="text-center py-12">
@@ -36,14 +65,22 @@ export const BudgetDetailPage: React.FC = () => {
       </div>
     );
   }
+  const participants = balances.map(b => ({ id: b.user_id, name: b.user_name }));
 
-  const { budget, expenses, responsibilities, balances, debt_summary } = budgetDetails;
+  const handleDeleteExpense = async () => {
+    if (!deletingExpense || !budgetId) return;
 
-  const formatPeriod = (period: string) => {
-    const year = period.substring(0, 4);
-    const month = period.substring(4, 6);
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+    try {
+      await removeExpenseMutation.mutateAsync({
+        budgetId: parseInt(budgetId),
+        expenseId: deletingExpense.id,
+        userId: currentUserId,
+      });
+      setDeletingExpense(null);
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      alert('Error al eliminar el gasto');
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -66,7 +103,7 @@ export const BudgetDetailPage: React.FC = () => {
     }
   };
 
-  const totalAmount = expenses.reduce((sum, exp) => sum + exp.snapshot_amount, 0);
+  const totalAmount = expenses.reduce((sum, exp) => sum + (Number(exp.snapshot_amount) || 0), 0);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -83,7 +120,15 @@ export const BudgetDetailPage: React.FC = () => {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{budget.name}</h1>
-            <p className="text-gray-600 mt-1">{formatPeriod(budget.period)}</p>
+            {budget.created_at && (
+              <p className="text-gray-600 mt-1">
+                Creado el {new Date(budget.created_at).toLocaleDateString('es-AR', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </p>
+            )}
             {budget.description && (
               <p className="text-gray-600 text-sm mt-2">{budget.description}</p>
             )}
@@ -91,9 +136,7 @@ export const BudgetDetailPage: React.FC = () => {
 
           <button
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            onClick={() => {
-              alert('Add expense modal - TODO');
-            }}
+            onClick={() => setIsAddExpenseModalOpen(true)}
           >
             <Plus className="w-5 h-5" />
             Agregar Gasto
@@ -114,9 +157,7 @@ export const BudgetDetailPage: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900">Gastos del Presupuesto</h2>
           <button
             className="flex items-center gap-2 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            onClick={() => {
-              alert('Add expense modal - TODO');
-            }}
+            onClick={() => setIsAddExpenseModalOpen(true)}
           >
             <Plus className="w-4 h-4" />
             Agregar
@@ -156,7 +197,7 @@ export const BudgetDetailPage: React.FC = () => {
 
                     <div className="text-right">
                       <div className="font-semibold text-lg text-gray-900">
-                        ${expense.snapshot_amount.toFixed(2)}
+                        ${(Number(expense.snapshot_amount) || 0).toFixed(2)}
                       </div>
                       <div className="text-sm text-gray-500">{expense.snapshot_currency}</div>
                     </div>
@@ -174,7 +215,7 @@ export const BudgetDetailPage: React.FC = () => {
                             {resp.user_name || `User ${resp.user_id}`}: {resp.percentage}%
                           </span>
                           <span className="text-gray-900 font-medium">
-                            ${resp.responsible_amount.toFixed(2)}
+                            ${(Number(resp.responsible_amount) || 0).toFixed(2)}
                           </span>
                         </div>
                       ))}
@@ -185,7 +226,11 @@ export const BudgetDetailPage: React.FC = () => {
                     <button
                       className="text-sm text-blue-600 hover:text-blue-800"
                       onClick={() => {
-                        alert(`Edit expense ${expense.id} - TODO`);
+                        setEditingExpense({
+                          id: expense.id,
+                          splitType: expense.split_type,
+                          description: expense.snapshot_description,
+                        });
                       }}
                     >
                       Editar División
@@ -193,9 +238,10 @@ export const BudgetDetailPage: React.FC = () => {
                     <button
                       className="text-sm text-red-600 hover:text-red-800"
                       onClick={() => {
-                        if (confirm('¿Eliminar este gasto del presupuesto?')) {
-                          alert(`Remove expense ${expense.id} - TODO`);
-                        }
+                        setDeletingExpense({
+                          id: expense.id,
+                          description: expense.snapshot_description,
+                        });
                       }}
                     >
                       Eliminar
@@ -220,6 +266,38 @@ export const BudgetDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <AddExpenseToBudgetModal
+        isOpen={isAddExpenseModalOpen}
+        onClose={() => setIsAddExpenseModalOpen(false)}
+        budgetId={parseInt(budgetId!)}
+        currentUserId={currentUserId}
+        participants={participants}
+      />
+
+      {editingExpense && (
+        <EditExpenseModal
+          isOpen={true}
+          onClose={() => setEditingExpense(null)}
+          budgetId={parseInt(budgetId!)}
+          expenseId={editingExpense.id}
+          currentUserId={currentUserId}
+          currentSplitType={editingExpense.splitType as any}
+          participants={participants}
+          expenseDescription={editingExpense.description}
+        />
+      )}
+
+      {deletingExpense && (
+        <DeleteExpenseConfirmation
+          isOpen={true}
+          onClose={() => setDeletingExpense(null)}
+          onConfirm={handleDeleteExpense}
+          expenseDescription={deletingExpense.description}
+          isDeleting={removeExpenseMutation.isPending}
+        />
+      )}
     </div>
   );
 };

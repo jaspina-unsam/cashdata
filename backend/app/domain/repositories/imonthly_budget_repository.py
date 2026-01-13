@@ -11,13 +11,8 @@ class IMonthlyBudgetRepository(ABC):
         pass
 
     @abstractmethod
-    def find_by_period_and_creator(self, period: str, created_by_user_id: int) -> Optional[MonthlyBudget]:
-        """Find budget by period and creator"""
-        pass
-
-    @abstractmethod
-    def find_by_period(self, period: str) -> List[MonthlyBudget]:
-        """Find all budgets for a specific period"""
+    def find_all(self) -> List[MonthlyBudget]:
+        """Find all budgets ordered by created_at DESC"""
         pass
 
     @abstractmethod

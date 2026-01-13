@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.value_objects.budget_status import BudgetStatus
@@ -8,15 +8,13 @@ from app.application.exceptions.application_exceptions import (
 )
 
 
-@dataclass(frozen=True)
-class RemoveExpenseFromBudgetCommand:
+class RemoveExpenseFromBudgetCommand(BaseModel):
     """Command to remove an expense from a budget"""
-    budget_expense_id: int
-    requesting_user_id: int  # User making the request
+    budget_expense_id: int = Field(gt=0)
+    requesting_user_id: int = Field(gt=0)  # User making the request
 
 
-@dataclass(frozen=True)
-class RemoveExpenseFromBudgetResult:
+class RemoveExpenseFromBudgetResult(BaseModel):
     """Result of removing expense from budget"""
     success: bool = True
 

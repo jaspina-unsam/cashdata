@@ -1,23 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { budgetsRepository } from '../../infrastructure/api/budgetsRepository';
 import type { CreateBudgetData, AddExpenseData, UpdateResponsibilitiesData } from '../../infrastructure/api/budgetsRepository';
-import type { MonthlyBudget, BudgetDetails } from '../../domain/entities';
 
 // Query keys
 export const budgetKeys = {
   all: ['budgets'] as const,
   lists: () => [...budgetKeys.all, 'list'] as const,
-  list: (period: string, userId: number) => [...budgetKeys.lists(), { period, userId }] as const,
+  list: (userId: number) => [...budgetKeys.lists(), { userId }] as const,
   details: () => [...budgetKeys.all, 'detail'] as const,
   detail: (budgetId: number) => [...budgetKeys.details(), budgetId] as const,
 };
 
-// List budgets by period
-export function useBudgets(period: string, userId: number) {
+// List all budgets for user
+export function useBudgets(userId: number) {
   return useQuery({
-    queryKey: budgetKeys.list(period, userId),
-    queryFn: () => budgetsRepository.listByPeriod(period, userId),
-    enabled: !!period && !!userId,
+    queryKey: budgetKeys.list(userId),
+    queryFn: () => budgetsRepository.list(userId),
+    enabled: !!userId,
   });
 }
 
@@ -36,8 +35,8 @@ export function useCreateBudget() {
 
   return useMutation({
     mutationFn: (data: CreateBudgetData) => budgetsRepository.create(data),
-    onSuccess: (newBudget) => {
-      // Invalidate all budget lists that might include this period
+    onSuccess: () => {
+      // Invalidate all budget lists
       queryClient.invalidateQueries({ queryKey: budgetKeys.lists() });
     },
   });

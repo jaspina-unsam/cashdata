@@ -10,7 +10,6 @@ class MonthlyBudgetModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
-    period = Column(String(6), nullable=False)  # YYYYMM format
     description = Column(Text, nullable=True)
     status = Column(String(20), nullable=False)  # BudgetStatus enum value
     created_by_user_id = Column(Integer, nullable=False)
@@ -22,4 +21,4 @@ class MonthlyBudgetModel(Base):
     participants = relationship("BudgetParticipantModel", back_populates="budget", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<MonthlyBudgetModel(id={self.id}, name='{self.name}', period='{self.period}')>"
+        return f"<MonthlyBudgetModel(id={self.id}, name='{self.name}')>"
