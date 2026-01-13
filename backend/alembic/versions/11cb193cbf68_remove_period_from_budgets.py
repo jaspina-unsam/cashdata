@@ -20,8 +20,21 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # First drop all indexes that reference period column
-    op.drop_index('idx_monthly_budgets_period_name', table_name='monthly_budgets')
+    # Check if period column exists before attempting to drop it
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    columns = [col['name'] for col in inspector.get_columns('monthly_budgets')]
+    
+    if 'period' not in columns:
+        # Column already removed or never existed, nothing to do
+        return
+    
+    # First drop ALL indexes that reference period column
+    for index_name in ['idx_monthly_budgets_period', 'idx_monthly_budgets_period_name']:
+        try:
+            op.drop_index(index_name, table_name='monthly_budgets')
+        except Exception:
+            pass  # Index might not exist
     
     # Then remove period column from monthly_budgets
     op.drop_column('monthly_budgets', 'period')

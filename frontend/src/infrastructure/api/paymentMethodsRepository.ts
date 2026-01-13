@@ -5,7 +5,7 @@ export class PaymentMethodApiRepository implements IPaymentMethodRepository {
     private baseUrl: string;
 
     constructor() {
-        this.baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        this.baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
     }
 
     async findByUserId(userId: number): Promise<PaymentMethod[]> {
