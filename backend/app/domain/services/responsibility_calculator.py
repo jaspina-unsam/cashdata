@@ -29,7 +29,7 @@ class ResponsibilityCalculator:
         amount: Money,
         split_type: SplitType,
         participants: List[User],
-        period: Period,
+        period: Optional[Period] = None,
         incomes: Optional[List[MonthlyIncome]] = None,
         custom_percentages: Optional[Dict[int, Decimal]] = None,
         full_single_user_id: Optional[int] = None
@@ -126,10 +126,56 @@ class ResponsibilityCalculator:
         expense_id: int,
         amount: Money,
         participants: List[User],
-        period: Period,
+        period: Optional[Period],
         incomes: List[MonthlyIncome]
     ) -> List[BudgetExpenseResponsibility]:
-        """Calculate proportional split based on monthly incomes"""
+        """
+        Calculate proportional split based on monthly incomes or user wages.
+        
+        If incomes are provided and cover all participants, use those.
+        Otherwise, fall back to user.wage for any missing participants.
+
+        Raises:
+            InvalidCalculation: If a participant has neither income nor wage
+        """
+        # Build income map
+        income_map = {income.user_id: income for income in incomes}
+
+        # Check if we need to use wages as fallback
+        use_wages_for_missing = False
+        for participant in participants:
+            if participant.id not in income_map:
+                use_wages_for_missing = True
+                break
+        
+        # If using wages, create synthetic incomes from wages
+        if use_wages_for_missing:
+            synthetic_incomes = []
+            for participant in participants:
+                if participant.id in income_map:
+                    synthetic_incomes.append(income_map[participant.id])
+                else:
+                    # Use wage as fallback
+                    if participant.wage is None or participant.wage.amount <= 0:
+                        raise InvalidCalculation(
+                            f"User {participant.id} has no monthly income and no wage defined"
+                        )
+                    # Create a synthetic MonthlyIncome from wage
+                    from app.domain.entities.monthly_income import MonthlyIncome
+                    synthetic_income = MonthlyIncome(
+                        id=None,
+                        user_id=participant.id,
+                        period=period if period else Period(year=2026, month=1),  # dummy period
+                        amount=participant.wage
+                    )
+                    synthetic_incomes.append(synthetic_income)
+            incomes = synthetic_incomes
+
+        # Use period from first income if not provided
+        if not period and incomes:
+            period = incomes[0].period
+        
+        # Calculate percentages
         percentages = self._apportionment_calculator.calculate_percentages(
             participants, incomes, period
         )

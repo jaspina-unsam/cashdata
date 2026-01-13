@@ -4,7 +4,6 @@ from typing import List
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.domain.entities.monthly_budget import MonthlyBudget
 from app.domain.entities.budget_participant import BudgetParticipant
-from app.domain.value_objects.period import Period
 from app.domain.value_objects.budget_status import BudgetStatus
 from app.application.dtos.monthly_budget_dto import CreateMonthlyBudgetCommand, MonthlyBudgetResponseDTO
 from app.application.mappers.monthly_budget_dto_mapper import MonthlyBudgetDTOMapper
@@ -56,21 +55,10 @@ class CreateMonthlyBudgetUseCase:
             if len(command.participant_user_ids) != len(set(command.participant_user_ids)):
                 raise BusinessRuleViolationError("Duplicate participant user IDs are not allowed")
 
-            # 5. Check if budget already exists for this period and creator
-            period = Period(command.year, command.month)
-            existing_budget = self._uow.monthly_budgets.find_by_period_and_creator(
-                period.to_string(), command.created_by_user_id
-            )
-            if existing_budget:
-                raise BusinessRuleViolationError(
-                    f"Budget already exists for period {period.to_string()} and creator {command.created_by_user_id}"
-                )
-
-            # 6. Create MonthlyBudget entity
+            # 5. Create MonthlyBudget entity
             budget = MonthlyBudget(
                 id=None,
                 name=command.name,
-                period=period,
                 description=command.description,
                 status=BudgetStatus.ACTIVE,
                 created_by_user_id=command.created_by_user_id,
@@ -78,18 +66,18 @@ class CreateMonthlyBudgetUseCase:
                 updated_at=None,
             )
 
-            # 7. Save budget
+            # 6. Save budget
             saved_budget = self._uow.monthly_budgets.save(budget)
 
-            # 8. Create and save participants
+            # 7. Create and save participants
             participants = [
                 BudgetParticipant(id=None, budget_id=saved_budget.id, user_id=user_id)
                 for user_id in command.participant_user_ids
             ]
             saved_participants = self._uow.budget_participants.save_many(participants)
 
-            # 9. Commit transaction
+            # 8. Commit transaction
             self._uow.commit()
 
-        # 10. Return response DTO with participant count
+        # 9. Return response DTO with participant count
         return MonthlyBudgetDTOMapper.to_response_dto(saved_budget, len(saved_participants))

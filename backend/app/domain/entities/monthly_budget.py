@@ -3,18 +3,16 @@ from datetime import datetime
 from typing import Optional
 
 from app.domain.exceptions.domain_exceptions import InvalidEntity
-from app.domain.value_objects.period import Period
 from app.domain.value_objects.budget_status import BudgetStatus
 
 
 @dataclass(frozen=True)
 class MonthlyBudget:
     """
-    Domain entity representing a monthly budget for expense sharing.
+    Domain entity representing a budget for expense sharing.
 
     Invariants:
     - name must not be empty or only whitespace
-    - period must be valid
     - created_by_user_id must be positive
     - status must be valid BudgetStatus
     - id can be None (before persistence)
@@ -22,7 +20,6 @@ class MonthlyBudget:
 
     id: Optional[int]
     name: str
-    period: Period
     description: Optional[str]
     status: BudgetStatus
     created_by_user_id: int
@@ -44,7 +41,7 @@ class MonthlyBudget:
             raise InvalidEntity("status must be a valid BudgetStatus")
 
     def __str__(self) -> str:
-        return f"MonthlyBudget({self.name}, Period(year={self.period.year}, month={self.period.month}), {self.status.value})"
+        return f"MonthlyBudget({self.name}, {self.status.value}, created={self.created_at.strftime('%Y-%m-%d')})"
 
     def is_active(self) -> bool:
         """Check if budget is in active status"""

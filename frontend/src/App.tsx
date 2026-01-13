@@ -12,6 +12,8 @@ import {
 } from './presentation';
 import { StatementsPage } from './presentation/pages/StatementsPage';
 import { StatementDetailPage } from './presentation/pages/StatementDetailPage';
+import { BudgetsPage } from './presentation/pages/BudgetsPage';
+import { BudgetDetailPage } from './presentation/pages/BudgetDetailPage';
 
 function HomePage() {
   return (
@@ -33,6 +35,9 @@ function HomePage() {
       </Link>
       <Link to="/statements">
         <Card title="📄 Resumenes" subtitle="Ver resumenes mensuales" />
+      </Link>
+      <Link to="/budgets">
+        <Card title="💰 Presupuestos" subtitle="Gastos compartidos" />
       </Link>
     </div>
   );
@@ -83,6 +88,8 @@ export default function App() {
             <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />
             <Route path="/statements" element={<StatementsPage />} />
             <Route path="/statements/:id" element={<StatementDetailPage />} />
+            <Route path="/budgets" element={<BudgetsPage />} />
+            <Route path="/budgets/:budgetId" element={<BudgetDetailPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

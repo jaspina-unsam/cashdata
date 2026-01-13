@@ -19,20 +19,10 @@ class SQLAlchemyMonthlyBudgetRepository(IMonthlyBudgetRepository):
         ).first()
         return MonthlyBudgetMapper.to_entity(budget) if budget else None
 
-    def find_by_period_and_creator(self, period: str, created_by_user_id: int) -> Optional[MonthlyBudget]:
-        """Find budget by period and creator"""
-        budget = self.session.scalars(
-            select(MonthlyBudgetModel).where(
-                MonthlyBudgetModel.period == period,
-                MonthlyBudgetModel.created_by_user_id == created_by_user_id
-            )
-        ).first()
-        return MonthlyBudgetMapper.to_entity(budget) if budget else None
-
-    def find_by_period(self, period: str) -> List[MonthlyBudget]:
-        """Find all budgets for a specific period"""
+    def find_all(self) -> List[MonthlyBudget]:
+        """Find all budgets ordered by created_at DESC"""
         budgets = self.session.scalars(
-            select(MonthlyBudgetModel).where(MonthlyBudgetModel.period == period)
+            select(MonthlyBudgetModel).order_by(MonthlyBudgetModel.created_at.desc())
         ).all()
         return [MonthlyBudgetMapper.to_entity(b) for b in budgets]
 
@@ -44,6 +34,7 @@ class SQLAlchemyMonthlyBudgetRepository(IMonthlyBudgetRepository):
             select(MonthlyBudgetModel)
             .join(BudgetParticipantModel, MonthlyBudgetModel.id == BudgetParticipantModel.budget_id)
             .where(BudgetParticipantModel.user_id == user_id)
+            .order_by(MonthlyBudgetModel.created_at.desc())
             .distinct()
         ).all()
         return [MonthlyBudgetMapper.to_entity(b) for b in budgets]
@@ -55,7 +46,6 @@ class SQLAlchemyMonthlyBudgetRepository(IMonthlyBudgetRepository):
             existing = self.session.get(MonthlyBudgetModel, budget.id)
             if existing:
                 existing.name = budget.name
-                existing.period = budget.period.to_string()
                 existing.description = budget.description
                 existing.status = budget.status.value
                 existing.created_by_user_id = budget.created_by_user_id
