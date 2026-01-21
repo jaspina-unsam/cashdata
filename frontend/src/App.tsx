@@ -50,7 +50,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <Link to="/">
             <h1 className="text-3xl font-bold text-white">💰 CashData</h1>
-            <p className="text-blue-100 text-sm mt-1">Tu finanzas bajo control</p>
+            <p className="text-blue-100 text-sm mt-1">Tus finanzas bajo control</p>
           </Link>
         </div>
       </nav>
