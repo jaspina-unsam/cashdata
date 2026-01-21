@@ -55,7 +55,6 @@ build/Release
 .cache
 .next
 out
-dist/
 
 # OS
 .DS_Store
