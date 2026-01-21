@@ -81,3 +81,6 @@ htmlcov/
 # Requirements
 edit-delete-purchases-installments.md
 feature*.md
+
+# Docker dev environment files
+docker-compose.override.yml
