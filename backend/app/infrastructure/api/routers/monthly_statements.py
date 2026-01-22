@@ -23,6 +23,9 @@ from app.application.use_cases.list_statements_by_credit_card_use_case import (
     ListStatementByCreditCardUseCase,
     ListStatementByCreditCardQuery,
 )
+from app.application.use_cases.update_statement_dates_use_case import (
+    UpdateStatementDatesUseCase,
+)
 from app.application.exceptions.application_exceptions import (
     CreditCardNotFoundError,
     CreditCardOwnerMismatchError,

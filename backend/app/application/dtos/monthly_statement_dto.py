@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import date
+from typing import Optional
 
 
 @dataclass
@@ -20,9 +21,9 @@ class MonthlyStatementResponseDTO:
 class UpdateStatementDatesInputDTO:
     """DTO for updating statement dates."""
 
-    start_date: date
     closing_date: date
     due_date: date
+    start_date: Optional[date] = None
 
 
 @dataclass

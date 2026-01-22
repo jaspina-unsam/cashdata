@@ -70,7 +70,7 @@ class UpdateStatementDatesUseCase:
         updated_statement = MonthlyStatement(
             id=statement.id,
             credit_card_id=statement.credit_card_id,
-            start_date=input_dto.start_date,
+            start_date=input_dto.start_date or statement.start_date,
             closing_date=input_dto.closing_date,
             due_date=input_dto.due_date,
         )
