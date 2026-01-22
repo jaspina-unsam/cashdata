@@ -37,8 +37,6 @@ class TestCreateBudget:
         """Should create a budget with multiple participants"""
         budget_data = {
             "name": "January 2026 Budget",
-            "year": 2026,
-            "month": 1,
             "description": "Shared household budget",
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], test_users[1]["id"]]
@@ -49,7 +47,6 @@ class TestCreateBudget:
         assert response.status_code == 201
         data = response.json()
         assert data["name"] == "January 2026 Budget"
-        assert data["period"] == "202601"
         assert data["description"] == "Shared household budget"
         assert data["status"] == "active"
         assert data["created_by_user_id"] == test_users[0]["id"]
@@ -61,8 +58,6 @@ class TestCreateBudget:
         """Should create a budget with single participant"""
         budget_data = {
             "name": "Personal Budget",
-            "year": 2026,
-            "month": 2,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"]]
         }
@@ -72,15 +67,12 @@ class TestCreateBudget:
         assert response.status_code == 201
         data = response.json()
         assert data["name"] == "Personal Budget"
-        assert data["period"] == "202602"
         assert data["participant_count"] == 1
 
     def test_should_fail_when_creator_not_participant(self, client, test_users):
         """Should fail when creator is not included in participants"""
         budget_data = {
             "name": "Invalid Budget",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[1]["id"]]  # Creator not included
         }
@@ -94,8 +86,6 @@ class TestCreateBudget:
         """Should fail when creator user doesn't exist"""
         budget_data = {
             "name": "Invalid Budget",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": 999,  # Non-existent user
             "participant_user_ids": [999]
         }
@@ -109,8 +99,6 @@ class TestCreateBudget:
         """Should fail when participant user doesn't exist"""
         budget_data = {
             "name": "Invalid Budget",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], 999]  # One participant doesn't exist
         }
@@ -124,8 +112,6 @@ class TestCreateBudget:
         """Should fail when participant user IDs are duplicated"""
         budget_data = {
             "name": "Invalid Budget",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], test_users[0]["id"]]  # Duplicate
         }
@@ -135,57 +121,25 @@ class TestCreateBudget:
         assert response.status_code == 409
         assert "duplicate participant user ids" in response.json()["detail"].lower()
 
-    def test_should_fail_when_budget_already_exists_for_period_and_creator(self, client, test_users):
-        """Should fail when budget already exists for same period and creator"""
-        # Create first budget
-        budget_data = {
-            "name": "January Budget",
-            "year": 2026,
-            "month": 1,
-            "created_by_user_id": test_users[0]["id"],
-            "participant_user_ids": [test_users[0]["id"]]
-        }
-        response1 = client.post("/api/v1/budgets", json=budget_data)
-        assert response1.status_code == 201
-
-        # Try to create another budget for same period and creator
-        budget_data2 = {
-            "name": "Another January Budget",
-            "year": 2026,
-            "month": 1,
-            "created_by_user_id": test_users[0]["id"],
-            "participant_user_ids": [test_users[0]["id"]]
-        }
-        response2 = client.post("/api/v1/budgets", json=budget_data2)
-
-        assert response2.status_code == 409
-        assert "budget already exists" in response2.json()["detail"].lower()
-
 
 class TestListBudgets:
     """Test GET /api/v1/budgets"""
 
     def test_should_list_budgets_for_user_in_period(self, client, test_users):
-        """Should list budgets where user is participant for specific period"""
+        """Should list budgets where user is participant"""
         # Create budgets
         budget1_data = {
             "name": "January Budget 1",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], test_users[1]["id"]]
         }
         budget2_data = {
             "name": "January Budget 2",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[1]["id"],
             "participant_user_ids": [test_users[1]["id"], test_users[2]["id"]]
         }
         budget3_data = {
             "name": "February Budget",
-            "year": 2026,
-            "month": 2,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"]]
         }
@@ -194,28 +148,23 @@ class TestListBudgets:
         client.post("/api/v1/budgets", json=budget2_data)
         client.post("/api/v1/budgets", json=budget3_data)
 
-        # List budgets for user 1 in January 2026
-        response = client.get("/api/v1/budgets", params={"period": "202601", "user_id": test_users[0]["id"]})
+        # List budgets for user 1
+        response = client.get("/api/v1/budgets", params={"user_id": test_users[0]["id"]})
 
         assert response.status_code == 200
         budgets = response.json()
-        assert len(budgets) == 1  # Only budget1 includes user 1
-        assert budgets[0]["name"] == "January Budget 1"
-        assert budgets[0]["participant_count"] == 2
+        assert len(budgets) == 2  # budget1 and budget3 include user 1
+        budget_names = [b["name"] for b in budgets]
+        assert "January Budget 1" in budget_names
+        assert "February Budget" in budget_names
 
     def test_should_return_empty_list_when_no_budgets_for_period(self, client, test_users):
-        """Should return empty list when no budgets exist for period"""
-        response = client.get("/api/v1/budgets", params={"period": "202601", "user_id": test_users[0]["id"]})
+        """Should return empty list when no budgets exist for user"""
+        response = client.get("/api/v1/budgets", params={"user_id": test_users[0]["id"]})
 
         assert response.status_code == 200
         budgets = response.json()
         assert len(budgets) == 0
-
-    def test_should_fail_for_invalid_period_format(self, client, test_users):
-        """Should fail for invalid period format"""
-        response = client.get("/api/v1/budgets", params={"period": "invalid", "user_id": test_users[0]["id"]})
-
-        assert response.status_code == 422  # FastAPI validation error
 
 
 class TestGetBudgetDetails:
@@ -226,8 +175,6 @@ class TestGetBudgetDetails:
         # Create budget
         budget_data = {
             "name": "Test Budget",
-            "year": 2026,
-            "month": 1,
             "description": "Budget for testing",
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], test_users[1]["id"]]
@@ -240,9 +187,9 @@ class TestGetBudgetDetails:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["id"] == budget_id
-        assert data["name"] == "Test Budget"
-        assert data["participant_count"] == 2
+        assert data["budget"]["id"] == budget_id
+        assert data["budget"]["name"] == "Test Budget"
+        assert data["budget"]["participant_count"] == 2
 
     def test_should_fail_when_budget_not_found(self, client, test_users):
         """Should fail when budget doesn't exist"""
@@ -256,8 +203,6 @@ class TestGetBudgetDetails:
         # Create budget with only user 1 and 2
         budget_data = {
             "name": "Exclusive Budget",
-            "year": 2026,
-            "month": 1,
             "created_by_user_id": test_users[0]["id"],
             "participant_user_ids": [test_users[0]["id"], test_users[1]["id"]]
         }

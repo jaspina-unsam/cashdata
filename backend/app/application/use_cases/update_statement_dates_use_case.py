@@ -1,5 +1,7 @@
 """Use case for updating statement dates."""
 
+from datetime import timedelta
+
 from app.application.dtos.monthly_statement_dto import (
     MonthlyStatementResponseDTO,
     UpdateStatementDatesInputDTO,
@@ -105,6 +107,9 @@ class UpdateStatementDatesUseCase:
                 credit_card, statement, saved_statement, user_id
             )
 
+        # Update the next statement's start date if it exists
+        self._update_next_statement_start_date(saved_statement, credit_card)
+
         return MonthlyStatementResponseDTO(
             id=saved_statement.id,
             credit_card_id=saved_statement.credit_card_id,
@@ -177,3 +182,46 @@ class UpdateStatementDatesUseCase:
                         manually_assigned_statement_id=None
                     )
                     self._installment_repository.save(updated_installment)
+
+    def _update_next_statement_start_date(
+        self, current_statement: MonthlyStatement, credit_card
+    ):
+        """Update the start date of the next statement to be the day after current statement's closing date.
+
+        Args:
+            current_statement: The updated statement
+            credit_card: The credit card entity
+        """
+        # Find all statements for this credit card
+        all_statements = self._statement_repository.find_by_credit_card_id(
+            credit_card.id, include_future=True
+        )
+
+        # Sort statements by start_date to find the chronological order
+        sorted_statements = sorted(all_statements, key=lambda s: s.start_date)
+
+        # Find the current statement in the sorted list and get the next one
+        next_statement = None
+        current_index = None
+
+        for i, stmt in enumerate(sorted_statements):
+            if stmt.id == current_statement.id:
+                current_index = i
+                break
+
+        if current_index is not None and current_index + 1 < len(sorted_statements):
+            next_statement = sorted_statements[current_index + 1]
+
+        # Calculate the correct start date for the next statement
+        next_start_date = current_statement.closing_date + timedelta(days=1)
+
+        # If there's a next statement and its start_date doesn't match, update it
+        if next_statement and next_statement.start_date != next_start_date:
+            updated_next_statement = MonthlyStatement(
+                id=next_statement.id,
+                credit_card_id=next_statement.credit_card_id,
+                start_date=next_start_date,
+                closing_date=next_statement.closing_date,
+                due_date=next_statement.due_date,
+            )
+            self._statement_repository.save(updated_next_statement)

@@ -9,7 +9,6 @@ from app.application.use_cases.create_monthly_budget_use_case import (
 from app.domain.entities.monthly_budget import MonthlyBudget
 from app.domain.entities.user import User
 from app.domain.entities.budget_participant import BudgetParticipant
-from app.domain.value_objects.period import Period
 from app.domain.value_objects.budget_status import BudgetStatus
 from app.domain.value_objects.money import Money, Currency
 from app.application.exceptions.application_exceptions import (
@@ -54,7 +53,6 @@ class TestCreateMonthlyBudgetUseCase:
         saved_budget = MonthlyBudget(
             id=1,
             name="January 2026 Budget",
-            period=Period(2026, 1),
             description="Shared budget",
             status=BudgetStatus.ACTIVE,
             created_by_user_id=1,
@@ -71,14 +69,11 @@ class TestCreateMonthlyBudgetUseCase:
             1: creator,
             2: participant
         }.get(user_id)
-        mock_unit_of_work.monthly_budgets.find_by_period_and_creator.return_value = None
         mock_unit_of_work.monthly_budgets.save.return_value = saved_budget
         mock_unit_of_work.budget_participants.save_many.return_value = saved_participants
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             description="Shared budget",
             created_by_user_id=1,
             participant_user_ids=[1, 2]
@@ -91,7 +86,6 @@ class TestCreateMonthlyBudgetUseCase:
         # Assert
         assert result.id == 1
         assert result.name == "January 2026 Budget"
-        assert result.period == "202601"
         assert result.description == "Shared budget"
         assert result.status == "active"
         assert result.created_by_user_id == 1
@@ -100,7 +94,6 @@ class TestCreateMonthlyBudgetUseCase:
         # Verify calls
         mock_unit_of_work.users.find_by_id.assert_any_call(1)
         mock_unit_of_work.users.find_by_id.assert_any_call(2)
-        mock_unit_of_work.monthly_budgets.find_by_period_and_creator.assert_called_once_with("202601", 1)
         mock_unit_of_work.monthly_budgets.save.assert_called_once()
         mock_unit_of_work.budget_participants.save_many.assert_called_once()
         mock_unit_of_work.commit.assert_called_once()
@@ -122,7 +115,6 @@ class TestCreateMonthlyBudgetUseCase:
         saved_budget = MonthlyBudget(
             id=1,
             name="January 2026 Budget",
-            period=Period(2026, 1),
             description=None,
             status=BudgetStatus.ACTIVE,
             created_by_user_id=1,
@@ -135,14 +127,11 @@ class TestCreateMonthlyBudgetUseCase:
         ]
 
         mock_unit_of_work.users.find_by_id.return_value = creator
-        mock_unit_of_work.monthly_budgets.find_by_period_and_creator.return_value = None
         mock_unit_of_work.monthly_budgets.save.return_value = saved_budget
         mock_unit_of_work.budget_participants.save_many.return_value = saved_participants
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             description=None,
             created_by_user_id=1,
             participant_user_ids=[1]
@@ -166,8 +155,6 @@ class TestCreateMonthlyBudgetUseCase:
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             created_by_user_id=1,
             participant_user_ids=[1, 2]
         )
@@ -198,8 +185,6 @@ class TestCreateMonthlyBudgetUseCase:
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             created_by_user_id=1,
             participant_user_ids=[1, 2]
         )
@@ -233,8 +218,6 @@ class TestCreateMonthlyBudgetUseCase:
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             created_by_user_id=1,
             participant_user_ids=[2]  # Creator not included
         )
@@ -262,8 +245,6 @@ class TestCreateMonthlyBudgetUseCase:
 
         command = CreateMonthlyBudgetCommand(
             name="January 2026 Budget",
-            year=2026,
-            month=1,
             created_by_user_id=1,
             participant_user_ids=[1, 1]  # Duplicate
         )
@@ -271,45 +252,4 @@ class TestCreateMonthlyBudgetUseCase:
 
         # Act & Assert
         with pytest.raises(BusinessRuleViolationError, match="Duplicate participant user IDs are not allowed"):
-            use_case.execute(command)
-
-    def test_should_fail_when_budget_already_exists(self, mock_unit_of_work):
-        """
-        GIVEN: Budget already exists for same period and creator
-        WHEN: Execute use case
-        THEN: BusinessRuleViolationError is raised
-        """
-        # Arrange
-        creator = User(
-            id=1,
-            name="John Doe",
-            email="john@example.com",
-            wage=Money(50000, Currency.ARS)
-        )
-
-        existing_budget = MonthlyBudget(
-            id=1,
-            name="Existing Budget",
-            period=Period(2026, 1),
-            description="Existing",
-            status=BudgetStatus.ACTIVE,
-            created_by_user_id=1,
-            created_at=datetime(2026, 1, 1, 12, 0, 0),
-            updated_at=None,
-        )
-
-        mock_unit_of_work.users.find_by_id.return_value = creator
-        mock_unit_of_work.monthly_budgets.find_by_period_and_creator.return_value = existing_budget
-
-        command = CreateMonthlyBudgetCommand(
-            name="January 2026 Budget",
-            year=2026,
-            month=1,
-            created_by_user_id=1,
-            participant_user_ids=[1]
-        )
-        use_case = CreateMonthlyBudgetUseCase(mock_unit_of_work)
-
-        # Act & Assert
-        with pytest.raises(BusinessRuleViolationError, match="Budget already exists for period 202601 and creator 1"):
             use_case.execute(command)

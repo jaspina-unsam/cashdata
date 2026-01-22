@@ -6,7 +6,6 @@ from app.domain.entities.budget_with_expenses import BudgetWithExpenses
 from app.domain.entities.monthly_budget import MonthlyBudget
 from app.domain.entities.budget_expense import BudgetExpense
 from app.domain.entities.budget_expense_responsibility import BudgetExpenseResponsibility
-from app.domain.value_objects.period import Period
 from app.domain.value_objects.budget_status import BudgetStatus
 from app.domain.value_objects.money import Money
 from app.domain.value_objects.split_type import SplitType
@@ -230,7 +229,6 @@ class TestBudgetWithExpensesCalculations:
         return MonthlyBudget(
             id=1,
             name="Test Budget",
-            period=Period(2026, 1),
             description="Test budget for calculations",
             status=BudgetStatus.ACTIVE,
             created_by_user_id=created_by_user_id,

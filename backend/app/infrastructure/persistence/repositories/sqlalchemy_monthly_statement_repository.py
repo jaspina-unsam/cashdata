@@ -93,6 +93,7 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
             )
             model = self._session.execute(stmt).scalar_one()
             model.credit_card_id = statement.credit_card_id
+            model.start_date = statement.start_date
             model.closing_date = statement.closing_date
             model.due_date = statement.due_date
             self._session.flush()
