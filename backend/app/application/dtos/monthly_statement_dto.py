@@ -48,6 +48,10 @@ class PurchaseInStatementDTO:
     installments: int
     installment_number: int | None  # None for full purchases, 1-N for installments
     category_name: str
+    # Dual-currency fields
+    original_amount: Optional[float] = None
+    original_currency: Optional[str] = None
+    exchange_rate_id: Optional[int] = None
 
 
 @dataclass

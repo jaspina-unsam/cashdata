@@ -59,6 +59,9 @@ class GetStatementDetailUseCase:
         if not credit_card or credit_card.user_id != user_id:
             return None
 
+        # Get the card's currency for proper total calculation
+        card_currency = credit_card.credit_limit.currency
+
         # Get purchases that were made with this credit card's payment method
         all_purchases = self._purchase_repo.find_by_payment_method_id(credit_card.payment_method_id)
 
@@ -82,11 +85,14 @@ class GetStatementDetailUseCase:
                     statement_purchases.append(
                         self._create_purchase_dto(
                             purchase,
-                            installment.installment_number,
-                            float(installment.amount.amount),
+                            installment,
+                            card_currency,
                         )
                     )
 
+        # Calculate total in card's currency (summing primary amounts which are in card currency)
+        # The primary_amount in each purchase is already in the card's currency (ARS for ARS cards)
+        # For purchases made in USD, the primary_amount is the ARS equivalent
         total = sum([p.amount for p in statement_purchases])
 
         return StatementDetailDTO(
@@ -100,39 +106,68 @@ class GetStatementDetailUseCase:
             period_end_date=statement.closing_date,
             purchases=statement_purchases,
             total_amount=total,
-            currency=credit_card.credit_limit.currency,
+            currency=card_currency,
         )
 
     def _create_purchase_dto(
         self,
         purchase: Purchase,
-        installment_number: int | None,
-        installment_amount: float | None = None,
+        installment: "Installment",
+        card_currency: str,
     ) -> PurchaseInStatementDTO:
         """Create a purchase DTO with category name.
 
         Args:
             purchase: The purchase entity
-            installment_number: The installment number if this is an installment
-            installment_amount: The installment amount (if different from total)
+            installment: The installment entity
+            card_currency: The currency of the credit card (for proper conversion)
         """
+        from app.domain.entities.installment import Installment
+        
         category = self._category_repo.find_by_id(purchase.category_id)
         category_name = category.name if category else "Unknown"
 
-        # Use installment amount if provided, otherwise use total amount
-        amount = (
-            installment_amount
-            if installment_amount is not None
-            else float(purchase.total_amount.amount)
-        )
+        # Get installment amount in card currency (primary) and original currency (secondary)
+        installment_amount = installment.amount
+        
+        # Determine primary and secondary amounts based on card currency
+        if installment_amount.primary_currency.value == card_currency:
+            # Installment is already in card currency
+            amount = float(installment_amount.primary_amount)
+            currency = installment_amount.primary_currency.value
+            
+            if installment_amount.is_dual_currency():
+                original_amount = float(installment_amount.secondary_amount)
+                original_currency = installment_amount.secondary_currency.value
+            else:
+                original_amount = None
+                original_currency = None
+        else:
+            # Installment is in different currency, need to swap
+            if installment_amount.is_dual_currency():
+                # Use secondary as primary (should be in card currency)
+                amount = float(installment_amount.secondary_amount)
+                currency = installment_amount.secondary_currency.value
+                original_amount = float(installment_amount.primary_amount)
+                original_currency = installment_amount.primary_currency.value
+            else:
+                # Single currency but doesn't match card - this shouldn't happen in proper bimonetary setup
+                # For now, just use what we have
+                amount = float(installment_amount.primary_amount)
+                currency = installment_amount.primary_currency.value
+                original_amount = None
+                original_currency = None
 
         return PurchaseInStatementDTO(
             id=purchase.id,
             description=purchase.description,
             purchase_date=purchase.purchase_date,
             amount=amount,
-            currency=purchase.total_amount.currency,
+            currency=currency,
             installments=purchase.installments_count,
-            installment_number=installment_number,
+            installment_number=installment.installment_number,
             category_name=category_name,
+            original_amount=original_amount,
+            original_currency=original_currency,
+            exchange_rate_id=None,
         )

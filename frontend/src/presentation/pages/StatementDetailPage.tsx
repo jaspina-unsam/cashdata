@@ -11,7 +11,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useStatement, useUpdateStatementDates } from '../../application/hooks/useStatements';
-import { DualCurrencyAmount } from '../components/DualCurrencyAmount';
 
 export function StatementDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -260,14 +259,21 @@ export function StatementDetailPage() {
                         ? `${purchase.installment_number}/${purchase.installments}`
                         : `${purchase.installments} cuotas`}
                     </td>
-                    <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      <DualCurrencyAmount
-                        primaryAmount={purchase.amount}
-                        primaryCurrency={purchase.currency}
-                        secondaryAmount={purchase.original_amount}
-                        secondaryCurrency={purchase.original_currency}
-                        showBothAlways={true}
-                      />
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                      {purchase.currency === 'ARS' 
+                        ? `$${Number(purchase.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : (purchase.original_currency === 'ARS' && purchase.original_amount
+                          ? `$${Number(purchase.original_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : '-')
+                      }
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                      {purchase.currency === 'USD' 
+                        ? `US$${Number(purchase.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : (purchase.original_currency === 'USD' && purchase.original_amount
+                          ? `US$${Number(purchase.original_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : '-')
+                      }
                     </td>
                   </tr>
                 ))}
