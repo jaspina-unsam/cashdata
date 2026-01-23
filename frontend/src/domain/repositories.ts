@@ -45,11 +45,11 @@ export interface ICreditCardRepository {
 export interface IPurchaseRepository {
   findByUserId(
     userId: number,
-    filters?: { startDate?: string; endDate?: string; skip?: number; limit?: number }
-  ): Promise<Purchase[]>;
+    filters?: { startDate?: string; endDate?: string; page?: number; page_size?: number }
+  ): Promise<{ items: Purchase[], total: number, page: number, page_size: number, total_pages: number }>;
   findById(id: number, userId: number): Promise<Purchase | null>;
-  findByCreditCardId(cardId: number, userId: number, skip?: number, limit?: number): Promise<Purchase[]>;
-  findByCategoryId(categoryId: number, userId: number, skip?: number, limit?: number): Promise<Purchase[]>;
+  findByCreditCardId(cardId: number, userId: number, page?: number, page_size?: number): Promise<{ items: Purchase[], total: number, page: number, page_size: number, total_pages: number }>;
+  findByCategoryId(categoryId: number, userId: number, page?: number, page_size?: number): Promise<{ items: Purchase[], total: number, page: number, page_size: number, total_pages: number }>;
   getInstallments(purchaseId: number, userId: number): Promise<Installment[]>;
   create(
     userId: number,

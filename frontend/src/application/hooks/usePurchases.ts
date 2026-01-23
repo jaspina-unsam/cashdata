@@ -58,7 +58,7 @@ export function usePurchasesByCreditCard(
   return useQuery({
     queryKey: queryKeys.purchases.byCard(cardId, userId),
     queryFn: () =>
-      purchaseRepository.findByCreditCardId(cardId, userId, filters?.skip, filters?.limit),
+      purchaseRepository.findByCreditCardId(cardId, userId, filters?.page, filters?.page_size),
     enabled: !!cardId && !!userId,
   });
 }
@@ -74,7 +74,7 @@ export function usePurchasesByCategory(
   return useQuery({
     queryKey: queryKeys.purchases.byCategory(categoryId, userId),
     queryFn: () =>
-      purchaseRepository.findByCategoryId(categoryId, userId, filters?.skip, filters?.limit),
+      purchaseRepository.findByCategoryId(categoryId, userId, filters?.page, filters?.page_size),
     enabled: !!categoryId && !!userId,
   });
 }

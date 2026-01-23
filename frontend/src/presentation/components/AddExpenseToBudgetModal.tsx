@@ -29,7 +29,8 @@ export const AddExpenseToBudgetModal: React.FC<AddExpenseToBudgetModalProps> = (
   const addExpenseMutation = useAddExpense();
 
   // Fetch all purchases (no date restrictions)
-  const { data: purchases = [] } = usePurchases(currentUserId);
+  const { data: purchasesData } = usePurchases(currentUserId);
+  const purchases = purchasesData?.items || [];
 
   // Initialize custom percentages when participants change
   useEffect(() => {

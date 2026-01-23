@@ -48,26 +48,26 @@ export class PurchaseApiRepository implements IPurchaseRepository {
   async findByCreditCardId(
     cardId: number,
     userId: number,
-    skip: number = 0,
-    limit: number = 100
-  ): Promise<Purchase[]> {
-    return httpClient.get<Purchase[]>(`/api/v1/credit-cards/${cardId}/purchases`, {
+    page: number = 1,
+    page_size: number = 50
+  ): Promise<PaginatedResponse<Purchase>> {
+    return httpClient.get<PaginatedResponse<Purchase>>(`/api/v1/credit-cards/${cardId}/purchases`, {
       user_id: userId,
-      skip,
-      limit,
+      page,
+      page_size,
     });
   }
 
   async findByCategoryId(
     categoryId: number,
     userId: number,
-    skip: number = 0,
-    limit: number = 100
-  ): Promise<Purchase[]> {
-    return httpClient.get<Purchase[]>(`/api/v1/categories/${categoryId}/purchases`, {
+    page: number = 1,
+    page_size: number = 50
+  ): Promise<PaginatedResponse<Purchase>> {
+    return httpClient.get<PaginatedResponse<Purchase>>(`/api/v1/categories/${categoryId}/purchases`, {
       user_id: userId,
-      skip,
-      limit,
+      page,
+      page_size,
     });
   }
 

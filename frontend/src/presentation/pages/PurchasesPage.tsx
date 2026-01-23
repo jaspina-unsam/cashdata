@@ -357,6 +357,7 @@ export function PurchasesPage() {
 
         {/* Purchases List */}
         {purchases && purchases.length > 0 ? (
+          <>
           <div className="space-y-4">
             {purchases.map((purchase) => (
               <div
@@ -527,6 +528,7 @@ export function PurchasesPage() {
               </button>
             </div>
           )}
+          </>
         ) : (
           <div className="bg-white p-12 rounded-lg shadow-md text-center">
             <ShoppingCart className="mx-auto text-gray-400 mb-4" size={48} />
