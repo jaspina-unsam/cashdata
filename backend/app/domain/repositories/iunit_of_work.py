@@ -15,6 +15,7 @@ from app.domain.repositories.idigital_wallet_repository import IDigitalWalletRep
 from app.domain.repositories.ibudget_expense_repository import IBudgetExpenseRepository
 from app.domain.repositories.ibudget_expense_responsibility_repository import IBudgetExpenseResponsibilityRepository
 from app.domain.repositories.ibudget_participant_repository import IBudgetParticipantRepository
+from app.domain.repositories.iexchange_rate_repository import IExchangeRateRepository
 
 
 class IUnitOfWork(ABC):
@@ -33,6 +34,7 @@ class IUnitOfWork(ABC):
     cash_accounts: ICashAccountRepository
     bank_accounts: IBankAccountRepository
     digital_wallets: IDigitalWalletRepository
+    exchange_rates: IExchangeRateRepository
 
     @abstractmethod
     def __enter__(self):

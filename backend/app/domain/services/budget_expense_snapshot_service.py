@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
+from typing import Optional, Union
 
 from app.domain.entities.purchase import Purchase
 from app.domain.entities.installment import Installment
 from app.domain.entities.payment_method import PaymentMethod
 from app.domain.value_objects.money import Money
+from app.domain.value_objects.dual_money import DualMoney
 
 
 @dataclass(frozen=True)
@@ -16,7 +17,7 @@ class ExpenseSnapshot:
     This ensures budget calculations remain consistent even if original
     purchase/installment data changes.
     """
-    amount: Money
+    amount: Union[Money, DualMoney]
     currency: str
     description: str
     date: date

@@ -93,6 +93,9 @@ def create_purchase(
             total_amount=purchase_data.total_amount,
             currency=purchase_data.currency,
             installments_count=purchase_data.installments_count,
+            original_amount=purchase_data.original_amount,
+            original_currency=purchase_data.original_currency,
+            rate_type=purchase_data.rate_type,
         )
 
         use_case = CreatePurchaseUseCase(uow)

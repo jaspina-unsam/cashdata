@@ -20,6 +20,14 @@ class PurchaseDTOMapper:
     @staticmethod
     def to_response_dto(purchase: Purchase) -> PurchaseResponseDTO:
         """Convert Purchase entity to response DTO"""
+        # Extract dual-currency fields if present
+        original_amount = None
+        original_currency = None
+        
+        if purchase.total_amount.is_dual_currency():
+            original_amount = purchase.total_amount.secondary_amount
+            original_currency = purchase.total_amount.secondary_currency
+        
         return PurchaseResponseDTO(
             id=purchase.id,
             user_id=purchase.user_id,
@@ -27,9 +35,12 @@ class PurchaseDTOMapper:
             category_id=purchase.category_id,
             purchase_date=purchase.purchase_date,
             description=purchase.description,
-            total_amount=purchase.total_amount.amount,
-            currency=purchase.total_amount.currency,
+            total_amount=purchase.total_amount.primary_amount,
+            currency=purchase.total_amount.primary_currency,
             installments_count=purchase.installments_count,
+            original_amount=original_amount,
+            original_currency=original_currency,
+            exchange_rate_id=None,  # Will be populated from model if needed
         )
 
 
@@ -44,8 +55,8 @@ class InstallmentDTOMapper:
             purchase_id=installment.purchase_id,
             installment_number=installment.installment_number,
             total_installments=installment.total_installments,
-            amount=installment.amount.amount,
-            currency=installment.amount.currency,
+            amount=installment.amount.primary_amount,
+            currency=installment.amount.primary_currency,
             billing_period=installment.billing_period,
             manually_assigned_statement_id=installment.manually_assigned_statement_id,
         )

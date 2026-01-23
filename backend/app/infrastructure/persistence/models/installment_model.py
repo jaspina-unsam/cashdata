@@ -16,6 +16,11 @@ class InstallmentModel(Base):
     currency = Column(String(3), nullable=False)
     billing_period = Column(String(6), nullable=False)
     manually_assigned_statement_id = Column(Integer, ForeignKey("monthly_statements.id"))
+    
+    # Dual-currency support
+    original_currency = Column(String(3), nullable=True)
+    original_amount = Column(Numeric(precision=12, scale=2), nullable=True)
+    exchange_rate_id = Column(Integer, ForeignKey("exchange_rates.id"), nullable=True)
 
 
     # Relationships

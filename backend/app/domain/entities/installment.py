@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from datetime import date
+from typing import Union
 import re
 
+from app.domain.value_objects.dual_money import DualMoney
 from app.domain.value_objects.money import Money
 
 
@@ -23,13 +25,23 @@ class Installment:
     purchase_id: int
     installment_number: int
     total_installments: int
-    amount: Money
+    amount: Union[DualMoney, Money]  # Accept both for backward compatibility
     billing_period: str
     manually_assigned_statement_id: int | None
 
 
     def __post_init__(self):
         """Validate invariants after initialization"""
+        # Convert Money to DualMoney if needed for backward compatibility
+        if isinstance(self.amount, Money):
+            object.__setattr__(
+                self,
+                "amount",
+                DualMoney(
+                    primary_amount=self.amount.amount,
+                    primary_currency=self.amount.currency,
+                ),
+            )
         # Validate total_installments
         if self.total_installments < 1:
             raise ValueError(
@@ -47,10 +59,6 @@ class Installment:
                 f"installment_number ({self.installment_number}) cannot exceed "
                 f"total_installments ({self.total_installments})"
             )
-
-        # Validate amount is not zero (can be negative for credits/bonifications)
-        if self.amount.amount == 0:
-            raise ValueError(f"amount cannot be zero, got {self.amount.amount}")
 
         # Validate billing_period format (YYYYMM)
         if not re.match(r"^\d{6}$", self.billing_period):

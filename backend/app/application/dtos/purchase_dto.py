@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from typing import Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from app.domain.value_objects.money import Currency
@@ -21,6 +22,10 @@ class CreatePurchaseInputDTO(BaseModel):
     installments_count: int = Field(
         ge=1, description="Number of installments (minimum 1)"
     )
+    # Dual-currency fields
+    original_amount: Optional[Decimal] = Field(None, description="Original amount (if different currency)")
+    original_currency: Optional[str] = Field(None, description="Original currency")
+    rate_type: Optional[str] = Field(None, description="Preferred exchange rate type")
 
     @field_validator("description")
     @classmethod
@@ -40,6 +45,9 @@ class CreatePurchaseInputDTO(BaseModel):
                 "total_amount": "120000.00",
                 "currency": "ARS",
                 "installments_count": 12,
+                "original_amount": "100.00",
+                "original_currency": "USD",
+                "rate_type": "blue"
             }
         },
     )
@@ -57,6 +65,10 @@ class PurchaseResponseDTO(BaseModel):
     total_amount: Decimal
     currency: Currency
     installments_count: int
+    # Dual-currency fields
+    original_amount: Optional[Decimal] = None
+    original_currency: Optional[str] = None
+    exchange_rate_id: Optional[int] = None
 
     model_config = ConfigDict(
         from_attributes=True,
