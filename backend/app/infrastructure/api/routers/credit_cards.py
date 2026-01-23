@@ -25,6 +25,7 @@ from app.application.dtos.purchase_dto import (
     CreditCardResponseDTO,
     CreditCardSummaryResponseDTO,
     PurchaseResponseDTO,
+    PaginatedResponse,
 )
 from app.application.mappers.purchase_dto_mapper import (
     CreditCardDTOMapper,
@@ -193,10 +194,10 @@ def get_credit_card_summary(
 
 @router.get(
     "/{card_id}/purchases",
-    response_model=List[PurchaseResponseDTO],
+    response_model=PaginatedResponse[PurchaseResponseDTO],
     summary="List purchases for a credit card",
     responses={
-        200: {"description": "List of purchases (may be empty)"},
+        200: {"description": "Paginated list of purchases"},
         400: {"description": "Card doesn't belong to user"},
         404: {"description": "Credit card not found"},
     },
@@ -204,9 +205,9 @@ def get_credit_card_summary(
 def list_purchases_by_card(
     card_id: int,
     user_id: int = Query(..., description="User ID (from auth context)"),
-    skip: int = Query(0, ge=0, description="Number of records to skip for pagination"),
-    limit: int = Query(
-        100, ge=1, le=1000, description="Maximum number of records to return"
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(
+        50, ge=1, le=200, description="Number of records per page"
     ),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
@@ -214,7 +215,7 @@ def list_purchases_by_card(
     List all purchases made with a specific credit card.
 
     Returns purchases sorted by date (most recent first).
-    Supports pagination (skip and limit).
+    Supports pagination with page and page_size parameters.
     Only returns purchases if card belongs to the authenticated user.
     """
     try:
@@ -233,10 +234,19 @@ def list_purchases_by_card(
             use_case = ListPurchasesByPaymentMethodUseCase(uow)
             purchases = use_case.execute(query)
 
-            # Apply pagination
-            paginated_purchases = purchases[skip : skip + limit]
+            # Calculate pagination
+            total = len(purchases)
+            skip = (page - 1) * page_size
+            items = [PurchaseDTOMapper.to_response_dto(p) for p in purchases[skip : skip + page_size]]
+            total_pages = (total + page_size - 1) // page_size if total > 0 else 1
 
-            return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+            return PaginatedResponse(
+                items=items,
+                total=total,
+                page=page,
+                page_size=page_size,
+                total_pages=total_pages,
+            )
 
     except ValueError as e:
         if "not found" in str(e):

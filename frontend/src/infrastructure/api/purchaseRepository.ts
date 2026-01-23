@@ -8,19 +8,27 @@ import { httpClient } from '../http/httpClient';
 import type { Purchase, Installment } from '../../domain/entities';
 import type { IPurchaseRepository } from '../../domain/repositories';
 
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
 export class PurchaseApiRepository implements IPurchaseRepository {
   private readonly basePath = '/api/v1/purchases';
 
   async findByUserId(
     userId: number,
-    filters?: { startDate?: string; endDate?: string; skip?: number; limit?: number }
-  ): Promise<Purchase[]> {
-    return httpClient.get<Purchase[]>(this.basePath, {
+    filters?: { startDate?: string; endDate?: string; page?: number; page_size?: number }
+  ): Promise<PaginatedResponse<Purchase>> {
+    return httpClient.get<PaginatedResponse<Purchase>>(this.basePath, {
       user_id: userId,
       start_date: filters?.startDate,
       end_date: filters?.endDate,
-      skip: filters?.skip || 0,
-      limit: filters?.limit || 100,
+      page: filters?.page || 1,
+      page_size: filters?.page_size || 50,
     });
   }
 

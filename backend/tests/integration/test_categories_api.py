@@ -146,9 +146,10 @@ class TestListPurchasesByCategory:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
         # All purchases should belong to this category
-        for purchase in data:
+        for purchase in data["items"]:
             assert purchase["category_id"] == category_id
 
     def test_should_return_empty_list_when_no_purchases(self, client, test_user):
@@ -165,7 +166,8 @@ class TestListPurchasesByCategory:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 0
+        assert data["total"] == 0
+        assert len(data["items"]) == 0
 
     def test_should_return_404_for_nonexistent_category(self, client, test_user):
         """Should return 404 for non-existent category"""
@@ -251,5 +253,6 @@ class TestListPurchasesByCategory:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
-        assert data[0]["description"] == "User 1 Purchase"
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["description"] == "User 1 Purchase"

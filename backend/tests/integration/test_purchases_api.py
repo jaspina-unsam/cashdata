@@ -154,11 +154,12 @@ class TestListPurchases:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
         # Should be sorted by date (most recent first)
-        assert data[0]["description"] == "Purchase 3"
-        assert data[1]["description"] == "Purchase 2"
-        assert data[2]["description"] == "Purchase 1"
+        assert data["items"][0]["description"] == "Purchase 3"
+        assert data["items"][1]["description"] == "Purchase 2"
+        assert data["items"][2]["description"] == "Purchase 1"
 
     def test_should_filter_by_date_range(
         self, client, test_user, test_credit_card, test_category
@@ -194,8 +195,9 @@ class TestListPurchases:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 1
-        assert data[0]["description"] == "Purchase 2"
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["description"] == "Purchase 2"
 
     def test_should_return_400_for_invalid_date_range(self, client, test_user):
         """Should return 400 when start_date > end_date"""
@@ -234,12 +236,27 @@ class TestListPurchases:
         # Test pagination
         response = client.get(
             "/api/v1/purchases",
-            params={"user_id": test_user["id"], "skip": 2, "limit": 3},
+            params={"user_id": test_user["id"], "page": 1, "page_size": 5},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert data["total"] == 10
+        assert data["page"] == 1
+        assert data["page_size"] == 5
+        assert data["total_pages"] == 2
+        assert len(data["items"]) == 5
+        
+        # Request second page
+        response = client.get(
+            "/api/v1/purchases",
+            params={"user_id": test_user["id"], "page": 2, "page_size": 5},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["page"] == 2
+        assert len(data["items"]) == 5
 
 
 class TestListInstallmentsByPurchase:

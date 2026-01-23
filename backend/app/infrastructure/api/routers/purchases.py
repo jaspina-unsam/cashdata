@@ -38,6 +38,7 @@ from app.application.dtos.purchase_dto import (
     PurchaseResponseDTO,
     InstallmentResponseDTO,
     UpdatePurchaseInputDTO,
+    PaginatedResponse,
 )
 from app.application.mappers.purchase_dto_mapper import (
     PurchaseDTOMapper,
@@ -211,11 +212,11 @@ def get_purchase(
 
 @router.get(
     "",
-    response_model=List[PurchaseResponseDTO],
+    response_model=PaginatedResponse[PurchaseResponseDTO],
     summary="List purchases for user",
     responses={
-        200: {"description": "List of purchases (may be empty)"},
-        400: {"description": "Invalid date range"},
+        200: {"description": "Paginated list of purchases"},
+        400: {"description": "Invalid date range or pagination parameters"},
     },
 )
 def list_purchases(
@@ -226,18 +227,18 @@ def list_purchases(
     end_date: Optional[date] = Query(
         None, description="Filter by end date (inclusive)"
     ),
-    skip: int = Query(0, ge=0, description="Number of records to skip for pagination"),
-    limit: int = Query(
-        100, ge=1, le=1000, description="Maximum number of records to return"
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(
+        50, ge=1, le=200, description="Number of items per page"
     ),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
-    List purchases for the authenticated user.
+    List purchases for the authenticated user with pagination.
 
     Supports:
     - Date range filtering (start_date and end_date)
-    - Pagination (skip and limit)
+    - Pagination (page and page_size)
 
     Returns purchases sorted by date (most recent first).
     """
@@ -254,10 +255,23 @@ def list_purchases(
             use_case = ListPurchasesByUserUseCase(uow)
             purchases = use_case.execute(query)
 
+        # Calculate pagination
+        total = len(purchases)
+        total_pages = (total + page_size - 1) // page_size if total > 0 else 1
+        
         # Apply pagination
-        paginated_purchases = purchases[skip : skip + limit]
+        skip = (page - 1) * page_size
+        paginated_purchases = purchases[skip : skip + page_size]
+        
+        items = [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
 
-        return [PurchaseDTOMapper.to_response_dto(p) for p in paginated_purchases]
+        return PaginatedResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+        )
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

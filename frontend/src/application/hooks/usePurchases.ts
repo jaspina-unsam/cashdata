@@ -10,17 +10,25 @@ import { purchaseRepository } from '../../infrastructure';
 import { queryKeys } from '../config/queryClient';
 
 export interface PurchaseFilters {
-  skip?: number;
-  limit?: number;
+  page?: number;
+  page_size?: number;
   startDate?: string; // Format: YYYY-MM-DD
   endDate?: string; // Format: YYYY-MM-DD
+}
+
+export interface PaginatedPurchases {
+  items: Purchase[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 /**
  * Hook to fetch all purchases for a user
  */
 export function usePurchases(userId: number, filters?: PurchaseFilters) {
-  return useQuery({
+  return useQuery<PaginatedPurchases>({
     queryKey: queryKeys.purchases.all(userId, filters),
     queryFn: () =>
       purchaseRepository.findByUserId(userId, filters),

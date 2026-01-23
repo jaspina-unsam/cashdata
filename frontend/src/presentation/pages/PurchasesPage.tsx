@@ -32,6 +32,8 @@ const formatLocalDate = (dateString: string): string => {
 export function PurchasesPage() {
   const [showForm, setShowForm] = useState(false);
   const [expandedPurchase, setExpandedPurchase] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 50;
   const [formData, setFormData] = useState({
     payment_method_id: '',
     category_id: '',
@@ -42,10 +44,16 @@ export function PurchasesPage() {
     installments_count: '1',
   });
 
-  const { data: purchases, isLoading, error } = usePurchases(CURRENT_USER_ID);
+  const { data: purchasesData, isLoading, error } = usePurchases(CURRENT_USER_ID, { 
+    page: currentPage, 
+    page_size: pageSize 
+  });
   const { data: categories } = useCategories();
   const { data: paymentMethods } = usePaymentMethods(CURRENT_USER_ID);
   const createPurchase = useCreatePurchase();
+
+  const purchases = purchasesData?.items || [];
+  const totalPages = purchasesData?.total_pages || 1;
 
   const navigate = useNavigate();
 
@@ -469,6 +477,56 @@ export function PurchasesPage() {
               </div>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Anterior
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-4 py-2 rounded-lg ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Siguiente
+              </button>
+            </div>
+          )}
         ) : (
           <div className="bg-white p-12 rounded-lg shadow-md text-center">
             <ShoppingCart className="mx-auto text-gray-400 mb-4" size={48} />

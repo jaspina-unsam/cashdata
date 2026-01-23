@@ -1,9 +1,11 @@
 from datetime import date
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, List, Generic, TypeVar
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from app.domain.value_objects.money import Currency
+
+T = TypeVar('T')
 
 
 class CreatePurchaseInputDTO(BaseModel):
@@ -285,3 +287,12 @@ class UpdateInstallmentInputDTO(BaseModel):
     model_config = ConfigDict(
         use_enum_values=True,
     )
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    """Generic paginated response"""
+    items: List[T]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int

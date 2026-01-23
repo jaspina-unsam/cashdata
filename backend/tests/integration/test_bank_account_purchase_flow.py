@@ -388,16 +388,18 @@ class TestBankAccountPurchaseFlow:
         # Verify both purchases exist and are associated with different users
         purchases1 = client.get("/api/v1/purchases", params={"user_id": user1_id})
         assert purchases1.status_code == 200
-        purchase1_ids = [p["id"] for p in purchases1.json()]
+        data1 = purchases1.json()
+        purchase1_ids = [p["id"] for p in data1["items"]]
         assert purchase1_id in purchase1_ids
 
         purchases2 = client.get("/api/v1/purchases", params={"user_id": user2_id})
         assert purchases2.status_code == 200
-        purchase2_ids = [p["id"] for p in purchases2.json()]
+        data2 = purchases2.json()
+        purchase2_ids = [p["id"] for p in data2["items"]]
         assert purchase2_id in purchase2_ids
 
         # Verify both purchases use the same payment_method_id
-        all_purchases = purchases1.json() + purchases2.json()
+        all_purchases = data1["items"] + data2["items"]
         bank_purchases = [
             p for p in all_purchases if p["payment_method_id"] == payment_method_id
         ]

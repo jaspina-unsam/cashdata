@@ -276,11 +276,12 @@ class TestListPurchasesByCreditCard:
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert data["total"] == 3
+        assert len(data["items"]) == 3
         # Should be sorted by date (most recent first)
-        assert data[0]["description"] == "Purchase 3"
-        assert data[1]["description"] == "Purchase 2"
-        assert data[2]["description"] == "Purchase 1"
+        assert data["items"][0]["description"] == "Purchase 3"
+        assert data["items"][1]["description"] == "Purchase 2"
+        assert data["items"][2]["description"] == "Purchase 1"
 
     def test_should_return_404_for_nonexistent_card(self, client, test_user):
         """Should return 404 for non-existent card"""
@@ -325,9 +326,13 @@ class TestListPurchasesByCreditCard:
         # Test pagination
         response = client.get(
             f"/api/v1/credit-cards/{card_id}/purchases",
-            params={"user_id": test_user["id"], "skip": 2, "limit": 3},
+            params={"user_id": test_user["id"], "page": 2, "page_size": 3},
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert len(data) == 3
+        assert data["total"] == 10
+        assert len(data["items"]) == 3
+        assert data["page"] == 2
+        assert data["page_size"] == 3
+        assert data["total_pages"] == 4

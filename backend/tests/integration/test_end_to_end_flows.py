@@ -210,17 +210,19 @@ class TestMultiplePurchasesFlow:
             },
         )
         assert date_filter_response.status_code == 200
-        date_filtered = date_filter_response.json()
-        assert len(date_filtered) == 1
-        assert date_filtered[0]["description"] == "Taxi ride"
+        data = date_filter_response.json()
+        assert data["total"] == 1
+        assert len(data["items"]) == 1
+        assert data["items"][0]["description"] == "Taxi ride"
 
         # 4. Filter by credit card
         card_purchases_response = client.get(
             f"/api/v1/credit-cards/{card_id}/purchases", params={"user_id": user_id}
         )
         assert card_purchases_response.status_code == 200
-        card_purchases = card_purchases_response.json()
-        assert len(card_purchases) == 3
+        card_data = card_purchases_response.json()
+        assert card_data["total"] == 3
+        assert len(card_data["items"]) == 3
 
         # 5. Filter by category
         food_purchases_response = client.get(
@@ -228,9 +230,10 @@ class TestMultiplePurchasesFlow:
             params={"user_id": user_id},
         )
         assert food_purchases_response.status_code == 200
-        food_purchases = food_purchases_response.json()
-        assert len(food_purchases) == 1
-        assert food_purchases[0]["description"] == "Grocery shopping"
+        food_data = food_purchases_response.json()
+        assert food_data["total"] == 1
+        assert len(food_data["items"]) == 1
+        assert food_data["items"][0]["description"] == "Grocery shopping"
 
 
 class TestInstallmentGenerationFlow:

@@ -20,6 +20,7 @@ from app.application.dtos.category_dto import CreateCategoryInputDTO
 from app.application.dtos.purchase_dto import (
     CategoryResponseDTO,
     PurchaseResponseDTO,
+    PaginatedResponse,
 )
 from app.application.mappers.purchase_dto_mapper import (
     CategoryDTOMapper,
@@ -114,16 +115,20 @@ def get_category(category_id: int, uow: IUnitOfWork = Depends(get_unit_of_work))
 
 @router.get(
     "/{category_id}/purchases",
-    response_model=List[PurchaseResponseDTO],
+    response_model=PaginatedResponse[PurchaseResponseDTO],
     summary="List purchases by category",
     responses={
-        200: {"description": "List of purchases (may be empty)"},
+        200: {"description": "Paginated list of purchases"},
         404: {"description": "Category not found"},
     },
 )
 def list_purchases_by_category(
     category_id: int,
     user_id: int = Query(..., description="User ID (from auth context)"),
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    page_size: int = Query(
+        50, ge=1, le=200, description="Number of records per page"
+    ),
     uow: IUnitOfWork = Depends(get_unit_of_work),
 ):
     """
@@ -148,4 +153,16 @@ def list_purchases_by_category(
     use_case = ListPurchasesByCategoryUseCase(uow)
     purchases = use_case.execute(query)
 
-    return [PurchaseDTOMapper.to_response_dto(p) for p in purchases]
+    # Calculate pagination
+    total = len(purchases)
+    skip = (page - 1) * page_size
+    items = [PurchaseDTOMapper.to_response_dto(p) for p in purchases[skip : skip + page_size]]
+    total_pages = (total + page_size - 1) // page_size if total > 0 else 1
+
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+        total_pages=total_pages,
+    )

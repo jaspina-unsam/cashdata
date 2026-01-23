@@ -126,21 +126,23 @@ class TestPurchaseAuthorization:
         response1 = client.get(
             "/api/v1/purchases", params={"user_id": setup["user1"]["id"]}
         )
-        purchases1 = response1.json()
+        data1 = response1.json()
 
         # Should only see User 1's purchase
-        assert len(purchases1) == 1
-        assert purchases1[0]["id"] == setup["purchase1"]["id"]
+        assert data1["total"] == 1
+        assert len(data1["items"]) == 1
+        assert data1["items"][0]["id"] == setup["purchase1"]["id"]
 
         # User 2 lists purchases
         response2 = client.get(
             "/api/v1/purchases", params={"user_id": setup["user2"]["id"]}
         )
-        purchases2 = response2.json()
+        data2 = response2.json()
 
         # Should only see User 2's purchase
-        assert len(purchases2) == 1
-        assert purchases2[0]["id"] == setup["purchase2"]["id"]
+        assert data2["total"] == 1
+        assert len(data2["items"]) == 1
+        assert data2["items"][0]["id"] == setup["purchase2"]["id"]
 
     def test_user_cannot_access_other_user_installments(self, client, two_users_setup):
         """User should not be able to access installments of another user's purchase"""
@@ -237,22 +239,24 @@ class TestCategoryAuthorizationForPurchases:
             f"/api/v1/categories/{setup['category']['id']}/purchases",
             params={"user_id": setup["user1"]["id"]},
         )
-        purchases1 = response1.json()
+        data1 = response1.json()
 
         # Should only see User 1's purchase
-        assert len(purchases1) == 1
-        assert purchases1[0]["description"] == "User 1 Purchase"
+        assert data1["total"] == 1
+        assert len(data1["items"]) == 1
+        assert data1["items"][0]["description"] == "User 1 Purchase"
 
         # User 2 requests category purchases
         response2 = client.get(
             f"/api/v1/categories/{setup['category']['id']}/purchases",
             params={"user_id": setup["user2"]["id"]},
         )
-        purchases2 = response2.json()
+        data2 = response2.json()
 
         # Should only see User 2's purchase
-        assert len(purchases2) == 1
-        assert purchases2[0]["description"] == "User 2 Purchase"
+        assert data2["total"] == 1
+        assert len(data2["items"]) == 1
+        assert data2["items"][0]["description"] == "User 2 Purchase"
 
 
 class TestCrossUserIsolation:
@@ -279,12 +283,14 @@ class TestCrossUserIsolation:
         ).json()
 
         # Verify User 1 only sees their own data
-        assert len(user1_purchases) == 1
-        assert user1_purchases[0]["user_id"] == user1_id
+        assert user1_purchases["total"] == 1
+        assert len(user1_purchases["items"]) == 1
+        assert user1_purchases["items"][0]["user_id"] == user1_id
         assert len(user1_cards) == 1
         assert user1_cards[0]["user_id"] == user1_id
-        assert len(user1_category_purchases) == 1
-        assert user1_category_purchases[0]["user_id"] == user1_id
+        assert user1_category_purchases["total"] == 1
+        assert len(user1_category_purchases["items"]) == 1
+        assert user1_category_purchases["items"][0]["user_id"] == user1_id
 
         # User 2's view
         user2_purchases = client.get(
@@ -301,13 +307,15 @@ class TestCrossUserIsolation:
         ).json()
 
         # Verify User 2 only sees their own data
-        assert len(user2_purchases) == 1
-        assert user2_purchases[0]["user_id"] == user2_id
+        assert user2_purchases["total"] == 1
+        assert len(user2_purchases["items"]) == 1
+        assert user2_purchases["items"][0]["user_id"] == user2_id
         assert len(user2_cards) == 1
         assert user2_cards[0]["user_id"] == user2_id
-        assert len(user2_category_purchases) == 1
-        assert user2_category_purchases[0]["user_id"] == user2_id
+        assert user2_category_purchases["total"] == 1
+        assert len(user2_category_purchases["items"]) == 1
+        assert user2_category_purchases["items"][0]["user_id"] == user2_id
 
         # Verify no overlap
-        assert user1_purchases[0]["id"] != user2_purchases[0]["id"]
+        assert user1_purchases["items"][0]["id"] != user2_purchases["items"][0]["id"]
         assert user1_cards[0]["id"] != user2_cards[0]["id"]

@@ -102,14 +102,15 @@ class TestCashPurchaseFlow:
             "/api/v1/purchases", params={"user_id": user_id}
         )
         assert user_purchases_response.status_code == 200
-        user_purchases = user_purchases_response.json()
+        data = user_purchases_response.json()
         
         # Should have at least our cash purchase
-        assert len(user_purchases) >= 1
+        assert data["total"] >= 1
+        assert len(data["items"]) >= 1
         
         # Find our purchase in the list
         cash_purchase = next(
-            (p for p in user_purchases if p["id"] == purchase_id), None
+            (p for p in data["items"] if p["id"] == purchase_id), None
         )
         assert cash_purchase is not None, "Cash purchase should be in user's purchase list"
         assert cash_purchase["payment_method_id"] == payment_method_id
@@ -226,16 +227,16 @@ class TestCashPurchaseFlow:
             "/api/v1/purchases", params={"user_id": user_id}
         )
         assert user_purchases_response.status_code == 200
-        user_purchases = user_purchases_response.json()
+        data = user_purchases_response.json()
         
         # Both purchases should be in the list
-        purchase_ids = [p["id"] for p in user_purchases]
+        purchase_ids = [p["id"] for p in data["items"]]
         assert purchase1_id in purchase_ids
         assert purchase2_id in purchase_ids
         
         # Both should have the same payment_method_id
         cash_purchases = [
-            p for p in user_purchases if p["payment_method_id"] == payment_method_id
+            p for p in data["items"] if p["payment_method_id"] == payment_method_id
         ]
         assert len(cash_purchases) >= 2, "Should have at least 2 purchases for this cash account"
 
