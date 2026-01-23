@@ -20,6 +20,7 @@ from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.application.services.statement_factory import StatementFactory
 from app.domain.services.payment_method_validator import PaymentMethodValidator
 from app.domain.value_objects.payment_method_type import PaymentMethodType
+from app.infrastructure.persistence.mappers.purchase_mapper import PurchaseMapper
 
 
 @dataclass(frozen=True)
@@ -38,6 +39,7 @@ class CreatePurchaseCommand:
     original_amount: Optional[Decimal] = None
     original_currency: Optional[str] = None
     rate_type: Optional[str] = None  # If None, auto-detect
+    exchange_rate_id: Optional[int] = None  # Pre-selected exchange rate
 
 
 @dataclass(frozen=True)
@@ -112,15 +114,27 @@ class CreatePurchaseUseCase:
             if not category:
                 raise ValueError(f"Category with ID {command.category_id} not found")
 
+            # Determine card currency for auto-conversion
+            purchase_currency = Currency(command.currency)
+            card_currency = None
+            
+            if paymethod.type == PaymentMethodType.CREDIT_CARD:
+                if credit_card and credit_card.credit_limit:
+                    card_currency = credit_card.credit_limit.currency
+
             # Build DualMoney for the purchase
             exchange_rate_entity = None
-            if command.original_amount is not None and command.original_currency is not None:
-                # Dual-currency purchase
-                original_curr = Currency(command.original_currency)
-                total_curr = Currency(command.currency)
-                
-                # Determine exchange rate type to use
-                preferred_rate_type = None
+            
+            # Auto-convert if purchase currency differs from card currency
+            should_auto_convert = (
+                card_currency is not None and 
+                purchase_currency != card_currency and 
+                command.original_amount is None
+            )
+            
+            if should_auto_convert:
+                # Purchase in foreign currency, auto-convert to card currency
+                preferred_rate_type = ExchangeRateType.MEP  # Default to MEP
                 if command.rate_type:
                     preferred_rate_type = ExchangeRateType(command.rate_type)
                 
@@ -128,25 +142,65 @@ class CreatePurchaseUseCase:
                 rate_finder = ExchangeRateFinder(uow.exchange_rates)
                 exchange_rate_entity = rate_finder.find_exchange_rate(
                     date=command.purchase_date,
-                    from_currency=Currency.USD,  # Assuming always USD -> ARS
-                    to_currency=Currency.ARS,
+                    from_currency=purchase_currency,
+                    to_currency=card_currency,
                     preferred_type=preferred_rate_type,
                     user_id=command.user_id,
                 )
                 
-                # If no exchange rate found and currencies are different, create inferred rate
-                if not exchange_rate_entity and original_curr != total_curr:
-                    calculator = InferredExchangeRateCalculator()
-                    exchange_rate_entity = calculator.create_inferred_rate_entity(
-                        purchase_date=command.purchase_date,
-                        original_amount=command.original_amount,
-                        original_currency=original_curr,
-                        converted_amount=command.total_amount,
-                        converted_currency=total_curr,
+                # Use found rate or fallback to 1500
+                rate_value = exchange_rate_entity.rate if exchange_rate_entity else Decimal("1500.00")
+                
+                # Calculate converted amount (from purchase currency to card currency)
+                converted_amount = command.total_amount * rate_value
+                
+                # Create DualMoney with card currency as primary, purchase currency as secondary
+                total_amount = DualMoney(
+                    primary_amount=converted_amount,
+                    primary_currency=card_currency,
+                    secondary_amount=command.total_amount,
+                    secondary_currency=purchase_currency,
+                    exchange_rate=rate_value,
+                )
+            elif command.original_amount is not None and command.original_currency is not None:
+                # Dual-currency purchase
+                original_curr = Currency(command.original_currency)
+                total_curr = Currency(command.currency)
+                
+                # Try to use provided exchange_rate_id first
+                if command.exchange_rate_id:
+                    exchange_rate_entity = uow.exchange_rates.find_by_id(command.exchange_rate_id)
+                    if not exchange_rate_entity:
+                        raise ValueError(f"Exchange rate with ID {command.exchange_rate_id} not found")
+                else:
+                    # Determine exchange rate type to use
+                    preferred_rate_type = None
+                    if command.rate_type:
+                        preferred_rate_type = ExchangeRateType(command.rate_type)
+                    
+                    # Try to find existing exchange rate
+                    rate_finder = ExchangeRateFinder(uow.exchange_rates)
+                    exchange_rate_entity = rate_finder.find_exchange_rate(
+                        date=command.purchase_date,
+                        from_currency=Currency.USD,  # Assuming always USD -> ARS
+                        to_currency=Currency.ARS,
+                        preferred_type=preferred_rate_type,
                         user_id=command.user_id,
                     )
-                    # Save the inferred exchange rate
-                    exchange_rate_entity = uow.exchange_rates.save(exchange_rate_entity)
+                    
+                    # If no exchange rate found and currencies are different, create inferred rate
+                    if not exchange_rate_entity and original_curr != total_curr:
+                        calculator = InferredExchangeRateCalculator()
+                        exchange_rate_entity = calculator.create_inferred_rate_entity(
+                            purchase_date=command.purchase_date,
+                            original_amount=command.original_amount,
+                            original_currency=original_curr,
+                            converted_amount=command.total_amount,
+                            converted_currency=total_curr,
+                            user_id=command.user_id,
+                        )
+                        # Save the inferred exchange rate
+                        exchange_rate_entity = uow.exchange_rates.save(exchange_rate_entity)
                 
                 total_amount = DualMoney(
                     primary_amount=command.total_amount,
@@ -184,6 +238,10 @@ class CreatePurchaseUseCase:
                 if purchase_model:
                     purchase_model.exchange_rate_id = exchange_rate_entity.id
                     uow.session.flush()
+                    
+                    # Re-fetch purchase to get updated entity with exchange_rate_id
+                    uow.session.refresh(purchase_model)
+                    saved_purchase = PurchaseMapper.to_entity(purchase_model)
 
             if paymethod.type == PaymentMethodType.CREDIT_CARD:
                 # Generate installments
@@ -196,10 +254,21 @@ class CreatePurchaseUseCase:
                 )
 
                 # Save all installments
-                uow.installments.save_all(installments)
+                saved_installments = uow.installments.save_all(installments)
+                
+                # Update exchange_rate_id for all installments if applicable
+                if exchange_rate_entity:
+                    from app.infrastructure.persistence.models.installment_model import InstallmentModel
+                    # Get all saved installment IDs and update them
+                    for installment in saved_installments:
+                        if installment.id:  # Should have ID after save
+                            installment_model = uow.session.get(InstallmentModel, installment.id)
+                            if installment_model:
+                                installment_model.exchange_rate_id = exchange_rate_entity.id
+                    uow.session.flush()
 
                 # Automatically create statements for all installment billing periods
-                for installment in installments:
+                for installment in saved_installments:
                     StatementFactory.get_or_create_statement_for_period(
                         credit_card=credit_card,
                         billing_period=installment.billing_period,

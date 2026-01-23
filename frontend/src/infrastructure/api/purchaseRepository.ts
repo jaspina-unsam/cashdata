@@ -79,7 +79,7 @@ export class PurchaseApiRepository implements IPurchaseRepository {
   }
 
   async update(id: number, userId: number, data: Partial<Omit<Purchase, 'id' | 'user_id'>>): Promise<Purchase> {
-    return httpClient.put<Purchase>(`${this.basePath}/${id}`, data, {
+    return httpClient.patch<Purchase>(`${this.basePath}/${id}`, data, {
       user_id: userId,
     });
   }

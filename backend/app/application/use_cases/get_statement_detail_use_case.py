@@ -123,40 +123,45 @@ class GetStatementDetailUseCase:
             card_currency: The currency of the credit card (for proper conversion)
         """
         from app.domain.entities.installment import Installment
+        from app.domain.value_objects.money import Currency
         
         category = self._category_repo.find_by_id(purchase.category_id)
         category_name = category.name if category else "Unknown"
 
-        # Get installment amount in card currency (primary) and original currency (secondary)
+        # Get installment amount in card currency
         installment_amount = installment.amount
         
         # Determine primary and secondary amounts based on card currency
-        if installment_amount.primary_currency.value == card_currency:
-            # Installment is already in card currency
-            amount = float(installment_amount.primary_amount)
-            currency = installment_amount.primary_currency.value
-            
-            if installment_amount.is_dual_currency():
+        # We ALWAYS want to show the amount in the card's currency
+        card_currency_enum = Currency[card_currency]
+        
+        if installment_amount.is_dual_currency():
+            # For dual currency, we need to figure out which is in card currency
+            if installment_amount.primary_currency == card_currency_enum:
+                # Primary is already in card currency - perfect!
+                amount = float(installment_amount.primary_amount)
+                currency = installment_amount.primary_currency.value
                 original_amount = float(installment_amount.secondary_amount)
                 original_currency = installment_amount.secondary_currency.value
-            else:
-                original_amount = None
-                original_currency = None
-        else:
-            # Installment is in different currency, need to swap
-            if installment_amount.is_dual_currency():
-                # Use secondary as primary (should be in card currency)
+            elif installment_amount.secondary_currency == card_currency_enum:
+                # Secondary is in card currency - swap them for display
                 amount = float(installment_amount.secondary_amount)
                 currency = installment_amount.secondary_currency.value
                 original_amount = float(installment_amount.primary_amount)
                 original_currency = installment_amount.primary_currency.value
             else:
-                # Single currency but doesn't match card - this shouldn't happen in proper bimonetary setup
-                # For now, just use what we have
+                # Neither matches card currency (shouldn't happen in bimonetary setup)
+                # Fall back to primary
                 amount = float(installment_amount.primary_amount)
                 currency = installment_amount.primary_currency.value
-                original_amount = None
-                original_currency = None
+                original_amount = float(installment_amount.secondary_amount)
+                original_currency = installment_amount.secondary_currency.value
+        else:
+            # Single currency installment
+            amount = float(installment_amount.primary_amount)
+            currency = installment_amount.primary_currency.value
+            original_amount = None
+            original_currency = None
 
         return PurchaseInStatementDTO(
             id=purchase.id,

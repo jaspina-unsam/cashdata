@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { usePurchase, useUpdatePurchase } from '../../application/hooks/usePurchases';
+import { usePurchase, useUpdatePurchase, usePurchaseInstallments } from '../../application/hooks/usePurchases';
 import InstallmentEditor from '../components/InstallmentEditor';
 import { useCategories } from '../../application/hooks/useCategories';
+import { useExchangeRates } from '../../application/hooks/useExchangeRates';
+import { useStatementsByCard } from '../../application/hooks/useStatements';
+import { usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
 
 const CURRENT_USER_ID = 1;
 
@@ -13,10 +16,24 @@ export default function EditPurchasePage() {
 
   const { data: purchase, isLoading, error } = usePurchase(purchaseId, CURRENT_USER_ID);
   const { data: categories } = useCategories();
+  
+  // Fetch exchange rates - get all available rates to allow flexibility in selection
+  const { data: exchangeRates } = useExchangeRates(CURRENT_USER_ID, {});
+  
+  // Fetch available statements for reassignment (single-payment only)
+  const { data: statements } = useStatementsByCard(
+    purchase?.payment_method_id || 0,
+    CURRENT_USER_ID
+  );
+  
+  // Fetch installments for single-payment reassignment
+  const { data: installments } = usePurchaseInstallments(purchaseId, CURRENT_USER_ID);
 
   const updatePurchase = useUpdatePurchase();
+  const updateInstallment = usePurchaseInstallmentsMutation();
 
   const [form, setForm] = useState<any>(null);
+  const [reassignStatementId, setReassignStatementId] = useState<number | null>(null);
 
   useEffect(() => {
     if (purchase) {
@@ -25,21 +42,56 @@ export default function EditPurchasePage() {
         category_id: purchase.category_id,
         purchase_date: purchase.purchase_date,
         total_amount: String(purchase.total_amount),
+        currency: purchase.currency || 'ARS',
+        original_amount: purchase.original_amount ? String(purchase.original_amount) : '',
+        original_currency: purchase.original_currency || '',
+        exchange_rate_id: purchase.exchange_rate_id || null,
       });
+      // Set current statement for reassignment
+      if (purchase.installments_count === 1 && installments && installments.length > 0) {
+        setReassignStatementId(installments[0].monthly_statement_id);
+      }
     }
-  }, [purchase]);
+  }, [purchase, installments]);
 
   if (isLoading || !form) return <div>Cargando...</div>;
   if (error) return <div>Error al cargar compra</div>;
 
   const onSave = async () => {
     try {
-      await updatePurchase.mutateAsync({ id: purchaseId, userId: CURRENT_USER_ID, data: {
-        description: form.description,
-        category_id: Number(form.category_id),
-        purchase_date: form.purchase_date,
-        total_amount: Number(form.total_amount),
-      }});
+      // Update purchase with dual-currency fields
+      await updatePurchase.mutateAsync({ 
+        id: purchaseId, 
+        userId: CURRENT_USER_ID, 
+        data: {
+          description: form.description,
+          category_id: Number(form.category_id),
+          purchase_date: form.purchase_date,
+          total_amount: Number(form.total_amount),
+          original_amount: form.original_amount ? Number(form.original_amount) : undefined,
+          original_currency: form.original_currency || undefined,
+          exchange_rate_id: (form.exchange_rate_id && form.exchange_rate_id !== 'custom') ? Number(form.exchange_rate_id) : undefined,
+        }
+      });
+      
+      // Reassign statement if changed (single-payment only)
+      if (
+        purchase?.installments_count === 1 && 
+        installments && 
+        installments.length > 0 && 
+        reassignStatementId && 
+        reassignStatementId !== installments[0].monthly_statement_id
+      ) {
+        await updateInstallment.mutateAsync({
+          id: installments[0].id,
+          userId: CURRENT_USER_ID,
+          purchaseId: purchaseId,
+          data: {
+            monthly_statement_id: reassignStatementId,
+          },
+        });
+      }
+      
       navigate('/purchases');
     } catch (err: any) {
       alert(`Error al actualizar: ${err?.message || 'Error desconocido'}`);
@@ -67,13 +119,125 @@ export default function EditPurchasePage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de compra</label>
-            <input type="date" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value={form.purchase_date} onChange={(e) => setForm({ ...form, purchase_date: e.target.value })} />
+            <input 
+              type="date" 
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              value={form.purchase_date} 
+              onChange={(e) => setForm({ ...form, purchase_date: e.target.value })} 
+            />
           </div>
           {purchase && purchase.installments_count === 1 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Monto total</label>
-              <input type="number" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: e.target.value })} />
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Monto ({form.currency})</label>
+                <input type="number" step="0.01" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" value={form.total_amount} onChange={(e) => setForm({ ...form, total_amount: e.target.value })} />
+              </div>
+              
+              {/* Dual-currency fields */}
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Conversión de moneda (opcional)</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Monto en {form.currency === 'USD' ? 'ARS' : 'USD'}
+                    </label>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                      value={form.original_amount} 
+                      onChange={(e) => {
+                        const newAmount = e.target.value;
+                        setForm({ 
+                          ...form, 
+                          original_amount: newAmount,
+                          original_currency: form.currency === 'USD' ? 'ARS' : 'USD',
+                          exchange_rate_id: newAmount ? 'custom' : null
+                        });
+                      }} 
+                      placeholder={form.currency === 'USD' ? 'Ej: 150000.00' : 'Ej: 100.00'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Tipo de cambio</label>
+                    <select 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                      value={form.exchange_rate_id || ''} 
+                      onChange={(e) => {
+                        const selectedValue = e.target.value;
+                        if (selectedValue === 'custom' || selectedValue === '') {
+                          setForm({ ...form, exchange_rate_id: selectedValue || null });
+                        } else {
+                          // Caso A: Seleccionar tipo de cambio existente → auto-calcular monto
+                          const selectedRate = exchangeRates?.find((r: any) => r.id === Number(selectedValue));
+                          if (selectedRate && form.total_amount) {
+                            const calculatedAmount = (Number(form.total_amount) * Number(selectedRate.rate)).toFixed(2);
+                            setForm({ 
+                              ...form, 
+                              exchange_rate_id: Number(selectedValue),
+                              original_amount: calculatedAmount,
+                              original_currency: form.currency === 'USD' ? 'ARS' : 'USD'
+                            });
+                          } else {
+                            setForm({ ...form, exchange_rate_id: Number(selectedValue) });
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">Seleccionar tipo de cambio...</option>
+                      {form.original_amount && form.exchange_rate_id === 'custom' && (
+                        <option value="custom">Monto personalizado</option>
+                      )}
+                      {exchangeRates?.filter((rate: any) => 
+                        (form.currency === 'USD' && rate.from_currency === 'USD' && rate.to_currency === 'ARS') ||
+                        (form.currency === 'ARS' && rate.from_currency === 'ARS' && rate.to_currency === 'USD')
+                      ).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                      .map((rate: any) => (
+                        <option key={rate.id} value={rate.id}>
+                          {new Date(rate.date).toLocaleDateString('es-AR')} - {rate.rate_type}: {Number(rate.rate).toFixed(2)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Vista previa</label>
+                    <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm">
+                      {form.original_amount && form.total_amount ? (
+                        <>
+                          1 {form.currency} = {
+                            form.exchange_rate_id === 'custom' 
+                              ? (Number(form.original_amount) / Number(form.total_amount)).toFixed(2)
+                              : (exchangeRates?.find((r: any) => r.id === form.exchange_rate_id)?.rate 
+                                  ? Number(exchangeRates?.find((r: any) => r.id === form.exchange_rate_id)?.rate).toFixed(2)
+                                  : '0.00')
+                          } {form.currency === 'USD' ? 'ARS' : 'USD'}
+                        </>
+                      ) : (
+                        <span className="text-gray-400">Completá los campos</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Statement reassignment */}
+              {statements && statements.length > 0 && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reasignar a statement</label>
+                  <select 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    value={reassignStatementId || ''} 
+                    onChange={(e) => setReassignStatementId(Number(e.target.value))}
+                  >
+                    {statements.map((stmt: any) => (
+                      <option key={stmt.id} value={stmt.id}>
+                        {new Date(stmt.start_date).toLocaleDateString('es-AR')} - {new Date(stmt.closing_date).toLocaleDateString('es-AR')} (Vence: {new Date(stmt.due_date).toLocaleDateString('es-AR')})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
         </div>
 

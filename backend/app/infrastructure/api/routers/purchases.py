@@ -96,6 +96,7 @@ def create_purchase(
             original_amount=purchase_data.original_amount,
             original_currency=purchase_data.original_currency,
             rate_type=purchase_data.rate_type,
+            exchange_rate_id=purchase_data.exchange_rate_id,
         )
 
         use_case = CreatePurchaseUseCase(uow)
@@ -157,6 +158,9 @@ def update_purchase(
             purchase_date=purchase_data.purchase_date,
             description=purchase_data.description,
             total_amount=purchase_data.total_amount,
+            original_amount=purchase_data.original_amount,
+            original_currency=purchase_data.original_currency,
+            exchange_rate_id=purchase_data.exchange_rate_id,
         )
 
         use_case = UpdatePurchaseUseCase(uow)

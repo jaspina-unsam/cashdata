@@ -13,13 +13,21 @@ class InstallmentMapper:
         """SQLAlchemy Model → Domain Entity"""
         # Build DualMoney from model fields
         if model.original_amount is not None and model.original_currency is not None:
-            # Dual-currency installment
+            # Dual-currency installment - calculate exchange rate from amounts
+            primary_amount = Decimal(str(model.amount))
+            secondary_amount = Decimal(str(model.original_amount))
+            
+            # Calculate rate from amounts (avoiding division by zero)
+            exchange_rate = None
+            if secondary_amount != 0:
+                exchange_rate = primary_amount / secondary_amount
+            
             amount = DualMoney(
-                primary_amount=Decimal(str(model.amount)),
+                primary_amount=primary_amount,
                 primary_currency=Currency(model.currency),
-                secondary_amount=Decimal(str(model.original_amount)),
+                secondary_amount=secondary_amount,
                 secondary_currency=Currency(model.original_currency),
-                exchange_rate=None  # Will be computed from exchange_rate_id if needed
+                exchange_rate=exchange_rate
             )
         else:
             # Single-currency installment

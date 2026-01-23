@@ -12,17 +12,32 @@ class PurchaseMapper:
     def to_entity(model: PurchaseModel) -> Purchase:
         """SQLAlchemy Model → Domain Entity"""
         # Build DualMoney from model fields
-        if model.original_amount is not None and model.original_currency is not None:
-            # Dual-currency purchase
+        # Only create dual-currency DualMoney if we have all three required fields
+        if (model.original_amount is not None and 
+            model.original_currency is not None and 
+            model.exchange_rate_id is not None and
+            model.total_currency != model.original_currency):  # Must be different currencies
+            # Dual-currency purchase - calculate exchange rate from amounts
+            # Rate is always how much of to_currency you get for 1 unit of from_currency
+            if model.total_currency == "ARS" and model.original_currency == "USD":
+                # USD to ARS: ARS amount / USD amount
+                calculated_rate = Decimal(str(model.total_amount)) / Decimal(str(model.original_amount))
+            elif model.total_currency == "USD" and model.original_currency == "ARS":
+                # ARS to USD: USD amount / ARS amount (inverse)
+                calculated_rate = Decimal(str(model.total_amount)) / Decimal(str(model.original_amount))
+            else:
+                # Other currency combinations
+                calculated_rate = Decimal(str(model.total_amount)) / Decimal(str(model.original_amount))
+            
             total_amount = DualMoney(
                 primary_amount=Decimal(str(model.total_amount)),
                 primary_currency=Currency(model.total_currency),
                 secondary_amount=Decimal(str(model.original_amount)),
                 secondary_currency=Currency(model.original_currency),
-                exchange_rate=None  # Will be computed from exchange_rate_id if needed
+                exchange_rate=calculated_rate
             )
         else:
-            # Single-currency purchase
+            # Single-currency purchase (or incomplete dual-currency data)
             total_amount = DualMoney(
                 primary_amount=Decimal(str(model.total_amount)),
                 primary_currency=Currency(model.total_currency),
