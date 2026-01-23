@@ -44,9 +44,19 @@ class SQLAlchemyPurchaseRepository(IPurchaseRepository):
                 existing.category_id = purchase.category_id
                 existing.purchase_date = purchase.purchase_date
                 existing.description = purchase.description
-                existing.total_amount = float(purchase.total_amount.amount)
-                existing.total_currency = purchase.total_amount.currency.value
+                existing.total_amount = float(purchase.total_amount.primary_amount)
+                existing.total_currency = purchase.total_amount.primary_currency.value
                 existing.installments_count = purchase.installments_count
+                
+                # Update dual-currency fields
+                if purchase.total_amount.is_dual_currency():
+                    existing.original_currency = purchase.total_amount.secondary_currency.value
+                    existing.original_amount = float(purchase.total_amount.secondary_amount)
+                else:
+                    existing.original_currency = None
+                    existing.original_amount = None
+                    existing.exchange_rate_id = None
+                
                 self.session.flush()
                 self.session.refresh(existing)
                 return PurchaseMapper.to_entity(existing)

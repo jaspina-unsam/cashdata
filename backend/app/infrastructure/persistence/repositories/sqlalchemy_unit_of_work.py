@@ -15,6 +15,7 @@ from app.infrastructure.persistence.repositories.sqlalchemy_budget_expense_repos
 from app.infrastructure.persistence.repositories.sqlalchemy_budget_expense_responsibility_repository import SQLAlchemyBudgetExpenseResponsibilityRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_budget_participant_repository import SQLAlchemyBudgetParticipantRepository
 from app.infrastructure.persistence.repositories.sqlalchemy_digital_wallet_repository import SQLAlchemyDigitalWalletRepository
+from app.infrastructure.persistence.repositories.sqlalchemy_exchange_rate_repository import SQLAlchemyExchangeRateRepository
 
 
 class SQLAlchemyUnitOfWork(IUnitOfWork):
@@ -39,6 +40,7 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self.cash_accounts = SQLAlchemyCashAccountRepository(self.session)
         self.digital_wallets = SQLAlchemyDigitalWalletRepository(self.session)
         self.bank_accounts = SQLAlchemyBankAccountRepository(self.session)
+        self.exchange_rates = SQLAlchemyExchangeRateRepository(self.session)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

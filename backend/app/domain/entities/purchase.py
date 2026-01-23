@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
+from typing import Union
 
-from app.domain.value_objects.money import Money
+from app.domain.value_objects.dual_money import DualMoney
+from app.domain.value_objects.money import Money, Currency
 
 
 @dataclass(frozen=True)
@@ -22,11 +25,22 @@ class Purchase:
     category_id: int
     purchase_date: date
     description: str
-    total_amount: Money
+    total_amount: Union[DualMoney, Money]  # Accept both for backward compatibility
     installments_count: int
 
     def __post_init__(self):
         """Validate invariants after initialization"""
+        # Convert Money to DualMoney if needed for backward compatibility
+        if isinstance(self.total_amount, Money):
+            object.__setattr__(
+                self,
+                "total_amount",
+                DualMoney(
+                    primary_amount=self.total_amount.amount,
+                    primary_currency=self.total_amount.currency,
+                ),
+            )
+        
         # Validate installments_count
         if self.installments_count < 1:
             raise ValueError(
@@ -34,9 +48,9 @@ class Purchase:
             )
 
         # Validate total_amount is not zero (can be negative for credits/bonifications)
-        if self.total_amount.amount == 0:
+        if self.total_amount.primary_amount == 0:
             raise ValueError(
-                f"total_amount cannot be zero, got {self.total_amount.amount}"
+                f"total_amount cannot be zero, got {self.total_amount.primary_amount}"
             )
 
         # Validate description is not empty
@@ -59,3 +73,9 @@ class Purchase:
     def __hash__(self):
         """Allow Purchase to be used in sets/dicts"""
         return hash(self.id) if self.id is not None else id(self)
+
+    def get_amount_in_currency(self, currency: Currency) -> Decimal:
+        return self.total_amount.in_currency(currency)
+
+    def is_dual_currency(self) -> bool:
+        return self.total_amount.is_dual_currency()

@@ -4,7 +4,9 @@ from datetime import date
 from decimal import Decimal
 
 from app.domain.entities.purchase import Purchase
-from app.domain.value_objects.money import Money, Currency
+from app.domain.value_objects.dual_money import DualMoney
+from app.domain.value_objects.money import Currency
+from app.domain.exceptions.domain_exceptions import InvalidMoneyOperation
 
 
 class TestPurchaseEntity:
@@ -26,7 +28,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Laptop Dell",
-            total_amount=Money(Decimal("150000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("150000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -37,8 +39,8 @@ class TestPurchaseEntity:
         assert purchase.category_id == 3
         assert purchase.purchase_date == date(2025, 1, 15)
         assert purchase.description == "Laptop Dell"
-        assert purchase.total_amount.amount == Decimal("150000.00")
-        assert purchase.total_amount.currency == Currency.ARS
+        assert purchase.total_amount.primary_amount == Decimal("150000.00")
+        assert purchase.total_amount.primary_currency == Currency.ARS
         assert purchase.installments_count == 1
 
     def test_create_purchase_with_multiple_installments(self):
@@ -55,7 +57,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Smart TV 55 pulgadas",
-            total_amount=Money(Decimal("85000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("85000.00"), primary_currency=Currency.ARS),
             installments_count=12,
         )
 
@@ -78,7 +80,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Supermercado",
-            total_amount=Money(Decimal("25000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("25000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -99,7 +101,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="  Cena en restaurante  ",
-            total_amount=Money(Decimal("8500.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("8500.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -120,12 +122,12 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Amazon purchase",
-            total_amount=Money(Decimal("250.00"), Currency.USD),
+            total_amount=DualMoney(primary_amount=Decimal("250.00"), primary_currency=Currency.USD),
             installments_count=3,
         )
 
         # Assert
-        assert purchase.total_amount.currency == Currency.USD
+        assert purchase.total_amount.primary_currency == Currency.USD
 
     # ===== VALIDATION ERRORS =====
 
@@ -144,7 +146,7 @@ class TestPurchaseEntity:
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
-                total_amount=Money(Decimal("1000.00"), Currency.ARS),
+                total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
                 installments_count=0,
             )
 
@@ -163,7 +165,7 @@ class TestPurchaseEntity:
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
-                total_amount=Money(Decimal("1000.00"), Currency.ARS),
+                total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
                 installments_count=-1,
             )
 
@@ -182,7 +184,7 @@ class TestPurchaseEntity:
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="Invalid purchase",
-                total_amount=Money(Decimal("0.00"), Currency.ARS),
+                total_amount=DualMoney(primary_amount=Decimal("0.00"), primary_currency=Currency.ARS),
                 installments_count=1,
             )
 
@@ -200,12 +202,12 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Credit",
-            total_amount=Money(Decimal("-100.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("-100.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         
         # Assert
-        assert purchase.total_amount.amount == Decimal("-100.00")
+        assert purchase.total_amount.primary_amount == Decimal("-100.00")
 
     def test_raises_error_for_empty_description(self):
         """
@@ -222,7 +224,7 @@ class TestPurchaseEntity:
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="",
-                total_amount=Money(Decimal("1000.00"), Currency.ARS),
+                total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
                 installments_count=1,
             )
 
@@ -241,7 +243,7 @@ class TestPurchaseEntity:
                 category_id=3,
                 purchase_date=date(2025, 1, 15),
                 description="   ",
-                total_amount=Money(Decimal("1000.00"), Currency.ARS),
+                total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
                 installments_count=1,
             )
 
@@ -261,7 +263,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         purchase2 = Purchase(
@@ -271,7 +273,7 @@ class TestPurchaseEntity:
             category_id=99,
             purchase_date=date(2025, 12, 31),
             description="Purchase B",
-            total_amount=Money(Decimal("5000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("5000.00"), primary_currency=Currency.ARS),
             installments_count=6,
         )
 
@@ -292,7 +294,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         purchase2 = Purchase(
@@ -302,7 +304,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -323,7 +325,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         purchase2 = Purchase(
@@ -333,7 +335,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -354,7 +356,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -377,7 +379,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -399,7 +401,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase A",
-            total_amount=Money(Decimal("1000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         purchase2 = Purchase(
@@ -409,7 +411,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Purchase B",
-            total_amount=Money(Decimal("2000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("2000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
         purchase3 = Purchase(
@@ -419,7 +421,7 @@ class TestPurchaseEntity:
             category_id=99,
             purchase_date=date(2025, 12, 31),
             description="Purchase C",
-            total_amount=Money(Decimal("3000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("3000.00"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
@@ -445,12 +447,12 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Expensive item",
-            total_amount=Money(Decimal("999999999.99"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("999999999.99"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
         # Assert
-        assert purchase.total_amount.amount == Decimal("999999999.99")
+        assert purchase.total_amount.primary_amount == Decimal("999999999.99")
 
     def test_purchase_with_many_installments(self):
         """
@@ -466,7 +468,7 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Long term financing",
-            total_amount=Money(Decimal("100000.00"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("100000.00"), primary_currency=Currency.ARS),
             installments_count=60,
         )
 
@@ -487,9 +489,118 @@ class TestPurchaseEntity:
             category_id=3,
             purchase_date=date(2025, 1, 15),
             description="Small purchase",
-            total_amount=Money(Decimal("0.01"), Currency.ARS),
+            total_amount=DualMoney(primary_amount=Decimal("0.01"), primary_currency=Currency.ARS),
             installments_count=1,
         )
 
         # Assert
-        assert purchase.total_amount.amount == Decimal("0.01")
+        assert purchase.total_amount.primary_amount == Decimal("0.01")
+
+    def test_is_dual_currency_false_for_single(self):
+        """
+        GIVEN: Purchase with single currency
+        WHEN: Calling is_dual_currency
+        THEN: Should return False
+        """
+        purchase = Purchase(
+            id=1,
+            user_id=10,
+            payment_method_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Single currency purchase",
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
+            installments_count=1,
+        )
+        assert not purchase.is_dual_currency()
+
+    def test_is_dual_currency_true_for_dual(self):
+        """
+        GIVEN: Purchase with dual currency
+        WHEN: Calling is_dual_currency
+        THEN: Should return True
+        """
+        purchase = Purchase(
+            id=1,
+            user_id=10,
+            payment_method_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Dual currency purchase",
+            total_amount=DualMoney(
+                primary_amount=Decimal("1000.00"),
+                primary_currency=Currency.ARS,
+                secondary_amount=Decimal("50.00"),
+                secondary_currency=Currency.USD,
+                exchange_rate=Decimal("20.00")
+            ),
+            installments_count=1,
+        )
+        assert purchase.is_dual_currency()
+
+    def test_get_amount_in_currency_primary(self):
+        """
+        GIVEN: Purchase with dual currency
+        WHEN: Getting amount in primary currency
+        THEN: Should return primary amount
+        """
+        purchase = Purchase(
+            id=1,
+            user_id=10,
+            payment_method_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Dual currency purchase",
+            total_amount=DualMoney(
+                primary_amount=Decimal("1000.00"),
+                primary_currency=Currency.ARS,
+                secondary_amount=Decimal("50.00"),
+                secondary_currency=Currency.USD,
+                exchange_rate=Decimal("20.00")
+            ),
+            installments_count=1,
+        )
+        assert purchase.get_amount_in_currency(Currency.ARS) == Decimal("1000.00")
+
+    def test_get_amount_in_currency_secondary(self):
+        """
+        GIVEN: Purchase with dual currency
+        WHEN: Getting amount in secondary currency
+        THEN: Should return secondary amount
+        """
+        purchase = Purchase(
+            id=1,
+            user_id=10,
+            payment_method_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Dual currency purchase",
+            total_amount=DualMoney(
+                primary_amount=Decimal("1000.00"),
+                primary_currency=Currency.ARS,
+                secondary_amount=Decimal("50.00"),
+                secondary_currency=Currency.USD,
+                exchange_rate=Decimal("20.00")
+            ),
+            installments_count=1,
+        )
+        assert purchase.get_amount_in_currency(Currency.USD) == Decimal("50.00")
+
+    def test_get_amount_in_currency_unavailable(self):
+        """
+        GIVEN: Purchase with single currency
+        WHEN: Getting amount in unavailable currency
+        THEN: Should raise InvalidMoneyOperation
+        """
+        purchase = Purchase(
+            id=1,
+            user_id=10,
+            payment_method_id=5,
+            category_id=3,
+            purchase_date=date(2025, 1, 15),
+            description="Single currency purchase",
+            total_amount=DualMoney(primary_amount=Decimal("1000.00"), primary_currency=Currency.ARS),
+            installments_count=1,
+        )
+        with pytest.raises(InvalidMoneyOperation):
+            purchase.get_amount_in_currency(Currency.USD)

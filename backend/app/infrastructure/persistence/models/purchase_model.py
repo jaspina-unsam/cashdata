@@ -17,6 +17,11 @@ class PurchaseModel(Base):
     total_amount = Column(Numeric(precision=12, scale=2), nullable=False)
     total_currency = Column(String(3), nullable=False)
     installments_count = Column(Integer, nullable=False)
+    
+    # Dual-currency support
+    original_currency = Column(String(3), nullable=True)
+    original_amount = Column(Numeric(precision=12, scale=2), nullable=True)
+    exchange_rate_id = Column(Integer, ForeignKey("exchange_rates.id"), nullable=True)
 
     # Relationships
     budget_expenses = relationship("BudgetExpenseModel", back_populates="purchase")
