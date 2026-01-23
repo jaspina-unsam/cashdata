@@ -409,10 +409,10 @@ class TestUpdatePurchase:
         assert len(installments) == 1
         assert installments[0]["amount"] == "1500.00"
 
-    def test_patch_purchase_amount_multiple_installments_returns_400(
+    def test_patch_purchase_amount_multiple_installments_regenerates(
         self, client, test_user, test_credit_card, test_category
     ):
-        """Should return 400 when trying to update amount for multi-installment purchase"""
+        """Should regenerate installments when updating amount for multi-installment purchase"""
         # Create multi-installment purchase
         purchase_data = {
             "payment_method_id": test_credit_card["payment_method_id"],
@@ -430,7 +430,7 @@ class TestUpdatePurchase:
         assert create_response.status_code == 201
         purchase = create_response.json()
 
-        # Try to update amount (should fail)
+        # Try to update amount (should succeed and regenerate installments)
         update_data = {"total_amount": 4000.00}
         response = client.patch(
             f"/api/v1/purchases/{purchase['id']}",
@@ -438,4 +438,6 @@ class TestUpdatePurchase:
             params={"user_id": test_user["id"]}
         )
 
-        assert response.status_code == 400
+        assert response.status_code == 200
+        updated_purchase = response.json()
+        assert updated_purchase["total_amount"] == "4000.00"

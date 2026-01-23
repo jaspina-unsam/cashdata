@@ -152,6 +152,18 @@ class TestCreatePurchaseUseCase:
             installments_count=1,
         )
         mock_unit_of_work.purchases.save.return_value = saved_purchase
+        
+        # Mock saved installments (return_value must be iterable)
+        mock_installment = Installment(
+            id=1,
+            purchase_id=100,
+            installment_number=1,
+            total_installments=1,
+            amount=Money(Decimal("50000.00"), Currency.ARS),
+            billing_period="202501",
+            manually_assigned_statement_id=None,
+        )
+        mock_unit_of_work.installments.save_all.return_value = [mock_installment]
 
         command = CreatePurchaseCommand(
             user_id=10,
@@ -201,6 +213,21 @@ class TestCreatePurchaseUseCase:
             installments_count=12,
         )
         mock_unit_of_work.purchases.save.return_value = saved_purchase
+        
+        # Mock saved installments (return_value must be iterable)
+        mock_installments = [
+            Installment(
+                id=i,
+                purchase_id=101,
+                installment_number=i,
+                total_installments=12,
+                amount=Money(Decimal("10000.00"), Currency.ARS),
+                billing_period=f"2025{i:02d}",
+                manually_assigned_statement_id=None,
+            )
+            for i in range(1, 13)
+        ]
+        mock_unit_of_work.installments.save_all.return_value = mock_installments
 
         command = CreatePurchaseCommand(
             user_id=10,
@@ -460,7 +487,21 @@ class TestCreatePurchaseUseCase:
             installments_count=3,
         )
         mock_unit_of_work.purchases.save.return_value = saved_purchase
-
+        
+        # Mock saved installments (return_value must be iterable)
+        mock_installments = [
+            Installment(
+                id=i,
+                purchase_id=103,
+                installment_number=i,
+                total_installments=3,
+                amount=Money(Decimal("2000.00"), Currency.ARS),
+                billing_period=f"2025{i:02d}",
+                manually_assigned_statement_id=None,
+            )
+            for i in range(1, 4)
+        ]
+        mock_unit_of_work.installments.save_all.return_value = mock_installments
         command = CreatePurchaseCommand(
             user_id=10,
             payment_method_id=1,

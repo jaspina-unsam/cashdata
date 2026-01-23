@@ -26,6 +26,7 @@ class CreatePurchaseInputDTO(BaseModel):
     original_amount: Optional[Decimal] = Field(None, description="Original amount (if different currency)")
     original_currency: Optional[str] = Field(None, description="Original currency")
     rate_type: Optional[str] = Field(None, description="Preferred exchange rate type")
+    exchange_rate_id: Optional[int] = Field(None, description="Pre-selected exchange rate ID")
 
     @field_validator("description")
     @classmethod
@@ -260,6 +261,10 @@ class UpdatePurchaseInputDTO(BaseModel):
     purchase_date: date | None = Field(None, description="Date of purchase")
     description: str | None = Field(None, min_length=1, max_length=500, description="Purchase description")
     total_amount: Decimal | None = Field(None, description="Total purchase amount (positive for purchases, negative for credits)")
+    # Dual-currency fields
+    original_amount: Decimal | None = Field(None, description="Original amount in foreign currency")
+    original_currency: str | None = Field(None, description="Original currency (USD)")
+    exchange_rate_id: int | None = Field(None, description="Exchange rate ID to use for conversion")
 
     @field_validator("description")
     @classmethod
