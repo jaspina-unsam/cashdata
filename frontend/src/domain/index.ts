@@ -6,3 +6,5 @@
 
 export * from './entities';
 export * from './repositories';
+export * from './entities/ExchangeRate';
+export * from './repositories/ExchangeRateRepository';

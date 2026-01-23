@@ -10,6 +10,7 @@ import { usePurchases, useCreatePurchase } from '../../application/hooks/usePurc
 import { useCategories } from '../../application/hooks/useCategories';
 import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
 import { PaymentMethodSelector } from '../components/PaymentMethodSelector';
+import { DualCurrencyAmount } from '../components/DualCurrencyAmount';
 import type { Purchase } from '../../domain/entities';
 import { useNavigate } from 'react-router-dom';
 import DeletePurchaseModal from '../components/DeletePurchaseModal';
@@ -373,9 +374,14 @@ export function PurchasesPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {purchase.currency} {Number(purchase.total_amount).toLocaleString()}
-                      </p>
+                      <div className="text-2xl font-bold text-gray-900">
+                        <DualCurrencyAmount
+                          primaryAmount={Number(purchase.total_amount)}
+                          primaryCurrency={purchase.currency}
+                          secondaryAmount={purchase.original_amount ? Number(purchase.original_amount) : undefined}
+                          secondaryCurrency={purchase.original_currency}
+                        />
+                      </div>
                       <p className="text-sm text-gray-600">
                         {purchase.installments_count === 1
                           ? 'Pago único'
@@ -423,13 +429,21 @@ export function PurchasesPage() {
                           <div className="flex justify-between items-center">
                             <span className="text-gray-700">Pago único</span>
                             <span className="font-semibold">
-                              {purchase.currency} {Number(purchase.total_amount).toLocaleString()}
+                              <DualCurrencyAmount
+                                primaryAmount={Number(purchase.total_amount)}
+                                primaryCurrency={purchase.currency}
+                                secondaryAmount={purchase.original_amount ? Number(purchase.original_amount) : undefined}
+                                secondaryCurrency={purchase.original_currency}
+                              />
                             </span>
                           </div>
                         </div>
                       ) : (
                         Array.from({ length: purchase.installments_count }, (_, i) => {
                           const installmentAmount = Number(purchase.total_amount) / purchase.installments_count;
+                          const secondaryInstallmentAmount = purchase.original_amount 
+                            ? Number(purchase.original_amount) / purchase.installments_count 
+                            : undefined;
                           return (
                             <div key={i} className="bg-white p-3 rounded-lg">
                               <div className="flex justify-between items-center">
@@ -437,7 +451,12 @@ export function PurchasesPage() {
                                   Cuota {i + 1}/{purchase.installments_count}
                                 </span>
                                 <span className="font-semibold">
-                                  {purchase.currency} {installmentAmount.toFixed(2)}
+                                  <DualCurrencyAmount
+                                    primaryAmount={installmentAmount}
+                                    primaryCurrency={purchase.currency}
+                                    secondaryAmount={secondaryInstallmentAmount}
+                                    secondaryCurrency={purchase.original_currency}
+                                  />
                                 </span>
                               </div>
                             </div>

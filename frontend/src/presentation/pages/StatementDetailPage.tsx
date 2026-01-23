@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useStatement, useUpdateStatementDates } from '../../application/hooks/useStatements';
+import { DualCurrencyAmount } from '../components/DualCurrencyAmount';
 
 export function StatementDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -231,7 +232,10 @@ export function StatementDetailPage() {
                     Cuotas
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Monto
+                    Monto ARS
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Monto USD
                   </th>
                 </tr>
               </thead>
@@ -256,8 +260,14 @@ export function StatementDetailPage() {
                         ? `${purchase.installment_number}/${purchase.installments}`
                         : `${purchase.installments} cuotas`}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      {formatCurrency(purchase.amount, purchase.currency)}
+                    <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                      <DualCurrencyAmount
+                        primaryAmount={purchase.amount}
+                        primaryCurrency={purchase.currency}
+                        secondaryAmount={purchase.original_amount}
+                        secondaryCurrency={purchase.original_currency}
+                        showBothAlways={true}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -267,7 +277,7 @@ export function StatementDetailPage() {
                   <td colSpan={4} className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
                     Total a Pagar:
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900 text-right">
+                  <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900 text-right">
                     {formatCurrency(statement.total_amount, statement.currency)}
                   </td>
                 </tr>
