@@ -122,6 +122,10 @@ export interface Purchase {
   total_amount: number | string; // number when sending, string when receiving from API
   currency: string;
   installments_count: number;
+  // Dual-currency fields
+  original_amount?: number | string;
+  original_currency?: string;
+  exchange_rate_id?: number;
 }
 
 /**
@@ -138,6 +142,10 @@ export interface Installment {
   currency: string;
   billing_period: string;
   due_date: string;
+  // Dual-currency fields
+  original_amount?: string;
+  original_currency?: string;
+  exchange_rate_id?: number;
 }
 
 /**
@@ -182,6 +190,10 @@ export interface PurchaseInStatement {
   installments: number;
   installment_number: number | null; // null for full purchases, 1-N for installments
   category_name: string;
+  // Dual-currency fields
+  original_amount?: number;
+  original_currency?: string;
+  exchange_rate_id?: number;
 }
 
 /**

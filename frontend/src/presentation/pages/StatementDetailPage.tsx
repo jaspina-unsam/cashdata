@@ -231,7 +231,10 @@ export function StatementDetailPage() {
                     Cuotas
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Monto
+                    Monto ARS
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Monto USD
                   </th>
                 </tr>
               </thead>
@@ -257,7 +260,20 @@ export function StatementDetailPage() {
                         : `${purchase.installments} cuotas`}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                      {formatCurrency(purchase.amount, purchase.currency)}
+                      {purchase.currency === 'ARS' 
+                        ? `$${Number(purchase.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : (purchase.original_currency === 'ARS' && purchase.original_amount
+                          ? `$${Number(purchase.original_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : '-')
+                      }
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
+                      {purchase.currency === 'USD' 
+                        ? `US$${Number(purchase.amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : (purchase.original_currency === 'USD' && purchase.original_amount
+                          ? `US$${Number(purchase.original_amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : '-')
+                      }
                     </td>
                   </tr>
                 ))}
@@ -267,7 +283,7 @@ export function StatementDetailPage() {
                   <td colSpan={4} className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
                     Total a Pagar:
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900 text-right">
+                  <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-lg font-bold text-gray-900 text-right">
                     {formatCurrency(statement.total_amount, statement.currency)}
                   </td>
                 </tr>
