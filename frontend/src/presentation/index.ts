@@ -10,3 +10,4 @@ export * from './pages/CreditCardsPage';
 export * from './pages/PaymentMethodsPage';
 export * from './pages/PurchasesPage';
 export { default as EditPurchasePage } from './pages/EditPurchasePage';
+export * from './pages/ProjectionsPage';
