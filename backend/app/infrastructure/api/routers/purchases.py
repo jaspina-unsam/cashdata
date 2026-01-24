@@ -374,5 +374,7 @@ def delete_purchase(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        # Log the exception here if logging is set up
+        # Log the exception
+        import logging
+        logging.error(f"Error deleting purchase {purchase_id}: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An error occurred while deleting the purchase")
