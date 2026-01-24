@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { UserProvider, useActiveUser } from './UserContext';
 import { userRepository } from '../../infrastructure/api/userRepository';

@@ -27,7 +27,7 @@ export function ProjectionsPage() {
   
   // Configuration state
   const [config, setConfig] = useState<ProjectionConfig>({
-    userId: USER_ID,
+    userId: activeUserId,
     currentMonthlyIncome: 0, // Will be initialized from user data
     fixedExpenses: 900,
     variableExpenses: 400,

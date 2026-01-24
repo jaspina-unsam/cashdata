@@ -41,7 +41,7 @@ export function ExchangeRatesPage() {
     notes: '',
   });
 
-  const { data: exchangeRates, isLoading, error } = useExchangeRates(userId);
+  const { data: exchangeRates, isLoading, error } = useExchangeRates(activeUserId);
   const createExchangeRate = useCreateExchangeRate();
   const deleteExchangeRate = useDeleteExchangeRate();
 
@@ -51,7 +51,7 @@ export function ExchangeRatesPage() {
 
     try {
       await createExchangeRate.mutateAsync({
-        userId,
+        userId: activeUserId,
         data: {
           ...formData,
           source: formData.source || undefined,
@@ -77,7 +77,7 @@ export function ExchangeRatesPage() {
     if (!confirm('¿Estás seguro de eliminar este tipo de cambio?')) return;
 
     try {
-      await deleteExchangeRate.mutateAsync({ id, userId });
+      await deleteExchangeRate.mutateAsync({ id, userId: activeUserId });
     } catch (err) {
       console.error('Failed to delete exchange rate:', err);
     }

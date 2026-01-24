@@ -4,7 +4,7 @@
  * Provides the active user selection across the application. This is an ephemeral
  * selector for the MVP (resets on page reload). Default active user id = 1.
  */
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { User } from '../../domain/entities';
 import { userRepository } from '../../infrastructure/api/userRepository';
