@@ -20,16 +20,7 @@ import { BudgetsPage } from './presentation/pages/BudgetsPage';
 import { BudgetDetailPage } from './presentation/pages/BudgetDetailPage';
 import { ExchangeRatesPage } from './presentation/pages/ExchangeRatesPage';
 import { ProjectionsPage } from './presentation/pages/ProjectionsPage';
-
-function HomePage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">CashData</h1>
-      <p className="mt-2 text-gray-600">Dashboard en construcción 🏗️</p>
-    </div>
-  );
-}
-
+import { DashboardPage } from './presentation/pages/DashboardPage';
 
 
 export default function App() {
@@ -41,7 +32,7 @@ export default function App() {
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<MainLayout />}>
-                  <Route index element={<HomePage />} />
+                  <Route index element={<DashboardPage />} />
                   <Route path="users" element={<UsersPage />} />
                   <Route path="categories" element={<CategoriesPage />} />
                   <Route path="payment-methods" element={<PaymentMethodsPage />} />

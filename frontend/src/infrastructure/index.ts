@@ -12,3 +12,6 @@ export * from './api/purchaseRepository';
 export * from './api/installmentRepository';
 export * from './api/statementsRepository';
 export * from './api/exchangeRatesApi';
+export * from './repositories/DashboardRepository';
+export * from './api/monthlyStatementRepository';
+export * from './api/budgetsRepository';
