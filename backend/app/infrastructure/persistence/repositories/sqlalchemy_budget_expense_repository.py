@@ -76,7 +76,9 @@ class SQLAlchemyBudgetExpenseRepository(IBudgetExpenseRepository):
         return BudgetExpenseMapper.to_entity(merged_model)
 
     def delete(self, expense_id: int) -> None:
-        """Delete budget expense by ID"""
-        self.session.execute(
-            delete(BudgetExpenseModel).where(BudgetExpenseModel.id == expense_id)
-        )
+        """Delete budget expense by ID using ORM delete so relationship cascade works."""
+        existing = self.session.get(BudgetExpenseModel, expense_id)
+        if existing:
+            # Use ORM delete so SQLAlchemy will cascade to responsibilities (delete-orphan)
+            self.session.delete(existing)
+            self.session.flush()

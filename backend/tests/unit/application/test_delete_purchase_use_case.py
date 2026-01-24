@@ -13,7 +13,12 @@ class TestDeletePurchaseUseCase:
         # Arrange
         mock_uow = MagicMock()
         mock_purchase_repo = MagicMock()
+        mock_installment_repo = MagicMock()
+        mock_budget_expense_repo = MagicMock()
+
         mock_uow.purchases = mock_purchase_repo
+        mock_uow.installments = mock_installment_repo
+        mock_uow.budget_expenses = mock_budget_expense_repo
 
         # Mock finding the purchase
         purchase = Purchase(
@@ -28,6 +33,13 @@ class TestDeletePurchaseUseCase:
         )
         mock_purchase_repo.find_by_id.return_value = purchase
 
+        # Mock installments and expenses
+        mock_installment = MagicMock()
+        mock_installment.id = 10
+        mock_installment_repo.find_by_purchase_id.return_value = [mock_installment]
+        mock_budget_expense_repo.find_by_installment_id.return_value = []
+        mock_budget_expense_repo.find_by_purchase_id.return_value = []
+
         use_case = DeletePurchaseUseCase(mock_uow)
 
         # Act
@@ -35,6 +47,9 @@ class TestDeletePurchaseUseCase:
 
         # Assert
         mock_purchase_repo.find_by_id.assert_called_once_with(1)
+        mock_budget_expense_repo.find_by_installment_id.assert_called_once_with(10)
+        mock_installment_repo.delete.assert_called_once_with(10)
+        mock_budget_expense_repo.find_by_purchase_id.assert_called_once_with(1)
         mock_purchase_repo.delete.assert_called_once_with(1)
         mock_uow.commit.assert_called_once()
 

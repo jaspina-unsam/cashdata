@@ -292,3 +292,83 @@ class TestSQLAlchemyPurchaseRepositoryDelete:
         # Verify installments are also gone (CASCADE delete)
         found_installments_after = db_session.query(InstallmentModel).filter_by(purchase_id=purchase_id).all()
         assert len(found_installments_after) == 0
+
+    def test_delete_purchase_also_deletes_budget_expense_responsibilities(self, db_session):
+        """Deleting a purchase should remove related budget expenses and their responsibilities."""
+        from app.infrastructure.persistence.models.budget_expense_model import BudgetExpenseModel
+        from app.infrastructure.persistence.models.budget_expense_responsibility_model import BudgetExpenseResponsibilityModel
+        from app.infrastructure.persistence.models.monthly_budget_model import MonthlyBudgetModel
+        from app.infrastructure.persistence.repositories.sqlalchemy_unit_of_work import SQLAlchemyUnitOfWork
+        from app.application.use_cases.delete_purchase_use_case import DeletePurchaseUseCase
+        from sqlalchemy.orm import sessionmaker
+        from datetime import datetime
+
+        # Create a monthly budget required by BudgetExpenseModel
+        budget = MonthlyBudgetModel(id=1, name="Test Budget", description=None, status="active", created_by_user_id=1, created_at=datetime.now())
+        db_session.add(budget)
+        db_session.commit()
+
+        # Create a purchase
+        from app.domain.entities.purchase import Purchase
+        from app.domain.value_objects.money import Money, Currency
+        from decimal import Decimal
+
+        purchase_repo = SQLAlchemyPurchaseRepository(db_session)
+        purchase = Purchase(
+            id=None,
+            user_id=1,
+            payment_method_id=1,
+            category_id=1,
+            purchase_date=date(2025, 1, 15),
+            description="Purchase with expense",
+            total_amount=Money(Decimal("3000.00"), Currency.ARS),
+            installments_count=1,
+        )
+        saved_purchase = purchase_repo.save(purchase)
+        purchase_id = saved_purchase.id
+
+        # Create a budget expense linked to the purchase
+        expense = BudgetExpenseModel(
+            budget_id=budget.id,
+            purchase_id=purchase_id,
+            installment_id=None,
+            paid_by_user_id=1,
+            split_type="full_single",
+            amount=100.00,
+            currency="ARS",
+            description="Expense linked to purchase",
+            date=date(2025, 1, 15),
+            payment_method_name=None,
+            created_at=datetime.now(),
+        )
+        db_session.add(expense)
+        db_session.flush()
+
+        # Add a responsibility for that expense
+        responsibility = BudgetExpenseResponsibilityModel(
+            budget_expense_id=expense.id,
+            user_id=1,
+            percentage=100.00,
+            responsible_amount=100.00,
+            responsible_currency="ARS",
+        )
+        db_session.add(responsibility)
+        db_session.commit()
+
+        # Verify entries exist
+        found_expenses = db_session.query(BudgetExpenseModel).filter_by(purchase_id=purchase_id).all()
+        assert len(found_expenses) == 1
+        found_resps = db_session.query(BudgetExpenseResponsibilityModel).filter_by(budget_expense_id=expense.id).all()
+        assert len(found_resps) == 1
+
+        # Use DeletePurchaseUseCase to delete purchase
+        # Create a unit of work that uses the same session
+        uow = SQLAlchemyUnitOfWork(lambda: db_session)
+        use_case = DeletePurchaseUseCase(uow)
+        use_case.execute(purchase_id, 1)
+
+        # After deletion, expense and responsibility should be gone
+        found_expenses_after = db_session.query(BudgetExpenseModel).filter_by(purchase_id=purchase_id).all()
+        assert len(found_expenses_after) == 0
+        found_resps_after = db_session.query(BudgetExpenseResponsibilityModel).filter_by(budget_expense_id=expense.id).all()
+        assert len(found_resps_after) == 0

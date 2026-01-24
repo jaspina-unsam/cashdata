@@ -34,6 +34,10 @@ class DeletePurchaseUseCase:
                 for expense in installment_expenses:
                     self._uow.budget_expenses.delete(expense.id)
 
+                # Delete the installment itself explicitly to avoid relying on DB-level ON DELETE CASCADE
+                # (some environments may have older schema without ON DELETE CASCADE)
+                self._uow.installments.delete(installment.id)
+
             # Delete budget expenses associated directly with the purchase
             budget_expenses = self._uow.budget_expenses.find_by_purchase_id(purchase_id)
             for expense in budget_expenses:
@@ -42,6 +46,6 @@ class DeletePurchaseUseCase:
             # Flush to execute deletes before deleting purchase
             self._uow.session.flush()
 
-            # Delete the purchase (cascade will delete installments)
+            # Delete the purchase
             self._uow.purchases.delete(purchase_id)
             self._uow.commit()
