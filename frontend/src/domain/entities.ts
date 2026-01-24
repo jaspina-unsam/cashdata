@@ -347,3 +347,76 @@ export interface BudgetDetails {
   balances: BudgetBalance[];
   debt_summary: BudgetDebt[];
 }
+
+/**
+ * Domain Entity: Financial Projection Configuration
+ * 
+ * Configuration for generating 5-year financial projections.
+ */
+export interface ProjectionConfig {
+  // User data
+  userId: number;
+  currentMonthlyIncome: number;      // In USD
+  
+  // Expenses (calculated or adjustable)
+  fixedExpenses: number;             // In USD (e.g., 900)
+  variableExpenses: number;          // In USD (e.g., 400)
+  emergencyFundContribution: number; // In USD (e.g., 100)
+  
+  // Professional scenarios
+  professionalScenario: 'conservative' | 'moderate' | 'optimistic' | 'very_optimistic';
+  annualRaisePercentage: number;     // % (0, 10, 15, 25)
+  
+  // Economic factors
+  constructionInflationRate: number; // % annual (e.g., 8)
+  devaluationRate: number;           // % annual (e.g., 0) - future ARS support
+  
+  // Savings goal
+  targetAmount: number;              // In USD (e.g., 75000)
+  investmentReturn: number;          // % annual (e.g., 7)
+}
+
+/**
+ * Domain Entity: Monthly Projection
+ * 
+ * Represents financial projection for a single month.
+ */
+export interface MonthlyProjection {
+  month: number;                     // 1-60
+  date: Date;
+  income: number;
+  fixedExpenses: number;
+  variableExpenses: number;
+  monthlySavings: number;
+  accumulatedSavings: number;
+  accumulatedEmergencyFund: number;
+  targetCost: number;                // Cost adjusted by inflation
+  difference: number;                // accumulatedSavings - targetCost
+  bonus: number;                     // Aguinaldo (month 6, 12, 18, etc.)
+}
+
+/**
+ * Domain Entity: Projection Summary
+ * 
+ * Summary of complete 5-year projection.
+ */
+export interface ProjectionSummary {
+  totalSaved: number;
+  finalTargetCost: number;
+  achievesGoal: boolean;
+  surplusOrDeficit: number;
+  finalEmergencyFund: number;
+  averageMonthlyIncome: number;
+  averageMonthlySavings: number;
+}
+
+/**
+ * Domain Aggregate: Projection Result
+ * 
+ * Complete projection with monthly data, summary and recommendations.
+ */
+export interface ProjectionResult {
+  months: MonthlyProjection[];
+  summary: ProjectionSummary;
+  recommendations: string[];
+}
