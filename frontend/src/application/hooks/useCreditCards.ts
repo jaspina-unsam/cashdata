@@ -28,6 +28,7 @@ export function useCreditCards(userId: number, filters?: CreditCardFilters) {
     queryKey: queryKeys.creditCards.all(userId),
     queryFn: () => creditCardRepository.findByUserId(userId, filters?.skip, filters?.limit),
     enabled: !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -39,6 +40,7 @@ export function useCreditCard(id: number, userId: number) {
     queryKey: queryKeys.creditCards.detail(id, userId),
     queryFn: () => creditCardRepository.findById(id, userId),
     enabled: !!id && !!userId,
+    keepPreviousData: true,
   });
 }
 

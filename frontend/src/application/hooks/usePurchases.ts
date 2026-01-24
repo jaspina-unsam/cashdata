@@ -33,6 +33,7 @@ export function usePurchases(userId: number, filters?: PurchaseFilters) {
     queryFn: () =>
       purchaseRepository.findByUserId(userId, filters),
     enabled: !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -44,6 +45,7 @@ export function usePurchase(id: number, userId: number) {
     queryKey: queryKeys.purchases.detail(id, userId),
     queryFn: () => purchaseRepository.findById(id, userId),
     enabled: !!id && !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -60,6 +62,7 @@ export function usePurchasesByCreditCard(
     queryFn: () =>
       purchaseRepository.findByCreditCardId(cardId, userId, filters?.page, filters?.page_size),
     enabled: !!cardId && !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -76,6 +79,7 @@ export function usePurchasesByCategory(
     queryFn: () =>
       purchaseRepository.findByCategoryId(categoryId, userId, filters?.page, filters?.page_size),
     enabled: !!categoryId && !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -87,6 +91,7 @@ export function usePurchaseInstallments(purchaseId: number, userId: number) {
     queryKey: queryKeys.purchases.installments(purchaseId, userId),
     queryFn: () => purchaseRepository.getInstallments(purchaseId, userId),
     enabled: !!purchaseId && !!userId,
+    keepPreviousData: true,
   });
 }
 

@@ -28,6 +28,7 @@ export function useUserData(userId?: number) {
     queryKey: ['user', idToUse],
     queryFn: () => userRepository.findById(idToUse),
     enabled: !!idToUse,
+    keepPreviousData: true,
   });
   
   // Fetch recent purchases (last 6 months)
@@ -46,6 +47,7 @@ export function useUserData(userId?: number) {
       return result.items;
     },
     enabled: !!userQuery.data,
+    keepPreviousData: true,
   });
   
   return {
@@ -76,6 +78,7 @@ export function useLatestExchangeRate(
     queryFn: () => exchangeRateRepository.getLatest(userId, rateType, 'USD', 'ARS'),
     staleTime: 1000 * 60 * 60, // 1 hour
     retry: 1, // Don't retry too much if rate doesn't exist
+    keepPreviousData: true,
   });
 }
 

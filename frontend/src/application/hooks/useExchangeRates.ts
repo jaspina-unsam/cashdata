@@ -23,8 +23,7 @@ export function useExchangeRates(userId: number, filters?: ExchangeRateFilters) 
   return useQuery({
     queryKey: ['exchangeRates', userId, filters],
     queryFn: () => exchangeRateRepository.list(userId, filters),
-    enabled: !!userId,
-  });
+    enabled: !!userId,    keepPreviousData: true,  });
 }
 
 /**
@@ -40,6 +39,7 @@ export function useLatestRate(
     queryKey: ['exchangeRates', 'latest', userId, rateType, fromCurrency, toCurrency],
     queryFn: () => exchangeRateRepository.getLatest(userId, rateType, fromCurrency, toCurrency),
     enabled: !!userId && !!rateType,
+    keepPreviousData: true,
   });
 }
 

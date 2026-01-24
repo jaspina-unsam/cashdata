@@ -9,6 +9,7 @@ export function usePaymentMethods(userId: number) {
     queryKey: ['paymentMethods', userId],
     queryFn: () => paymentMethodRepository.findByUserId(userId),
     enabled: !!userId,
+    keepPreviousData: true,
   });
 }
 

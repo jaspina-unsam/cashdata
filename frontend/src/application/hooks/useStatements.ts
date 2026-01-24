@@ -5,6 +5,7 @@ export function useStatementsByCard(creditCardId: number, userId: number) {
     queryKey: ['statements', 'byCard', creditCardId, userId],
     queryFn: () => statementsRepository.findByCard(creditCardId, userId),
     enabled: !!creditCardId && !!userId,
+    keepPreviousData: true,
   });
 }
 /**
@@ -23,8 +24,7 @@ export function useStatements(userId: number, includeFuture: boolean = false) {
   return useQuery({
     queryKey: ['statements', userId, includeFuture],
     queryFn: () => monthlyStatementRepository.findByUserId(userId, includeFuture),
-    enabled: !!userId,
-  });
+    enabled: !!userId,    keepPreviousData: true,  });
 }
 
 /**
@@ -34,8 +34,7 @@ export function useStatement(statementId: number, userId: number) {
   return useQuery({
     queryKey: ['statement', statementId, userId],
     queryFn: () => monthlyStatementRepository.findById(statementId, userId),
-    enabled: !!statementId && !!userId,
-  });
+    enabled: !!statementId && !!userId,    keepPreviousData: true,  });
 }
 
 /**
