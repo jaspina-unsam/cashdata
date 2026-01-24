@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { usePurchase, useUpdatePurchase, usePurchaseInstallments } from '../../application/hooks/usePurchases';
+import { usePurchase, useUpdatePurchase } from '../../application/hooks/usePurchases';
 import InstallmentEditor from '../components/InstallmentEditor';
 import { useCategories } from '../../application/hooks/useCategories';
 import { useExchangeRates } from '../../application/hooks/useExchangeRates';
-import { useStatementsByCard } from '../../application/hooks/useStatements';
-import { usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
 import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
 import { useCreditCards } from '../../application/hooks/useCreditCards';
 
@@ -25,21 +23,10 @@ export default function EditPurchasePage() {
   
   // Fetch exchange rates - get all available rates to allow flexibility in selection
   const { data: exchangeRates } = useExchangeRates(activeUserId, {});
-  
-  // Fetch available statements for reassignment (single-payment only)
-  const { data: statements } = useStatementsByCard(
-    purchase?.payment_method_id || 0,
-    activeUserId
-  );
-  
-  // Fetch installments for single-payment reassignment
-  const { data: installments } = usePurchaseInstallments(purchaseId, activeUserId);
 
   const updatePurchase = useUpdatePurchase();
-  const updateInstallment = usePurchaseInstallmentsMutation();
 
   const [form, setForm] = useState<any>(null);
-  const [reassignStatementId, setReassignStatementId] = useState<number | null>(null);
 
   useEffect(() => {
     if (purchase) {
@@ -53,12 +40,8 @@ export default function EditPurchasePage() {
         original_currency: purchase.original_currency || '',
         exchange_rate_id: purchase.exchange_rate_id || null,
       });
-      // Set current statement for reassignment
-      if (purchase.installments_count === 1 && installments && installments.length > 0) {
-        setReassignStatementId(installments[0].monthly_statement_id);
-      }
     }
-  }, [purchase, installments]);
+  }, [purchase]);
 
   if (isLoading || !form) return <div>Cargando...</div>;
   if (error) return <div>Error al cargar compra</div>;
@@ -79,24 +62,6 @@ export default function EditPurchasePage() {
           exchange_rate_id: (form.exchange_rate_id && form.exchange_rate_id !== 'custom') ? Number(form.exchange_rate_id) : undefined,
         }
       });
-      
-      // Reassign statement if changed (single-payment only)
-      if (
-        purchase?.installments_count === 1 && 
-        installments && 
-        installments.length > 0 && 
-        reassignStatementId && 
-        reassignStatementId !== installments[0].monthly_statement_id
-      ) {
-        await updateInstallment.mutateAsync({
-          id: installments[0].id,
-          userId: activeUserId,
-          purchaseId: purchaseId,
-          data: {
-            monthly_statement_id: reassignStatementId,
-          },
-        });
-      }
       
       navigate('/purchases');
     } catch (err: any) {
@@ -225,24 +190,6 @@ export default function EditPurchasePage() {
                   </div>
                 </div>
               </div>
-              
-              {/* Statement reassignment */}
-              {statements && statements.length > 0 && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reasignar a statement</label>
-                  <select 
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                    value={reassignStatementId || ''} 
-                    onChange={(e) => setReassignStatementId(Number(e.target.value))}
-                  >
-                    {statements.map((stmt: any) => (
-                      <option key={stmt.id} value={stmt.id}>
-                        {new Date(stmt.start_date).toLocaleDateString('es-AR')} - {new Date(stmt.closing_date).toLocaleDateString('es-AR')} (Vence: {new Date(stmt.due_date).toLocaleDateString('es-AR')})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
             </>
           )}
         </div>
