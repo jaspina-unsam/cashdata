@@ -208,17 +208,7 @@ export default function EditPurchasePage() {
         
         // Find the credit card that corresponds to this payment method
         const creditCard = creditCards.find(cc => cc.payment_method_id === purchase.payment_method_id);
-        
-        console.log('Credit card lookup:', {
-          purchasePaymentMethodId: purchase.payment_method_id,
-          allCreditCards: creditCards,
-          foundCreditCard: creditCard
-        });
-        
-        if (!creditCard) {
-          console.error('No credit card found for payment_method_id:', purchase.payment_method_id);
-          return null;
-        }
+        if (!creditCard) return null;
         
         return (
           <div className="mt-6">

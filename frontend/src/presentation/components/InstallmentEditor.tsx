@@ -44,9 +44,6 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
     const originalInst = installments?.find((i: any) => i.id === instId);
     if (!originalInst) return;
 
-    console.log('Original installment:', originalInst);
-    console.log('Local entry:', entry);
-
     // Build data object with only changed fields
     const data: any = {};
     
@@ -70,12 +67,6 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
     const newStatementId = normalizeStatementId(entry.statementId);
     const originalStatementId = normalizeStatementId(originalInst.manually_assigned_statement_id);
     
-    console.log('Statement comparison:', { 
-      newStatementId, 
-      originalStatementId,
-      changed: newStatementId !== originalStatementId 
-    });
-    
     if (newStatementId !== originalStatementId) {
       data.manually_assigned_statement_id = newStatementId;
     }
@@ -85,13 +76,6 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
       alert('No hay cambios para guardar');
       return;
     }
-
-    console.log('Sending installment update:', { 
-      id: instId, 
-      userId, 
-      purchaseId, 
-      data: JSON.parse(JSON.stringify(data)) 
-    });
 
     try {
       await updateMutation.mutateAsync({ id: instId, userId, purchaseId, data });
