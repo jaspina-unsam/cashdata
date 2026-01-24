@@ -216,6 +216,44 @@ export interface StatementDetail {
   currency: string;
 }
 
+/**
+ * Dashboard Metrics & Analytics entities (Fase 1b)
+ */
+export interface DashboardMetrics {
+  totalBalance: number;
+  incomeThisMonth: number;
+  expensesThisMonth: number;
+  netBalance: number;
+  incomeTrend: number; // % change vs previous month
+  expensesTrend: number; // % change vs previous month
+  balanceTrend: number; // % change vs last 6 months average
+}
+
+export interface UpcomingInstallmentGroup {
+  month: string; // "2026-02"
+  paymentMethodId: number;
+  paymentMethodName: string; // "Visa *1234"
+  totalAmount: number;
+  installmentCount: number;
+  statementId: number;
+}
+
+export interface ExpensesByMonth {
+  month: string; // "2026-01"
+  amount: number;
+}
+
+export interface ExpensesByCategory {
+  categoryName: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface IncomesByMonth {
+  month: string; // "2026-01"
+  amount: number;
+}
+
 export interface PaymentMethod {
   id: number;
   user_id: number;
