@@ -143,6 +143,7 @@ export interface Installment {
   billing_period: string;
   due_date: string;
   monthly_statement_id: number;
+  manually_assigned_statement_id?: number | null;
   // Dual-currency fields
   original_amount?: string;
   original_currency?: string;

@@ -259,7 +259,11 @@ export default function EditPurchasePage() {
       })() && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Cuotas</h3>
-          <InstallmentEditor purchaseId={purchaseId} userId={activeUserId} />
+          <InstallmentEditor 
+            purchaseId={purchaseId} 
+            userId={activeUserId} 
+            paymentMethodId={purchase.payment_method_id} 
+          />
         </div>
       )}
     </div>

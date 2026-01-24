@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { usePurchaseInstallments, usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
-import { useStatements } from '../../application/hooks/useStatements';
+import { useStatementsByCard } from '../../application/hooks/useStatements';
 
 type Props = {
   purchaseId: number;
   userId: number;
+  paymentMethodId: number;
 };
 
-export function InstallmentEditor({ purchaseId, userId }: Props) {
+export function InstallmentEditor({ purchaseId, userId, paymentMethodId }: Props) {
   const { data: installments, isLoading } = usePurchaseInstallments(purchaseId, userId);
-  const statementsQuery = useStatements(userId, true);
+  const statementsQuery = useStatementsByCard(paymentMethodId, userId);
   const updateMutation = usePurchaseInstallmentsMutation();
 
   const [local, setLocal] = useState<Record<number, { amount: string; statementId?: number | null }>>({});
@@ -38,15 +39,39 @@ export function InstallmentEditor({ purchaseId, userId }: Props) {
   const handleSave = async (instId: number) => {
     const entry = local[instId];
     if (!entry) return;
-    // basic validation
-    const amount = parseFloat(entry.amount);
-    if (isNaN(amount) || amount === 0) {
+    
+    // Find original installment to detect changes
+    const originalInst = installments?.find((i: any) => i.id === instId);
+    if (!originalInst) return;
+
+    // Build data object with only changed fields
+    const data: any = {};
+    
+    // Check if amount changed
+    const newAmount = parseFloat(entry.amount);
+    if (isNaN(newAmount) || newAmount === 0) {
       alert('El monto de la cuota no puede ser cero');
+      return;
+    }
+    if (newAmount !== parseFloat(String(originalInst.amount))) {
+      data.amount = newAmount;
+    }
+    
+    // Check if statement assignment changed
+    const newStatementId = entry.statementId ?? null;
+    const originalStatementId = originalInst.manually_assigned_statement_id ?? null;
+    if (newStatementId !== originalStatementId) {
+      data.manually_assigned_statement_id = newStatementId;
+    }
+
+    // If nothing changed, don't send request
+    if (Object.keys(data).length === 0) {
+      alert('No hay cambios para guardar');
       return;
     }
 
     try {
-      await updateMutation.mutateAsync({ id: instId, userId, purchaseId, data: { amount: amount, manually_assigned_statement_id: entry.statementId ?? null } });
+      await updateMutation.mutateAsync({ id: instId, userId, purchaseId, data });
       alert('Cuota actualizada');
     } catch (err: any) {
       console.error('Update installment failed', err);
