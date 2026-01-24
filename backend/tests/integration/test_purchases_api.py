@@ -458,3 +458,83 @@ class TestUpdatePurchase:
         assert response.status_code == 200
         updated_purchase = response.json()
         assert updated_purchase["total_amount"] == "4000.00"
+
+
+class TestDeletePurchase:
+    """Test DELETE /api/v1/purchases/{purchase_id}"""
+
+    def test_should_delete_purchase_and_installments(
+        self, client, test_user, test_credit_card, test_category
+    ):
+        """Should delete purchase and its installments"""
+        # Create purchase with 2 installments
+        purchase_data = {
+            "payment_method_id": test_credit_card["payment_method_id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 2000.00,
+            "total_currency": "ARS",
+            "installments_count": 2,
+        }
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+        purchase_id = purchase["id"]
+
+        # Verify purchase exists
+        response = client.get(
+            f"/api/v1/purchases/{purchase_id}", params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 200
+
+        # Delete purchase
+        response = client.delete(
+            f"/api/v1/purchases/{purchase_id}", params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 204
+
+        # Verify purchase is deleted
+        response = client.get(
+            f"/api/v1/purchases/{purchase_id}", params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 404
+
+        # Verify installments are deleted
+        response = client.get(
+            f"/api/v1/purchases/{purchase_id}/installments", params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 404
+
+    def test_should_return_404_for_nonexistent_purchase(self, client, test_user):
+        """Should return 404 for non-existent purchase"""
+        response = client.delete(
+            "/api/v1/purchases/999", params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 404
+
+    def test_should_return_404_for_wrong_user(self, client, test_user, test_credit_card, test_category):
+        """Should return 404 when user doesn't own the purchase"""
+        # Create purchase for test_user
+        purchase_data = {
+            "payment_method_id": test_credit_card["payment_method_id"],
+            "category_id": test_category["id"],
+            "purchase_date": "2025-01-15",
+            "description": "Test Purchase",
+            "total_amount": 1000.00,
+            "total_currency": "ARS",
+            "installments_count": 1,
+        }
+        create_response = client.post(
+            "/api/v1/purchases", json=purchase_data, params={"user_id": test_user["id"]}
+        )
+        assert create_response.status_code == 201
+        purchase = create_response.json()
+
+        # Try to delete with wrong user
+        response = client.delete(
+            f"/api/v1/purchases/{purchase['id']}", params={"user_id": 999}
+        )
+        assert response.status_code == 404

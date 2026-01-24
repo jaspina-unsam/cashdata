@@ -10,8 +10,8 @@ class BudgetExpenseModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     budget_id = Column(Integer, ForeignKey("monthly_budgets.id"), nullable=False)
-    purchase_id = Column(Integer, ForeignKey("purchases.id"), nullable=True)
-    installment_id = Column(Integer, ForeignKey("installments.id"), nullable=True)
+    purchase_id = Column(Integer, ForeignKey("purchases.id", ondelete="CASCADE"), nullable=True)
+    installment_id = Column(Integer, ForeignKey("installments.id", ondelete="CASCADE"), nullable=True)
     paid_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     split_type = Column(String(20), nullable=False)
     amount = Column(Numeric(precision=10, scale=2), nullable=False)

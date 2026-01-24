@@ -77,6 +77,6 @@ class SQLAlchemyBudgetExpenseRepository(IBudgetExpenseRepository):
 
     def delete(self, expense_id: int) -> None:
         """Delete budget expense by ID"""
-        expense = self.session.get(BudgetExpenseModel, expense_id)
-        if expense:
-            self.session.delete(expense)
+        self.session.execute(
+            delete(BudgetExpenseModel).where(BudgetExpenseModel.id == expense_id)
+        )
