@@ -207,6 +207,7 @@ export function PurchasesPage() {
               </button>
 
               <button
+                data-testid="new-purchase-button"
                 onClick={() => setShowForm(!showForm)}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
@@ -374,6 +375,7 @@ export function PurchasesPage() {
             {purchases.map((purchase) => (
               <div
                 key={purchase.id}
+                data-testid="purchase-row"
                 className="bg-white rounded-lg shadow-md overflow-hidden"
               >
                 {/* Purchase Header */}
@@ -412,6 +414,7 @@ export function PurchasesPage() {
                       {/* Buttons placed bottom-right, visually-only (no action) */}
                       <div className="flex justify-end gap-3 mt-3">
                         <button
+                          data-testid="delete-button"
                           onClick={(e) => { e.stopPropagation(); openDeleteModal(purchase.id!, purchase.description); }}
                           className="flex items-center gap-1 text-red-600 hover:text-red-700 text-sm"
                           aria-label="Eliminar compra"

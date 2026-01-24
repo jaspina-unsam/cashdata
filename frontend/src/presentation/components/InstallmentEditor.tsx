@@ -58,8 +58,15 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
     }
     
     // Check if statement assignment changed
-    const newStatementId = entry.statementId ?? null;
-    const originalStatementId = originalInst.manually_assigned_statement_id ?? null;
+    // Normalize values: treat undefined, null, and empty string as null
+    const normalizeStatementId = (val: any) => {
+      if (val === '' || val === null || val === undefined) return null;
+      return Number(val);
+    };
+    
+    const newStatementId = normalizeStatementId(entry.statementId);
+    const originalStatementId = normalizeStatementId(originalInst.manually_assigned_statement_id);
+    
     if (newStatementId !== originalStatementId) {
       data.manually_assigned_statement_id = newStatementId;
     }
@@ -80,9 +87,9 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
   };
 
   return (
-    <div className="mt-3 space-y-3">
+    <div className="mt-3 space-y-3" data-testid="installment-editor">
       {installments.map((inst: any) => (
-        <div key={inst.id} className="bg-white p-3 rounded shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <div key={inst.id} data-testid="installment-row" className="bg-white p-3 rounded shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
           <div>
             <div className="text-sm text-gray-700">Cuota {inst.installment_number}/{inst.total_installments}</div>
             <div className="text-sm text-gray-500">Período {inst.billing_period}</div>
@@ -103,6 +110,7 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
             <div className="flex-1">
               <label className="block text-xs text-gray-600">Asignación de resumen</label>
               <select
+                data-testid="statement-selector"
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={local[inst.id]?.statementId ?? ''}
                 onChange={(e) => handleChange(inst.id, 'statementId', e.target.value ? Number(e.target.value) : null)}
@@ -115,7 +123,7 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
             </div>
 
             <div>
-              <button onClick={() => handleSave(inst.id)} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Guardar</button>
+              <button data-testid="save-installment-button" onClick={() => handleSave(inst.id)} className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Guardar</button>
             </div>
           </div>
         </div>
