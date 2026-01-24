@@ -9,6 +9,8 @@ import { useQuery } from '@tanstack/react-query';
 import { userRepository } from '../../infrastructure/api/userRepository';
 import { PurchaseApiRepository } from '../../infrastructure/api/purchaseRepository';
 import { useActiveUser } from '../contexts/UserContext';
+import type { User, Purchase } from '../../domain/entities';
+import type { ExchangeRate } from '../../domain/entities/ExchangeRate';
 
 const purchaseRepository = new PurchaseApiRepository();
 
@@ -24,7 +26,7 @@ export function useUserData(userId?: number) {
   const idToUse = userId ?? activeUserId;
 
   // Fetch user data
-  const userQuery = useQuery({
+  const userQuery = useQuery<User | null>({
     queryKey: ['user', idToUse],
     queryFn: () => userRepository.findById(idToUse),
     enabled: !!idToUse,
@@ -35,7 +37,7 @@ export function useUserData(userId?: number) {
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   
-  const purchasesQuery = useQuery({
+  const purchasesQuery = useQuery<Purchase[]>({
     queryKey: ['purchases', idToUse, 'recent-6m'],
     queryFn: async () => {
       const result = await purchaseRepository.findByUserId(idToUse, {
@@ -73,7 +75,7 @@ export function useLatestExchangeRate(
   userId: number,
   rateType: 'official' | 'blue' | 'mep' | 'ccl' | 'custom' = 'blue'
 ) {
-  return useQuery({
+  return useQuery<ExchangeRate | null>({
     queryKey: ['exchange-rate', 'latest', rateType, userId],
     queryFn: () => exchangeRateRepository.getLatest(userId, rateType, 'USD', 'ARS'),
     staleTime: 1000 * 60 * 60, // 1 hour

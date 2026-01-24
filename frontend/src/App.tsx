@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
@@ -6,7 +6,6 @@ import { CurrencyProvider } from './application/contexts/CurrencyContext';
 import { UserProvider } from './application/contexts/UserContext';
 import { SidebarProvider } from './application/contexts/SidebarContext';
 import { MainLayout } from './presentation/layouts/MainLayout';
-import { UserSelector } from './presentation/components/UserSelector';
 import { 
   UsersPage, 
   CategoriesPage, 
@@ -21,55 +20,17 @@ import { BudgetsPage } from './presentation/pages/BudgetsPage';
 import { BudgetDetailPage } from './presentation/pages/BudgetDetailPage';
 import { ExchangeRatesPage } from './presentation/pages/ExchangeRatesPage';
 import { ProjectionsPage } from './presentation/pages/ProjectionsPage';
-import { CurrencyToggle } from './presentation/components/CurrencyToggle';
 
 function HomePage() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <Link to="/users">
-        <Card title="👥 Usuarios" subtitle="Gestioná usuarios" />
-      </Link>
-      <Link to="/categories">
-        <Card title="🏷️ Categorías" subtitle="Organizá tus gastos" />
-      </Link>
-      <Link to="/payment-methods">
-        <Card title="💳 Métodos de Pago" subtitle="Tarjetas, cuentas y billeteras" />
-      </Link>
-      <Link to="/credit-cards">
-        <Card title="💳 Tarjetas" subtitle="Seguimiento de tarjetas" />
-      </Link>
-      <Link to="/purchases">
-        <Card title="📊 Gastos" subtitle="Registrá tus gastos diarios" />
-      </Link>
-      <Link to="/statements">
-        <Card title="📄 Resumenes" subtitle="Ver resumenes mensuales" />
-      </Link>
-      <Link to="/budgets">
-        <Card title="💰 Presupuestos" subtitle="Gastos compartidos" />
-      </Link>
-      <Link to="/exchange-rates">
-        <Card title="💱 Tipos de Cambio" subtitle="Cotizaciones USD/ARS" />
-      </Link>
-      <Link to="/projections">
-        <Card title="📈 Proyecciones" subtitle="Planificá tu ahorro a 5 años" />
-      </Link>
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold">CashData</h1>
+      <p className="mt-2 text-gray-600">Dashboard en construcción 🏗️</p>
     </div>
   );
 }
 
 
-
-function Card({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow border border-gray-100 cursor-pointer">
-      <h2 className="text-2xl font-semibold mb-2">{title}</h2>
-      <p className="text-gray-600">{subtitle}</p>
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <span className="text-sm text-blue-600 font-medium">Ver más →</span>
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   return (

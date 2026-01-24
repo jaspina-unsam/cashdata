@@ -1,13 +1,18 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useSidebar } from '../../application/contexts/SidebarContext';
-import { Home, CreditCard, DollarSign, FileText, BarChart2 } from 'lucide-react';
+import { Home, Users, Tag, Wallet, CreditCard, ShoppingCart, FileText, DollarSign, Repeat, BarChart2 } from 'lucide-react';
 
 const navItems = [
-  { to: '/', icon: <Home size={18} />, label: 'Dashboard' },
-  { to: '/purchases', icon: <CreditCard size={18} />, label: 'Compras' },
-  { to: '/budgets', icon: <DollarSign size={18} />, label: 'Presupuestos' },
+  { to: '/', icon: <Home size={18} />, label: 'Inicio' },
+  { to: '/users', icon: <Users size={18} />, label: 'Usuarios' },
+  { to: '/categories', icon: <Tag size={18} />, label: 'Categorías' },
+  { to: '/payment-methods', icon: <Wallet size={18} />, label: 'Métodos de Pago' },
+  { to: '/credit-cards', icon: <CreditCard size={18} />, label: 'Tarjetas' },
+  { to: '/purchases', icon: <ShoppingCart size={18} />, label: 'Gastos' },
   { to: '/statements', icon: <FileText size={18} />, label: 'Resúmenes' },
+  { to: '/budgets', icon: <DollarSign size={18} />, label: 'Presupuestos' },
+  { to: '/exchange-rates', icon: <Repeat size={18} />, label: 'Tipos de Cambio' },
   { to: '/projections', icon: <BarChart2 size={18} />, label: 'Proyecciones' },
 ];
 
