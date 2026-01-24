@@ -11,13 +11,14 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useStatement, useUpdateStatementDates } from '../../application/hooks/useStatements';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export function StatementDetailPage() {
   const { id } = useParams<{ id: string }>();
   const statementId = parseInt(id || '0', 10);
-  const [userId] = useState(1); // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
 
-  const { data: statement, isLoading, error } = useStatement(statementId, userId);
+  const { data: statement, isLoading, error } = useStatement(statementId, activeUserId);
   const updateMutation = useUpdateStatementDates();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -50,7 +51,7 @@ export function StatementDetailPage() {
     try {
       await updateMutation.mutateAsync({
         statementId: statement.id,
-        userId,
+        userId: activeUserId,
         data: {
           closing_date: billingCloseDate,
           due_date: paymentDueDate,

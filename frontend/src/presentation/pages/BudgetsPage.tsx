@@ -3,12 +3,13 @@ import { Plus, Calendar } from 'lucide-react';
 import { useBudgets } from '../../application/hooks/useBudgets';
 import { BudgetCard } from '../components/BudgetCard';
 import { CreateBudgetModal } from '../components/CreateBudgetModal';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export const BudgetsPage: React.FC = () => {
-  const currentUserId = 1; // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const { data: budgets, isLoading } = useBudgets(currentUserId);
+  const { data: budgets, isLoading } = useBudgets(activeUserId);
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -32,7 +33,7 @@ export const BudgetsPage: React.FC = () => {
       <CreateBudgetModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        currentUserId={currentUserId}
+        currentUserId={activeUserId}
       />
 
       {isLoading ? (

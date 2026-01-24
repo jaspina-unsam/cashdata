@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit } from 'lucide-react';
+import { Plus, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { usePurchases, useCreatePurchase } from '../../application/hooks/usePurchases';
 import { useCategories } from '../../application/hooks/useCategories';
 import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
@@ -14,9 +14,7 @@ import { DualCurrencyAmount } from '../components/DualCurrencyAmount';
 import type { Purchase } from '../../domain/entities';
 import { useNavigate } from 'react-router-dom';
 import DeletePurchaseModal from '../components/DeletePurchaseModal';
-
-// Hardcoded user ID for MVP (will be replaced with auth context)
-const CURRENT_USER_ID = 1;
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 // Helper function to format date string as local date (avoid timezone issues)
 const formatLocalDate = (dateString: string): string => {
@@ -44,12 +42,14 @@ export function PurchasesPage() {
     installments_count: '1',
   });
 
-  const { data: purchasesData, isLoading, error } = usePurchases(CURRENT_USER_ID, { 
+  const { activeUserId } = useActiveUser();
+
+  const { data: purchasesData, isLoading, isFetching, error, refetch } = usePurchases(activeUserId, { 
     page: currentPage, 
     page_size: pageSize 
   });
   const { data: categories } = useCategories();
-  const { data: paymentMethods } = usePaymentMethods(CURRENT_USER_ID);
+  const { data: paymentMethods } = usePaymentMethods(activeUserId);
   const createPurchase = useCreatePurchase();
 
   const purchases = purchasesData?.items || [];
@@ -105,7 +105,7 @@ export function PurchasesPage() {
         installments_count: isCreditCard ? installments : 1, // Force 1 for non-credit cards
       };
 
-      await createPurchase.mutateAsync({ userId: CURRENT_USER_ID, data: purchaseData });
+      await createPurchase.mutateAsync({ userId: activeUserId, data: purchaseData });
       
       // Reset form
       setFormData({
@@ -195,13 +195,25 @@ export function PurchasesPage() {
               <h1 className="text-3xl font-bold text-gray-900">Compras</h1>
               <p className="text-gray-600 mt-1">Registrá tus gastos y seguí tus cuotas</p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <Plus size={20} />
-              Nueva Compra
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => refetch()}
+                className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+                disabled={isFetching}
+                title="Actualizar lista de compras"
+              >
+                <RefreshCw size={18} />
+                {isFetching ? 'Actualizando...' : 'Actualizar'}
+              </button>
+
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus size={20} />
+                Nueva Compra
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -220,7 +232,7 @@ export function PurchasesPage() {
                     Método de Pago *
                   </label>
                   <PaymentMethodSelector
-                    userId={CURRENT_USER_ID}
+                    userId={activeUserId}
                     value={formData.payment_method_id ? parseInt(formData.payment_method_id) : null}
                     onChange={(paymentMethodId) => setFormData({ ...formData, payment_method_id: paymentMethodId.toString() })}
                   />
@@ -550,7 +562,7 @@ export function PurchasesPage() {
         isOpen={deleteModalOpen}
         onClose={() => { closeDeleteModal(); if (deleteTarget && expandedPurchase === deleteTarget.id) setExpandedPurchase(null); }}
         description={deleteTarget?.description}
-        userId={CURRENT_USER_ID}
+        userId={activeUserId}
       />
     </div>
   );

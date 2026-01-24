@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Plus, Trash2, TrendingUp, DollarSign } from 'lucide-react';
 import { useExchangeRates, useCreateExchangeRate, useDeleteExchangeRate } from '../../application/hooks/useExchangeRates';
 import type { ExchangeRateType, CreateExchangeRateData } from '../../domain/entities/ExchangeRate';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 const RATE_TYPE_LABELS: Record<ExchangeRateType, string> = {
   official: 'Oficial',
@@ -28,7 +29,7 @@ const RATE_TYPE_COLORS: Record<ExchangeRateType, string> = {
 };
 
 export function ExchangeRatesPage() {
-  const userId = 1; // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreateExchangeRateData>({
     date: new Date().toISOString().split('T')[0],
@@ -40,7 +41,7 @@ export function ExchangeRatesPage() {
     notes: '',
   });
 
-  const { data: exchangeRates, isLoading, error } = useExchangeRates(userId);
+  const { data: exchangeRates, isLoading, error } = useExchangeRates(activeUserId);
   const createExchangeRate = useCreateExchangeRate();
   const deleteExchangeRate = useDeleteExchangeRate();
 
@@ -50,7 +51,7 @@ export function ExchangeRatesPage() {
 
     try {
       await createExchangeRate.mutateAsync({
-        userId,
+        userId: activeUserId,
         data: {
           ...formData,
           source: formData.source || undefined,
@@ -76,7 +77,7 @@ export function ExchangeRatesPage() {
     if (!confirm('¿Estás seguro de eliminar este tipo de cambio?')) return;
 
     try {
-      await deleteExchangeRate.mutateAsync({ id, userId });
+      await deleteExchangeRate.mutateAsync({ id, userId: activeUserId });
     } catch (err) {
       console.error('Failed to delete exchange rate:', err);
     }

@@ -13,13 +13,13 @@ import { CreateBankAccountModal } from '../components/CreateBankAccountModal';
 import { CreateDigitalWalletModal } from '../components/CreateDigitalWalletModal';
 import type { PaymentMethod } from '../../domain';
 
-// Default user ID for MVP (will be replaced with auth context)
-const DEFAULT_USER_ID = 1;
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export function PaymentMethodsPage() {
   const [modalType, setModalType] = useState<'cash' | 'bank' | 'digital' | null>(null);
 
-  const { data: paymentMethods, isLoading, error, refetch } = usePaymentMethods(DEFAULT_USER_ID);
+  const { activeUserId } = useActiveUser();
+  const { data: paymentMethods, isLoading, error, refetch } = usePaymentMethods(activeUserId);
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -150,19 +150,19 @@ export function PaymentMethodsPage() {
       {/* Modals */}
       {modalType === 'cash' && (
         <CreateCashAccountModal
-          userId={DEFAULT_USER_ID}
+          userId={activeUserId}
           onClose={handleModalClose}
         />
       )}
       {modalType === 'bank' && (
         <CreateBankAccountModal
-          userId={DEFAULT_USER_ID}
+          userId={activeUserId}
           onClose={handleModalClose}
         />
       )}
       {modalType === 'digital' && (
         <CreateDigitalWalletModal
-          userId={DEFAULT_USER_ID}
+          userId={activeUserId}
           onClose={handleModalClose}
         />
       )}

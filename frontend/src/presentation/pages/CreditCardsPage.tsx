@@ -9,8 +9,7 @@ import { Plus, CreditCard as CreditCardIcon, User, Trash2 } from 'lucide-react';
 import { useCreditCards, useCreateCreditCard, useUsers, useDeleteCreditCard } from '../../application';
 import type { CreditCard } from '../../domain/entities';
 
-// Default user ID for listing cards (will be replaced with auth context)
-const DEFAULT_USER_ID = 1;
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export function CreditCardsPage() {
   const [showForm, setShowForm] = useState(false);
@@ -25,8 +24,9 @@ export function CreditCardsPage() {
     credit_limit_currency: 'ARS',
   });
 
+  const { activeUserId } = useActiveUser();
   const { data: users } = useUsers();
-  const { data: creditCards, isLoading, error } = useCreditCards(DEFAULT_USER_ID);
+  const { data: creditCards, isLoading, error } = useCreditCards(activeUserId);
   const createCreditCard = useCreateCreditCard();
   const deleteCreditCard = useDeleteCreditCard();
 
@@ -36,7 +36,7 @@ export function CreditCardsPage() {
     }
 
     try {
-      await deleteCreditCard.mutateAsync({ id: cardId, userId: DEFAULT_USER_ID });
+      await deleteCreditCard.mutateAsync({ id: cardId, userId: activeUserId });
     } catch (err: any) {
       console.error('Failed to delete credit card:', err);
       alert(`Error al eliminar tarjeta: ${err.message || 'Error desconocido'}`);

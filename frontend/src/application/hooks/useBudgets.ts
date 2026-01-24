@@ -17,6 +17,7 @@ export function useBudgets(userId: number) {
     queryKey: budgetKeys.list(userId),
     queryFn: () => budgetsRepository.list(userId),
     enabled: !!userId,
+    keepPreviousData: true,
   });
 }
 
@@ -26,6 +27,7 @@ export function useBudgetDetails(budgetId: number | undefined, userId: number) {
     queryKey: budgetKeys.detail(budgetId!),
     queryFn: () => budgetsRepository.getDetails(budgetId!, userId),
     enabled: !!budgetId && !!userId,
+    keepPreviousData: true,
   });
 }
 
