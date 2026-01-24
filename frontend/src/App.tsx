@@ -16,6 +16,7 @@ import { StatementDetailPage } from './presentation/pages/StatementDetailPage';
 import { BudgetsPage } from './presentation/pages/BudgetsPage';
 import { BudgetDetailPage } from './presentation/pages/BudgetDetailPage';
 import { ExchangeRatesPage } from './presentation/pages/ExchangeRatesPage';
+import { ProjectionsPage } from './presentation/pages/ProjectionsPage';
 import { CurrencyToggle } from './presentation/components/CurrencyToggle';
 
 function HomePage() {
@@ -44,6 +45,9 @@ function HomePage() {
       </Link>
       <Link to="/exchange-rates">
         <Card title="💱 Tipos de Cambio" subtitle="Cotizaciones USD/ARS" />
+      </Link>
+      <Link to="/projections">
+        <Card title="📈 Proyecciones" subtitle="Planificá tu ahorro a 5 años" />
       </Link>
     </div>
   );
@@ -101,6 +105,7 @@ export default function App() {
               <Route path="/budgets" element={<BudgetsPage />} />
               <Route path="/budgets/:budgetId" element={<BudgetDetailPage />} />
               <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
+              <Route path="/projections" element={<ProjectionsPage />} />
             </Routes>
           </Layout>
         </BrowserRouter>

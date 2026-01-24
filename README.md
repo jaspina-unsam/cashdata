@@ -21,6 +21,8 @@ CashData helps you manage credit card purchases with installment tracking and au
 - 📊 **Monthly Statements**: Auto-generated billing statements per card
 - 🏷️ **Categorization**: Organize purchases with categories
 - 📈 **Billing Summaries**: View period-based summaries with all installments
+- 📈 **Financial Projections** 🆕: 5-year savings projections with interactive scenarios
+- 💱 **Bimonetary Support**: Track USD and ARS with exchange rates
 - 🧪 **Well Tested**: 475+ tests with >90% coverage
 
 ---
