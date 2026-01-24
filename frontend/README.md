@@ -9,6 +9,20 @@ Currently, two official plugins are available:
 
 ## React Compiler
 
+### Feature: User Selector (MVP)
+
+A new user selector is available in the header to switch the active user for the UI. The selector is ephemeral (resets on page reload) and defaults to the user with `id = 1`. It provides a `UserProvider` context and a `useActiveUser()` hook to read/change the active user globally.
+
+Usage:
+- Wrap your app with `UserProvider` (already done in `App.tsx`).
+- Use the `useActiveUser()` hook to access `activeUserId`, `users`, `setActiveUserId`, and `isLoading`.
+
+Limitations:
+- No persistence (localStorage) in this phase.
+- No authentication integration yet.
+
+
+
 The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
 ## Expanding the ESLint configuration

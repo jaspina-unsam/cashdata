@@ -3,6 +3,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 // import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { queryClient } from './application';
 import { CurrencyProvider } from './application/contexts/CurrencyContext';
+import { UserProvider } from './application/contexts/UserContext';
+import { UserSelector } from './presentation/components/UserSelector';
 import { 
   UsersPage, 
   CategoriesPage, 
@@ -63,7 +65,10 @@ function Layout({ children }: { children: React.ReactNode }) {
               <h1 className="text-3xl font-bold text-white">💰 CashData</h1>
               <p className="text-blue-100 text-sm mt-1">Tus finanzas bajo control</p>
             </Link>
-            <CurrencyToggle />
+            <div className="flex items-center gap-4">
+              <CurrencyToggle />
+              <UserSelector />
+            </div>
           </div>
         </div>
       </nav>
@@ -90,25 +95,27 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <CurrencyProvider>
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/categories" element={<CategoriesPage />} />
-              <Route path="/payment-methods" element={<PaymentMethodsPage />} />
-              <Route path="/credit-cards" element={<CreditCardsPage />} />
-              <Route path="/purchases" element={<PurchasesPage />} />
-              <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />
-              <Route path="/statements" element={<StatementsPage />} />
-              <Route path="/statements/:id" element={<StatementDetailPage />} />
-              <Route path="/budgets" element={<BudgetsPage />} />
-              <Route path="/budgets/:budgetId" element={<BudgetDetailPage />} />
-              <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
-              <Route path="/projections" element={<ProjectionsPage />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
+        <UserProvider>
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/categories" element={<CategoriesPage />} />
+                <Route path="/payment-methods" element={<PaymentMethodsPage />} />
+                <Route path="/credit-cards" element={<CreditCardsPage />} />
+                <Route path="/purchases" element={<PurchasesPage />} />
+                <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />
+                <Route path="/statements" element={<StatementsPage />} />
+                <Route path="/statements/:id" element={<StatementDetailPage />} />
+                <Route path="/budgets" element={<BudgetsPage />} />
+                <Route path="/budgets/:budgetId" element={<BudgetDetailPage />} />
+                <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
+                <Route path="/projections" element={<ProjectionsPage />} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+        </UserProvider>
       </CurrencyProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>

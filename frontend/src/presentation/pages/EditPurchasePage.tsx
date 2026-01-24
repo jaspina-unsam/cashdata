@@ -7,27 +7,29 @@ import { useExchangeRates } from '../../application/hooks/useExchangeRates';
 import { useStatementsByCard } from '../../application/hooks/useStatements';
 import { usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
 
-const CURRENT_USER_ID = 1;
+import { useActiveUser } from '../../application/contexts/UserContext';
+
 
 export default function EditPurchasePage() {
   const { id } = useParams();
   const purchaseId = Number(id);
   const navigate = useNavigate();
 
-  const { data: purchase, isLoading, error } = usePurchase(purchaseId, CURRENT_USER_ID);
+  const { activeUserId } = useActiveUser();
+  const { data: purchase, isLoading, error } = usePurchase(purchaseId, activeUserId);
   const { data: categories } = useCategories();
   
   // Fetch exchange rates - get all available rates to allow flexibility in selection
-  const { data: exchangeRates } = useExchangeRates(CURRENT_USER_ID, {});
+  const { data: exchangeRates } = useExchangeRates(activeUserId, {});
   
   // Fetch available statements for reassignment (single-payment only)
   const { data: statements } = useStatementsByCard(
     purchase?.payment_method_id || 0,
-    CURRENT_USER_ID
+    activeUserId
   );
   
   // Fetch installments for single-payment reassignment
-  const { data: installments } = usePurchaseInstallments(purchaseId, CURRENT_USER_ID);
+  const { data: installments } = usePurchaseInstallments(purchaseId, activeUserId);
 
   const updatePurchase = useUpdatePurchase();
   const updateInstallment = usePurchaseInstallmentsMutation();
@@ -62,7 +64,7 @@ export default function EditPurchasePage() {
       // Update purchase with dual-currency fields
       await updatePurchase.mutateAsync({ 
         id: purchaseId, 
-        userId: CURRENT_USER_ID, 
+        userId: activeUserId, 
         data: {
           description: form.description,
           category_id: Number(form.category_id),
@@ -84,7 +86,7 @@ export default function EditPurchasePage() {
       ) {
         await updateInstallment.mutateAsync({
           id: installments[0].id,
-          userId: CURRENT_USER_ID,
+          userId: activeUserId,
           purchaseId: purchaseId,
           data: {
             monthly_statement_id: reassignStatementId,
@@ -251,7 +253,7 @@ export default function EditPurchasePage() {
       {purchase && purchase.installments_count > 1 && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Cuotas</h3>
-          <InstallmentEditor purchaseId={purchaseId} userId={CURRENT_USER_ID} />
+          <InstallmentEditor purchaseId={purchaseId} userId={activeUserId} />
         </div>
       )}
     </div>

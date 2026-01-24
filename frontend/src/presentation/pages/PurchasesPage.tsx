@@ -14,9 +14,7 @@ import { DualCurrencyAmount } from '../components/DualCurrencyAmount';
 import type { Purchase } from '../../domain/entities';
 import { useNavigate } from 'react-router-dom';
 import DeletePurchaseModal from '../components/DeletePurchaseModal';
-
-// Hardcoded user ID for MVP (will be replaced with auth context)
-const CURRENT_USER_ID = 1;
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 // Helper function to format date string as local date (avoid timezone issues)
 const formatLocalDate = (dateString: string): string => {
@@ -44,12 +42,14 @@ export function PurchasesPage() {
     installments_count: '1',
   });
 
-  const { data: purchasesData, isLoading, error } = usePurchases(CURRENT_USER_ID, { 
+  const { activeUserId } = useActiveUser();
+
+  const { data: purchasesData, isLoading, error } = usePurchases(activeUserId, { 
     page: currentPage, 
     page_size: pageSize 
   });
   const { data: categories } = useCategories();
-  const { data: paymentMethods } = usePaymentMethods(CURRENT_USER_ID);
+  const { data: paymentMethods } = usePaymentMethods(activeUserId);
   const createPurchase = useCreatePurchase();
 
   const purchases = purchasesData?.items || [];
@@ -105,7 +105,7 @@ export function PurchasesPage() {
         installments_count: isCreditCard ? installments : 1, // Force 1 for non-credit cards
       };
 
-      await createPurchase.mutateAsync({ userId: CURRENT_USER_ID, data: purchaseData });
+      await createPurchase.mutateAsync({ userId: activeUserId, data: purchaseData });
       
       // Reset form
       setFormData({
@@ -220,7 +220,7 @@ export function PurchasesPage() {
                     Método de Pago *
                   </label>
                   <PaymentMethodSelector
-                    userId={CURRENT_USER_ID}
+                    userId={activeUserId}
                     value={formData.payment_method_id ? parseInt(formData.payment_method_id) : null}
                     onChange={(paymentMethodId) => setFormData({ ...formData, payment_method_id: paymentMethodId.toString() })}
                   />
@@ -550,7 +550,7 @@ export function PurchasesPage() {
         isOpen={deleteModalOpen}
         onClose={() => { closeDeleteModal(); if (deleteTarget && expandedPurchase === deleteTarget.id) setExpandedPurchase(null); }}
         description={deleteTarget?.description}
-        userId={CURRENT_USER_ID}
+        userId={activeUserId}
       />
     </div>
   );

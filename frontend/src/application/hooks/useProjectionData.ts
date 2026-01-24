@@ -8,6 +8,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { userRepository } from '../../infrastructure/api/userRepository';
 import { PurchaseApiRepository } from '../../infrastructure/api/purchaseRepository';
+import { useActiveUser } from '../contexts/UserContext';
 
 const purchaseRepository = new PurchaseApiRepository();
 
@@ -17,11 +18,16 @@ interface CalculatedExpenses {
   total: number;
 }
 
-export function useUserData(userId: number) {
+export function useUserData(userId?: number) {
+  // Prefer explicit param, otherwise use active user from context
+  const { activeUserId } = useActiveUser();
+  const idToUse = userId ?? activeUserId;
+
   // Fetch user data
   const userQuery = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => userRepository.findById(userId),
+    queryKey: ['user', idToUse],
+    queryFn: () => userRepository.findById(idToUse),
+    enabled: !!idToUse,
   });
   
   // Fetch recent purchases (last 6 months)
@@ -29,9 +35,9 @@ export function useUserData(userId: number) {
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   
   const purchasesQuery = useQuery({
-    queryKey: ['purchases', userId, 'recent-6m'],
+    queryKey: ['purchases', idToUse, 'recent-6m'],
     queryFn: async () => {
-      const result = await purchaseRepository.findByUserId(userId, {
+      const result = await purchaseRepository.findByUserId(idToUse, {
         startDate: sixMonthsAgo.toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         page: 1,

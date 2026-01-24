@@ -9,6 +9,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useUserData, useLatestExchangeRate, calculateExpensesFromPurchases } from '../../application/hooks/useProjectionData';
+import { useActiveUser } from '../../application/contexts/UserContext';
 import { projectionCalculator } from '../../application/services/projectionCalculator';
 import { ProjectionControls } from '../components/ProjectionControls';
 import { ProjectionChart } from '../components/ProjectionChart';
@@ -17,11 +18,12 @@ import { YearlySummaryTable } from '../components/YearlySummaryTable';
 import { ProjectionRecommendations } from '../components/ProjectionRecommendations';
 import type { ProjectionConfig } from '../../domain/entities';
 
-const USER_ID = 1; // Hardcoded for Phase 1
-
 export function ProjectionsPage() {
-  const { user, purchases, isLoading: userLoading } = useUserData(USER_ID);
-  const { data: latestRate, isLoading: rateLoading } = useLatestExchangeRate(USER_ID, 'blue');
+  // Use active user from context
+  const { activeUserId } = useActiveUser();
+
+  const { user, purchases, isLoading: userLoading } = useUserData();
+  const { data: latestRate, isLoading: rateLoading } = useLatestExchangeRate(activeUserId, 'blue');
   
   // Configuration state
   const [config, setConfig] = useState<ProjectionConfig>({

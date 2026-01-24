@@ -9,12 +9,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useStatements } from '../../application/hooks/useStatements';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export function StatementsPage() {
-  const [userId] = useState(1); // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
   const [includeFuture, setIncludeFuture] = useState(false);
 
-  const { data: statements, isLoading, error } = useStatements(userId, includeFuture);
+  const { data: statements, isLoading, error } = useStatements(activeUserId, includeFuture);
 
   if (isLoading) {
     return (

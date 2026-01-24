@@ -6,10 +6,11 @@ import { BudgetBalanceSummary } from '../components/BudgetBalanceSummary';
 import { AddExpenseToBudgetModal } from '../components/AddExpenseToBudgetModal';
 import { EditExpenseModal } from '../components/EditExpenseModal';
 import { DeleteExpenseConfirmation } from '../components/DeleteExpenseConfirmation';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export const BudgetDetailPage: React.FC = () => {
   const { budgetId } = useParams<{ budgetId: string }>();
-  const currentUserId = 1; // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
 
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<{ id: number; splitType: string; description: string } | null>(null);
@@ -17,7 +18,7 @@ export const BudgetDetailPage: React.FC = () => {
 
   const { data: budgetDetails, isLoading, error } = useBudgetDetails(
     budgetId ? parseInt(budgetId) : undefined,
-    currentUserId
+    activeUserId
   );
   
   const removeExpenseMutation = useRemoveExpense();
@@ -74,7 +75,7 @@ export const BudgetDetailPage: React.FC = () => {
       await removeExpenseMutation.mutateAsync({
         budgetId: parseInt(budgetId),
         expenseId: deletingExpense.id,
-        userId: currentUserId,
+        userId: activeUserId,
       });
       setDeletingExpense(null);
     } catch (error) {
@@ -272,7 +273,7 @@ export const BudgetDetailPage: React.FC = () => {
         isOpen={isAddExpenseModalOpen}
         onClose={() => setIsAddExpenseModalOpen(false)}
         budgetId={parseInt(budgetId!)}
-        currentUserId={currentUserId}
+        currentUserId={activeUserId}
         participants={participants}
       />
 
@@ -282,7 +283,7 @@ export const BudgetDetailPage: React.FC = () => {
           onClose={() => setEditingExpense(null)}
           budgetId={parseInt(budgetId!)}
           expenseId={editingExpense.id}
-          currentUserId={currentUserId}
+          currentUserId={activeUserId}
           currentSplitType={editingExpense.splitType as any}
           participants={participants}
           expenseDescription={editingExpense.description}

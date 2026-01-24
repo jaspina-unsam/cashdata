@@ -7,13 +7,14 @@
 import { DollarSign, TrendingUp } from 'lucide-react';
 import { useCurrencyPreference } from '../../application/contexts/CurrencyContext';
 import { useLatestRate } from '../../application/hooks/useExchangeRates';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 export function CurrencyToggle() {
   const { preference, toggleCurrency } = useCurrencyPreference();
-  const userId = 1; // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
 
   const { data: latestRate } = useLatestRate(
-    userId,
+    activeUserId,
     preference.preferredRateType,
     'USD',
     'ARS'

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Plus, Trash2, TrendingUp, DollarSign } from 'lucide-react';
 import { useExchangeRates, useCreateExchangeRate, useDeleteExchangeRate } from '../../application/hooks/useExchangeRates';
 import type { ExchangeRateType, CreateExchangeRateData } from '../../domain/entities/ExchangeRate';
+import { useActiveUser } from '../../application/contexts/UserContext';
 
 const RATE_TYPE_LABELS: Record<ExchangeRateType, string> = {
   official: 'Oficial',
@@ -28,7 +29,7 @@ const RATE_TYPE_COLORS: Record<ExchangeRateType, string> = {
 };
 
 export function ExchangeRatesPage() {
-  const userId = 1; // TODO: Get from auth context
+  const { activeUserId } = useActiveUser();
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<CreateExchangeRateData>({
     date: new Date().toISOString().split('T')[0],
