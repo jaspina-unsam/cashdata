@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { budgetsRepository } from '../../infrastructure/api/budgetsRepository';
 import type { CreateBudgetData, AddExpenseData, UpdateResponsibilitiesData } from '../../infrastructure/api/budgetsRepository';
+import type { MonthlyBudget, BudgetDetails } from '../../domain/entities';
 
 // Query keys
 export const budgetKeys = {
@@ -13,7 +14,7 @@ export const budgetKeys = {
 
 // List all budgets for user
 export function useBudgets(userId: number) {
-  return useQuery({
+  return useQuery<MonthlyBudget[]>({
     queryKey: budgetKeys.list(userId),
     queryFn: () => budgetsRepository.list(userId),
     enabled: !!userId,
@@ -23,7 +24,7 @@ export function useBudgets(userId: number) {
 
 // Get budget details
 export function useBudgetDetails(budgetId: number | undefined, userId: number) {
-  return useQuery({
+  return useQuery<BudgetDetails>({
     queryKey: budgetKeys.detail(budgetId!),
     queryFn: () => budgetsRepository.getDetails(budgetId!, userId),
     enabled: !!budgetId && !!userId,

@@ -1,7 +1,11 @@
 import { statementsRepository } from '../../infrastructure';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { MonthlyStatement, StatementDetail } from '../../domain/entities';
+import { monthlyStatementRepository } from '../../infrastructure/api/monthlyStatementRepository';
+
 
 export function useStatementsByCard(creditCardId: number, userId: number) {
-  return useQuery({
+  return useQuery<MonthlyStatement[]>({
     queryKey: ['statements', 'byCard', creditCardId, userId],
     queryFn: () => statementsRepository.findByCard(creditCardId, userId),
     enabled: !!creditCardId && !!userId,
@@ -14,14 +18,11 @@ export function useStatementsByCard(creditCardId: number, userId: number) {
  * React Query hooks for managing monthly statement data.
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { monthlyStatementRepository } from '../../infrastructure/api/monthlyStatementRepository';
-
 /**
  * Hook to fetch all statements for a user
  */
 export function useStatements(userId: number, includeFuture: boolean = false) {
-  return useQuery({
+  return useQuery<MonthlyStatement[]>({
     queryKey: ['statements', userId, includeFuture],
     queryFn: () => monthlyStatementRepository.findByUserId(userId, includeFuture),
     enabled: !!userId,    keepPreviousData: true,  });
@@ -31,7 +32,7 @@ export function useStatements(userId: number, includeFuture: boolean = false) {
  * Hook to fetch a single statement detail with purchases
  */
 export function useStatement(statementId: number, userId: number) {
-  return useQuery({
+  return useQuery<StatementDetail | null>({
     queryKey: ['statement', statementId, userId],
     queryFn: () => monthlyStatementRepository.findById(statementId, userId),
     enabled: !!statementId && !!userId,    keepPreviousData: true,  });

@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CreateExchangeRateData, ExchangeRateType } from '../../domain/entities/ExchangeRate';
+import type { CreateExchangeRateData, ExchangeRateType, ExchangeRate } from '../../domain/entities/ExchangeRate';
 import { exchangeRateRepository } from '../../infrastructure/api/exchangeRatesApi';
 
 export interface ExchangeRateFilters {
@@ -20,7 +20,7 @@ export interface ExchangeRateFilters {
  * Hook to fetch exchange rates with filters
  */
 export function useExchangeRates(userId: number, filters?: ExchangeRateFilters) {
-  return useQuery({
+  return useQuery<ExchangeRate[]>({
     queryKey: ['exchangeRates', userId, filters],
     queryFn: () => exchangeRateRepository.list(userId, filters),
     enabled: !!userId,    keepPreviousData: true,  });
@@ -35,13 +35,14 @@ export function useLatestRate(
   fromCurrency: string = 'USD',
   toCurrency: string = 'ARS'
 ) {
-  return useQuery({
+  return useQuery<ExchangeRate | null>({
     queryKey: ['exchangeRates', 'latest', userId, rateType, fromCurrency, toCurrency],
     queryFn: () => exchangeRateRepository.getLatest(userId, rateType, fromCurrency, toCurrency),
     enabled: !!userId && !!rateType,
     keepPreviousData: true,
   });
 }
+
 
 /**
  * Hook to create a new exchange rate

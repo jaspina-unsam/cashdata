@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Purchase } from '../../domain/entities';
+import type { Purchase, Installment } from '../../domain/entities';
 import { purchaseRepository } from '../../infrastructure';
 import { queryKeys } from '../config/queryClient';
 
@@ -41,7 +41,7 @@ export function usePurchases(userId: number, filters?: PurchaseFilters) {
  * Hook to fetch a single purchase by ID
  */
 export function usePurchase(id: number, userId: number) {
-  return useQuery({
+  return useQuery<Purchase | null>({
     queryKey: queryKeys.purchases.detail(id, userId),
     queryFn: () => purchaseRepository.findById(id, userId),
     enabled: !!id && !!userId,
@@ -57,7 +57,7 @@ export function usePurchasesByCreditCard(
   userId: number,
   filters?: Omit<PurchaseFilters, 'startDate' | 'endDate'>
 ) {
-  return useQuery({
+  return useQuery<PaginatedPurchases>({
     queryKey: queryKeys.purchases.byCard(cardId, userId),
     queryFn: () =>
       purchaseRepository.findByCreditCardId(cardId, userId, filters?.page, filters?.page_size),
@@ -66,15 +66,12 @@ export function usePurchasesByCreditCard(
   });
 }
 
-/**
- * Hook to fetch purchases by category
- */
 export function usePurchasesByCategory(
   categoryId: number,
   userId: number,
   filters?: Omit<PurchaseFilters, 'startDate' | 'endDate'>
 ) {
-  return useQuery({
+  return useQuery<PaginatedPurchases>({
     queryKey: queryKeys.purchases.byCategory(categoryId, userId),
     queryFn: () =>
       purchaseRepository.findByCategoryId(categoryId, userId, filters?.page, filters?.page_size),
@@ -83,11 +80,8 @@ export function usePurchasesByCategory(
   });
 }
 
-/**
- * Hook to fetch installments for a purchase
- */
 export function usePurchaseInstallments(purchaseId: number, userId: number) {
-  return useQuery({
+  return useQuery<Installment[]>({
     queryKey: queryKeys.purchases.installments(purchaseId, userId),
     queryFn: () => purchaseRepository.getInstallments(purchaseId, userId),
     enabled: !!purchaseId && !!userId,

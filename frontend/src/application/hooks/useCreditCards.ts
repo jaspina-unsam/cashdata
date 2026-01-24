@@ -5,7 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CreditCard } from '../../domain/entities';
+import type { CreditCard, CreditCardSummary } from '../../domain/entities';
 import { creditCardRepository } from '../../infrastructure';
 import { queryKeys } from '../config/queryClient';
 
@@ -24,7 +24,7 @@ export interface CreditCardSummaryParams {
  * Hook to fetch all credit cards for a user
  */
 export function useCreditCards(userId: number, filters?: CreditCardFilters) {
-  return useQuery({
+  return useQuery<CreditCard[]>({
     queryKey: queryKeys.creditCards.all(userId),
     queryFn: () => creditCardRepository.findByUserId(userId, filters?.skip, filters?.limit),
     enabled: !!userId,
@@ -36,7 +36,7 @@ export function useCreditCards(userId: number, filters?: CreditCardFilters) {
  * Hook to fetch a single credit card by ID
  */
 export function useCreditCard(id: number, userId: number) {
-  return useQuery({
+  return useQuery<CreditCard | null>({
     queryKey: queryKeys.creditCards.detail(id, userId),
     queryFn: () => creditCardRepository.findById(id, userId),
     enabled: !!id && !!userId,
@@ -48,7 +48,7 @@ export function useCreditCard(id: number, userId: number) {
  * Hook to fetch credit card summary for a billing period
  */
 export function useCreditCardSummary(params: CreditCardSummaryParams) {
-  return useQuery({
+  return useQuery<CreditCardSummary>({
     queryKey: queryKeys.creditCards.summary(params.cardId, params.userId, params.billingPeriod),
     queryFn: () =>
       creditCardRepository.getSummary(params.cardId, params.userId, params.billingPeriod),
