@@ -7,15 +7,15 @@
  * Phase 1 (POC): Hardcoded to user_id = 1, ephemeral state.
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useUserData, useLatestExchangeRate, calculateExpensesFromPurchases } from '@/application/hooks/useProjectionData';
-import { projectionCalculator } from '@/application/services/projectionCalculator';
+import { useState, useMemo, useEffect } from 'react';
+import { useUserData, useLatestExchangeRate, calculateExpensesFromPurchases } from '../../application/hooks/useProjectionData';
+import { projectionCalculator } from '../../application/services/projectionCalculator';
 import { ProjectionControls } from '../components/ProjectionControls';
 import { ProjectionChart } from '../components/ProjectionChart';
 import { ProjectionSummary } from '../components/ProjectionSummary';
 import { YearlySummaryTable } from '../components/YearlySummaryTable';
 import { ProjectionRecommendations } from '../components/ProjectionRecommendations';
-import type { ProjectionConfig } from '@/domain/entities';
+import type { ProjectionConfig } from '../../domain/entities';
 
 const USER_ID = 1; // Hardcoded for Phase 1
 
@@ -48,7 +48,7 @@ export function ProjectionsPage() {
         incomeUSD = incomeUSD / latestRate.rate;
       }
       
-      setConfig(prev => ({ ...prev, currentMonthlyIncome: incomeUSD }));
+      setConfig((prev: ProjectionConfig) => ({ ...prev, currentMonthlyIncome: incomeUSD }));
     }
   }, [user, latestRate]);
   

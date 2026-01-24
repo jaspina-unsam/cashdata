@@ -5,8 +5,7 @@
  * Includes sliders for expenses, scenario selection, and economic factors.
  */
 
-import React from 'react';
-import type { ProjectionConfig } from '@/domain/entities';
+import type { ProjectionConfig } from '../../domain/entities';
 
 interface ProjectionControlsProps {
   config: ProjectionConfig;

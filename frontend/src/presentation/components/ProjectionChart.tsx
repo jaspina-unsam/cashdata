@@ -5,9 +5,8 @@
  * Uses Recharts for responsive visualization.
  */
 
-import React from 'react';
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import type { MonthlyProjection } from '@/domain/entities';
+import type { MonthlyProjection } from '../../domain/entities';
 
 interface ProjectionChartProps {
   data: MonthlyProjection[];
@@ -27,7 +26,8 @@ export function ProjectionChart({ data }: ProjectionChartProps) {
     return `$${(value / 1000).toFixed(0)}k`;
   };
   
-  const formatTooltip = (value: number) => {
+  const formatTooltip = (value: number | undefined) => {
+    if (value === undefined) return '';
     return `$${value.toLocaleString()}`;
   };
   

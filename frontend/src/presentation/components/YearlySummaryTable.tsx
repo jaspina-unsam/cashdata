@@ -4,8 +4,7 @@
  * Table showing year-by-year breakdown of income, savings, and bonuses.
  */
 
-import React from 'react';
-import type { MonthlyProjection } from '@/domain/entities';
+import type { MonthlyProjection } from '../../domain/entities';
 
 interface YearlySummaryTableProps {
   data: MonthlyProjection[];

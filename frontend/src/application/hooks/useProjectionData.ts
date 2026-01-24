@@ -6,8 +6,8 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { userRepository } from '@/infrastructure/api/userRepository';
-import { PurchaseApiRepository } from '@/infrastructure/api/purchaseRepository';
+import { userRepository } from '../../infrastructure/api/userRepository';
+import { PurchaseApiRepository } from '../../infrastructure/api/purchaseRepository';
 
 const purchaseRepository = new PurchaseApiRepository();
 
@@ -57,7 +57,7 @@ export function useUserData(userId: number) {
  * Used to convert ARS amounts to USD.
  */
 
-import { ExchangeRateApiRepository } from '@/infrastructure/api/exchangeRatesApi';
+import { ExchangeRateApiRepository } from '../../infrastructure/api/exchangeRatesApi';
 
 const exchangeRateRepository = new ExchangeRateApiRepository();
 

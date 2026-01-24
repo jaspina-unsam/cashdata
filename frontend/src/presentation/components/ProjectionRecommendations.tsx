@@ -4,8 +4,6 @@
  * Displays advantages and personalized recommendations based on projection results.
  */
 
-import React from 'react';
-
 interface ProjectionRecommendationsProps {
   recommendations: string[];
 }

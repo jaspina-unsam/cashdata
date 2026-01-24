@@ -5,7 +5,7 @@
  * Handles salary growth, inflation, investment returns, and bonuses.
  */
 
-import type { ProjectionConfig, ProjectionResult, MonthlyProjection, ProjectionSummary } from '@/domain/entities';
+import type { ProjectionConfig, ProjectionResult, MonthlyProjection, ProjectionSummary } from '../../domain/entities';
 
 interface CalculateProjectionParams {
   config: ProjectionConfig;

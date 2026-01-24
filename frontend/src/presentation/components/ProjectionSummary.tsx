@@ -5,8 +5,7 @@
  * Highlights whether the goal is achieved with conditional styling.
  */
 
-import React from 'react';
-import type { ProjectionSummary } from '@/domain/entities';
+import type { ProjectionSummary } from '../../domain/entities';
 
 interface ProjectionSummaryProps {
   summary: ProjectionSummary;
