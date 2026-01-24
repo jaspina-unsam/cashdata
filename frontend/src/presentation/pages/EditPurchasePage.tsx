@@ -6,6 +6,7 @@ import { useCategories } from '../../application/hooks/useCategories';
 import { useExchangeRates } from '../../application/hooks/useExchangeRates';
 import { useStatementsByCard } from '../../application/hooks/useStatements';
 import { usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
+import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
 
 import { useActiveUser } from '../../application/contexts/UserContext';
 
@@ -18,6 +19,7 @@ export default function EditPurchasePage() {
   const { activeUserId } = useActiveUser();
   const { data: purchase, isLoading, error } = usePurchase(purchaseId, activeUserId);
   const { data: categories } = useCategories();
+  const { data: paymentMethods } = usePaymentMethods(activeUserId);
   
   // Fetch exchange rates - get all available rates to allow flexibility in selection
   const { data: exchangeRates } = useExchangeRates(activeUserId, {});
@@ -249,8 +251,12 @@ export default function EditPurchasePage() {
         </div>
       </div>
 
-      {/* Installments editor for multi-installment purchases */}
-      {purchase && purchase.installments_count > 1 && (
+      {/* Installments editor for credit card purchases */}
+      {purchase && paymentMethods && (() => {
+        const paymentMethod = paymentMethods.find(pm => pm.id === purchase.payment_method_id);
+        const isCreditCard = paymentMethod?.type === 'credit_card';
+        return isCreditCard;
+      })() && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold">Cuotas</h3>
           <InstallmentEditor purchaseId={purchaseId} userId={activeUserId} />

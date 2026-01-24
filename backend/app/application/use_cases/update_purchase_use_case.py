@@ -210,9 +210,14 @@ class UpdatePurchaseUseCase:
 
             # Regenerate installments if amounts changed and it's a credit card purchase
             if needs_regenerate and credit_card:
-                # Delete existing installments
+                # Delete existing installments and their associated budget expenses
                 existing_installments = self._uow.installments.find_by_purchase_id(purchase.id)
                 for inst in existing_installments:
+                    # Delete associated budget expenses first (FK constraint)
+                    budget_expenses = self._uow.budget_expenses.find_by_installment_id(inst.id)
+                    for expense in budget_expenses:
+                        self._uow.budget_expenses.delete(expense.id)
+                    
                     self._uow.installments.delete(inst.id)
                 
                 # Generate new installments

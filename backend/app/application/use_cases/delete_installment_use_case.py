@@ -57,6 +57,11 @@ class DeleteInstallmentUseCase:
             if len(all_installments) <= 1:
                 raise BusinessRuleViolationError("Cannot delete the last remaining installment of a purchase")
 
+            # Delete associated budget expenses first (FK constraint)
+            budget_expenses = self._uow.budget_expenses.find_by_installment_id(command.installment_id)
+            for expense in budget_expenses:
+                self._uow.budget_expenses.delete(expense.id)
+
             # Delete the installment
             deleted = self._uow.installments.delete(command.installment_id)
             if not deleted:

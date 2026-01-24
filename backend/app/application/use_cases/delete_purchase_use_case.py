@@ -25,6 +25,11 @@ class DeletePurchaseUseCase:
                     f"Purchase with ID {purchase_id} not found for user {user_id}"
                 )
 
+            # Delete associated budget expenses first (FK constraint)
+            budget_expenses = self._uow.budget_expenses.find_by_purchase_id(purchase_id)
+            for expense in budget_expenses:
+                self._uow.budget_expenses.delete(expense.id)
+
             # Delete the purchase (cascade will delete installments)
             self._uow.purchases.delete(purchase_id)
             self._uow.commit()
