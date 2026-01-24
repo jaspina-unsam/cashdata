@@ -69,7 +69,13 @@ class UpdateInstallmentUseCase:
                 statement = self._uow.monthly_statements.find_by_id(command.manually_assigned_statement_id)
                 if not statement:
                     raise MonthlyStatementNotFoundError(f"Monthly statement with ID {command.manually_assigned_statement_id} not found")
-                if statement.credit_card_id != purchase.payment_method_id:
+                
+                # Find the credit card for this purchase's payment method
+                credit_card = self._uow.credit_cards.find_by_payment_method_id(purchase.payment_method_id)
+                if not credit_card:
+                    raise MonthlyStatementNotFoundError(f"No credit card found for payment method {purchase.payment_method_id}")
+                
+                if statement.credit_card_id != credit_card.id:
                     raise MonthlyStatementNotFoundError(f"Statement {command.manually_assigned_statement_id} does not belong to the same credit card")
 
             # Update installment

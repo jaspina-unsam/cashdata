@@ -86,7 +86,12 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
       return;
     }
 
-    console.log('Sending installment update:', { id: instId, userId, purchaseId, data });
+    console.log('Sending installment update:', { 
+      id: instId, 
+      userId, 
+      purchaseId, 
+      data: JSON.parse(JSON.stringify(data)) 
+    });
 
     try {
       await updateMutation.mutateAsync({ id: instId, userId, purchaseId, data });
