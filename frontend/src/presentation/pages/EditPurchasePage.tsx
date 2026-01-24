@@ -7,6 +7,7 @@ import { useExchangeRates } from '../../application/hooks/useExchangeRates';
 import { useStatementsByCard } from '../../application/hooks/useStatements';
 import { usePurchaseInstallmentsMutation } from '../../application/hooks/useInstallments';
 import { usePaymentMethods } from '../../application/hooks/usePaymentMethods';
+import { useCreditCards } from '../../application/hooks/useCreditCards';
 
 import { useActiveUser } from '../../application/contexts/UserContext';
 
@@ -20,6 +21,7 @@ export default function EditPurchasePage() {
   const { data: purchase, isLoading, error } = usePurchase(purchaseId, activeUserId);
   const { data: categories } = useCategories();
   const { data: paymentMethods } = usePaymentMethods(activeUserId);
+  const { data: creditCards } = useCreditCards(activeUserId);
   
   // Fetch exchange rates - get all available rates to allow flexibility in selection
   const { data: exchangeRates } = useExchangeRates(activeUserId, {});
@@ -252,20 +254,26 @@ export default function EditPurchasePage() {
       </div>
 
       {/* Installments editor for credit card purchases */}
-      {purchase && paymentMethods && (() => {
+      {purchase && paymentMethods && creditCards && (() => {
         const paymentMethod = paymentMethods.find(pm => pm.id === purchase.payment_method_id);
         const isCreditCard = paymentMethod?.type === 'credit_card';
-        return isCreditCard;
-      })() && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Cuotas</h3>
-          <InstallmentEditor 
-            purchaseId={purchaseId} 
-            userId={activeUserId} 
-            paymentMethodId={purchase.payment_method_id} 
-          />
-        </div>
-      )}
+        if (!isCreditCard) return null;
+        
+        // Find the credit card that corresponds to this payment method
+        const creditCard = creditCards.find(cc => cc.payment_method_id === purchase.payment_method_id);
+        if (!creditCard) return null;
+        
+        return (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold">Cuotas</h3>
+            <InstallmentEditor 
+              purchaseId={purchaseId} 
+              userId={activeUserId} 
+              creditCardId={creditCard.id}
+            />
+          </div>
+        );
+      })()}
     </div>
   );
 }

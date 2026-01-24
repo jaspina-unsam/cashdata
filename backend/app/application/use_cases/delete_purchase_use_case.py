@@ -25,7 +25,16 @@ class DeletePurchaseUseCase:
                     f"Purchase with ID {purchase_id} not found for user {user_id}"
                 )
 
-            # Delete associated budget expenses first (FK constraint)
+            # Get all installments for this purchase
+            installments = self._uow.installments.find_by_purchase_id(purchase_id)
+            
+            # Delete budget expenses associated with each installment
+            for installment in installments:
+                installment_expenses = self._uow.budget_expenses.find_by_installment_id(installment.id)
+                for expense in installment_expenses:
+                    self._uow.budget_expenses.delete(expense.id)
+
+            # Delete budget expenses associated directly with the purchase
             budget_expenses = self._uow.budget_expenses.find_by_purchase_id(purchase_id)
             for expense in budget_expenses:
                 self._uow.budget_expenses.delete(expense.id)

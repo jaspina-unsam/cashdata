@@ -97,6 +97,7 @@ export interface Category {
  */
 export interface CreditCard {
   id: number;
+  payment_method_id?: number;
   user_id: number;
   name: string;
   bank: string;

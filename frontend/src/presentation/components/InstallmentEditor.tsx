@@ -5,12 +5,12 @@ import { useStatementsByCard } from '../../application/hooks/useStatements';
 type Props = {
   purchaseId: number;
   userId: number;
-  paymentMethodId: number;
+  creditCardId: number;
 };
 
-export function InstallmentEditor({ purchaseId, userId, paymentMethodId }: Props) {
+export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
   const { data: installments, isLoading } = usePurchaseInstallments(purchaseId, userId);
-  const statementsQuery = useStatementsByCard(paymentMethodId, userId);
+  const statementsQuery = useStatementsByCard(creditCardId, userId);
   const updateMutation = usePurchaseInstallmentsMutation();
 
   const [local, setLocal] = useState<Record<number, { amount: string; statementId?: number | null }>>({});
