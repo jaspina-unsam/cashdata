@@ -4,6 +4,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './application';
 import { CurrencyProvider } from './application/contexts/CurrencyContext';
 import { UserProvider } from './application/contexts/UserContext';
+import { SidebarProvider } from './application/contexts/SidebarContext';
+import { MainLayout } from './presentation/layouts/MainLayout';
 import { UserSelector } from './presentation/components/UserSelector';
 import { 
   UsersPage, 
@@ -55,29 +57,7 @@ function HomePage() {
   );
 }
 
-function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-gradient-to-r from-blue-600 to-blue-800 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/">
-              <h1 className="text-3xl font-bold text-white">💰 CashData</h1>
-              <p className="text-blue-100 text-sm mt-1">Tus finanzas bajo control</p>
-            </Link>
-            <div className="flex items-center gap-4">
-              <CurrencyToggle />
-              <UserSelector />
-            </div>
-          </div>
-        </div>
-      </nav>
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {children}
-      </main>
-    </div>
-  );
-}
+
 
 function Card({ title, subtitle }: { title: string; subtitle: string }) {
   return (
@@ -96,25 +76,27 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <CurrencyProvider>
         <UserProvider>
-          <BrowserRouter>
-            <Layout>
+          <SidebarProvider>
+            <BrowserRouter>
               <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/users" element={<UsersPage />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-                <Route path="/payment-methods" element={<PaymentMethodsPage />} />
-                <Route path="/credit-cards" element={<CreditCardsPage />} />
-                <Route path="/purchases" element={<PurchasesPage />} />
-                <Route path="/purchases/:id/edit" element={<EditPurchasePage />} />
-                <Route path="/statements" element={<StatementsPage />} />
-                <Route path="/statements/:id" element={<StatementDetailPage />} />
-                <Route path="/budgets" element={<BudgetsPage />} />
-                <Route path="/budgets/:budgetId" element={<BudgetDetailPage />} />
-                <Route path="/exchange-rates" element={<ExchangeRatesPage />} />
-                <Route path="/projections" element={<ProjectionsPage />} />
+                <Route path="/" element={<MainLayout />}>
+                  <Route index element={<HomePage />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route path="categories" element={<CategoriesPage />} />
+                  <Route path="payment-methods" element={<PaymentMethodsPage />} />
+                  <Route path="credit-cards" element={<CreditCardsPage />} />
+                  <Route path="purchases" element={<PurchasesPage />} />
+                  <Route path="purchases/:id/edit" element={<EditPurchasePage />} />
+                  <Route path="statements" element={<StatementsPage />} />
+                  <Route path="statements/:id" element={<StatementDetailPage />} />
+                  <Route path="budgets" element={<BudgetsPage />} />
+                  <Route path="budgets/:budgetId" element={<BudgetDetailPage />} />
+                  <Route path="exchange-rates" element={<ExchangeRatesPage />} />
+                  <Route path="projections" element={<ProjectionsPage />} />
+                </Route>
               </Routes>
-            </Layout>
-          </BrowserRouter>
+            </BrowserRouter>
+          </SidebarProvider>
         </UserProvider>
       </CurrencyProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
