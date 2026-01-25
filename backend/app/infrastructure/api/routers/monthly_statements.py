@@ -26,12 +26,19 @@ from app.application.use_cases.list_statements_by_credit_card_use_case import (
 from app.application.use_cases.update_statement_dates_use_case import (
     UpdateStatementDatesUseCase,
 )
+from app.application.use_cases.delete_statement_use_case import (
+    DeleteStatementUseCase,
+    DeleteStatementCommand,
+)
 from app.application.exceptions.application_exceptions import (
     CreditCardNotFoundError,
     CreditCardOwnerMismatchError,
+    MonthlyStatementNotFoundError,
+    BusinessRuleViolationError,
 )
 from app.domain.repositories.iunit_of_work import IUnitOfWork
 from app.infrastructure.api.dependencies import get_unit_of_work
+from fastapi import Response
 
 router = APIRouter(prefix="/api/v1/statements", tags=["statements"])
 
@@ -217,3 +224,40 @@ def list_statements_by_card(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(e),
             )
+
+
+@router.delete(
+    "/{statement_id}",
+    summary="Delete statement",
+    responses={
+        204: {"description": "Statement deleted successfully"},
+        404: {"description": "Statement not found"},
+        403: {"description": "Forbidden - Statement does not belong to user"},
+        422: {"description": "Business rule violation"},
+    },
+)
+def delete_statement(
+    statement_id: int,
+    user_id: int = Query(..., description="User ID for authorization"),
+    uow: IUnitOfWork = Depends(get_unit_of_work),
+):
+    """
+    Permanently delete a monthly statement.
+
+    Business rules:
+    - Statement must exist
+    - Statement must belong to a credit card owned by the user
+    """
+    try:
+        use_case = DeleteStatementUseCase(uow)
+        command = DeleteStatementCommand(statement_id=statement_id, user_id=user_id)
+        use_case.execute(command)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except MonthlyStatementNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Statement not found")
+    except CreditCardOwnerMismatchError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Statement does not belong to user")
+    except BusinessRuleViolationError as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Internal server error: {str(e)}")

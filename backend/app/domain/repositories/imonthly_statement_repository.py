@@ -77,3 +77,15 @@ class IMonthlyStatementRepository(ABC):
             The previous statement (with earlier close date), or None if this is the first
         """
         pass
+
+    @abstractmethod
+    def delete(self, statement_id: int) -> bool:
+        """Delete a monthly statement by its ID.
+
+        Args:
+            statement_id: The ID of the statement to delete
+
+        Returns:
+            True if a statement was deleted, False otherwise
+        """
+        pass

@@ -116,3 +116,15 @@ class SQLAlchemyMonthlyStatementRepository(IMonthlyStatementRepository):
         )
         model = self._session.execute(stmt).scalar_one_or_none()
         return MonthlyStatementMapper.to_entity(model) if model else None
+
+    def delete(self, statement_id: int) -> bool:
+        """Delete a monthly statement by its ID."""
+        stmt = select(MonthlyStatementModel).where(MonthlyStatementModel.id == statement_id)
+        model = self._session.execute(stmt).scalar_one_or_none()
+        if not model:
+            return False
+
+        # Delete model and flush
+        self._session.delete(model)
+        self._session.flush()
+        return True

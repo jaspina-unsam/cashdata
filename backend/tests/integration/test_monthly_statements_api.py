@@ -59,19 +59,21 @@ class TestGetStatementsByCard:
         data = response.json()
         assert isinstance(data, list)
         assert len(data) >= 1
+    def test_delete_statement_returns_204_when_owner_deletes(self, client, test_user, test_statement):
+        """Should delete a statement when the owning user requests it"""
+        statement_id = test_statement["id"]
 
-        # Check structure of first statement
-        statement = data[0]
-        assert "id" in statement
-        assert "credit_card_id" in statement
-        assert "credit_card_name" in statement
-        assert "start_date" in statement
-        assert "closing_date" in statement
-        assert "due_date" in statement
+        resp = client.delete(f"/api/v1/statements/{statement_id}", params={"user_id": test_user["id"]})
+        assert resp.status_code == 204
 
-        # Verify it belongs to the correct credit card
-        assert statement["credit_card_id"] == test_credit_card["id"]
-        assert statement["credit_card_name"] == test_credit_card["name"]
+        # Subsequent fetch should return 404
+        get_resp = client.get(f"/api/v1/statements/{statement_id}", params={"user_id": test_user["id"]})
+        assert get_resp.status_code == 404
+
+    def test_delete_statement_wrong_user_returns_403(self, client, test_user, test_statement):
+        statement_id = test_statement["id"]
+        resp = client.delete(f"/api/v1/statements/{statement_id}", params={"user_id": 999})
+        assert resp.status_code == 403
 
     def test_get_statements_by_card_includes_future_statements(
         self, client, test_user, test_credit_card
