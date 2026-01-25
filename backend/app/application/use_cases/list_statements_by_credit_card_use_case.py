@@ -46,7 +46,10 @@ class ListStatementByCreditCardUseCase:
                     f"Credit card {query.credit_card_id} does not belong to user {query.user_id}"
                 )
 
-            statements = uow.monthly_statements.find_by_credit_card_id(query.credit_card_id)
+            # Include future statements so dropdowns show all statements regardless of due_date
+            statements = uow.monthly_statements.find_by_credit_card_id(
+                query.credit_card_id, include_future=True
+            )
 
             # Convert to DTOs
             result = []

@@ -124,7 +124,7 @@ class TestListStatementByCreditCardUseCaseIntegration:
         result = use_case.execute(query)
 
         uow_mock.credit_cards.find_by_id.assert_called_once_with(1)
-        uow_mock.monthly_statements.find_by_credit_card_id.assert_called_once_with(1)
+        uow_mock.monthly_statements.find_by_credit_card_id.assert_called_once_with(1, include_future=True)
         
         # Check that statements are sorted by due_date
         assert len(result) == 3

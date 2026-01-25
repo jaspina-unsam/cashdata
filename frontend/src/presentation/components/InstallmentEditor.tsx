@@ -13,12 +13,6 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
   const statementsQuery = useStatementsByCard(creditCardId, userId);
   const updateMutation = usePurchaseInstallmentsMutation();
 
-  // Debug: log statements data to help diagnose dropdown issues
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug('statementsQuery data count:', statementsQuery.data?.length, statementsQuery.data);
-  }, [statementsQuery.data]);
-
   const [local, setLocal] = useState<Record<number, { amount: string; statementId?: number | null }>>({});
 
   const prepare = () => {

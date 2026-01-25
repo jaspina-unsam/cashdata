@@ -73,6 +73,32 @@ class TestGetStatementsByCard:
         assert statement["credit_card_id"] == test_credit_card["id"]
         assert statement["credit_card_name"] == test_credit_card["name"]
 
+    def test_get_statements_by_card_includes_future_statements(
+        self, client, test_user, test_credit_card
+    ):
+        """Should include future statements in the result (no upper bound on due_date)"""
+        future_statement_data = {
+            "credit_card_id": test_credit_card["id"],
+            "start_date": "2030-01-01",
+            "closing_date": "2030-01-30",
+            "due_date": "2030-02-10",
+        }
+
+        create_resp = client.post(
+            "/api/v1/statements", json=future_statement_data, params={"user_id": test_user["id"]}
+        )
+        assert create_resp.status_code == 201
+        future_stmt = create_resp.json()
+
+        response = client.get(
+            f"/api/v1/statements/by-card/{test_credit_card['id']}",
+            params={"user_id": test_user["id"]}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        ids = [s["id"] for s in data]
+        assert future_stmt["id"] in ids
+
     def test_get_statements_by_card_wrong_user_returns_404(
         self, client, test_user, test_credit_card, test_statement
     ):
