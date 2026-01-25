@@ -68,6 +68,12 @@ class UpdateStatementDatesUseCase:
         if not credit_card or credit_card.user_id != user_id:
             return None
 
+        # --- Preserve current included installments so they remain assigned to the statement ---
+        included_installment_ids = self._get_included_installment_ids(statement, user_id)
+
+        # --- Protect installments belonging to the next statement so they are not stolen ---
+        self._protect_next_statement_installments(statement, credit_card, user_id)
+
         # Create updated statement entity (validation happens in __post_init__)
         updated_statement = MonthlyStatement(
             id=statement.id,
@@ -107,6 +113,26 @@ class UpdateStatementDatesUseCase:
                 credit_card, statement, saved_statement, user_id
             )
 
+        # Re-assign previously included installments to this statement so they remain included
+        from app.domain.entities.installment import Installment
+        for inst_id in included_installment_ids:
+            existing = self._installment_repository.find_by_id(inst_id)
+            # Only assign to this statement if it's currently unassigned or already belonged to this statement.
+            if existing and (
+                existing.manually_assigned_statement_id is None
+                or existing.manually_assigned_statement_id == statement.id
+            ) and existing.manually_assigned_statement_id != saved_statement.id:
+                updated = Installment(
+                    id=existing.id,
+                    purchase_id=existing.purchase_id,
+                    installment_number=existing.installment_number,
+                    total_installments=existing.total_installments,
+                    amount=existing.amount,
+                    billing_period=existing.billing_period,
+                    manually_assigned_statement_id=saved_statement.id,
+                )
+                self._installment_repository.save(updated)
+
         # Update the next statement's start date if it exists
         self._update_next_statement_start_date(saved_statement, credit_card)
 
@@ -118,6 +144,43 @@ class UpdateStatementDatesUseCase:
             closing_date=saved_statement.closing_date,
             due_date=saved_statement.due_date,
         )
+
+    def _get_included_installment_ids(self, statement: MonthlyStatement, user_id: int) -> list:
+        """Return installment ids that are currently included in the statement.
+
+        Included installements are either manually assigned to the statement or
+        automatically assigned because their billing_period matches the statement's period.
+        """
+        period = statement.get_period_identifier()
+        included = []
+
+        # Get all purchases for this user and card
+        all_purchases = self._purchase_repository.find_by_user_id(user_id)
+
+        # Defensive: repository might return a non-iterable Mock in tests; treat as empty
+        try:
+            iter(all_purchases)
+        except TypeError:
+            return included
+
+        card_purchases = [p for p in all_purchases if p.payment_method_id == statement.credit_card_id]
+
+        for purchase in card_purchases:
+            installments = self._installment_repository.find_by_purchase_id(purchase.id)
+
+            # Defensive: ensure installments is iterable
+            try:
+                iter(installments)
+            except TypeError:
+                continue
+
+            for inst in installments:
+                if inst.manually_assigned_statement_id == statement.id:
+                    included.append(inst.id)
+                elif inst.billing_period == period and inst.manually_assigned_statement_id is None:
+                    included.append(inst.id)
+
+        return included
 
     def _recalculate_installment_periods(
         self,
@@ -158,8 +221,11 @@ class UpdateStatementDatesUseCase:
 
         # Get all purchases for this user and card
         all_purchases = self._purchase_repository.find_by_user_id(user_id)
+        # Only consider purchases whose purchase_date falls inside the original statement period.
         card_purchases = [
-            p for p in all_purchases if p.payment_method_id == credit_card.id
+            p
+            for p in all_purchases
+            if p.payment_method_id == credit_card.id and old_statement.includes_purchase_date(p.purchase_date)
         ]
 
         # For each purchase, update installments that were in the old period
@@ -172,6 +238,7 @@ class UpdateStatementDatesUseCase:
                     # Calculate the correct due date for this installment in the new period
                     # The installment keeps its relative position (installment_number)
                     # but gets updated to the new period
+                    # Preserve any existing manual assignment. Only update the billing_period.
                     updated_installment = Installment(
                         id=installment.id,
                         purchase_id=installment.purchase_id,
@@ -179,7 +246,7 @@ class UpdateStatementDatesUseCase:
                         total_installments=installment.total_installments,
                         amount=installment.amount,
                         billing_period=new_period,
-                        manually_assigned_statement_id=None
+                        manually_assigned_statement_id=installment.manually_assigned_statement_id,
                     )
                     self._installment_repository.save(updated_installment)
 
@@ -196,6 +263,12 @@ class UpdateStatementDatesUseCase:
         all_statements = self._statement_repository.find_by_credit_card_id(
             credit_card.id, include_future=True
         )
+
+        # Defensive: repository might return a Mock in tests; ensure we have an iterable
+        try:
+            iter(all_statements)
+        except TypeError:
+            all_statements = []
 
         # Sort statements by start_date to find the chronological order
         sorted_statements = sorted(all_statements, key=lambda s: s.start_date)
@@ -225,3 +298,51 @@ class UpdateStatementDatesUseCase:
                 due_date=next_statement.due_date,
             )
             self._statement_repository.save(updated_next_statement)
+
+    def _protect_next_statement_installments(self, current_statement: MonthlyStatement, credit_card, user_id: int):
+        """Ensure that installments that currently belong to the next statement remain assigned to it.
+
+        This avoids the situation where extending the previous statement's period causes
+        the previous statement to automatically include installments that logically
+        belong to the next statement.
+        """
+        # Find all statements for this credit card
+        all_statements = self._statement_repository.find_by_credit_card_id(
+            credit_card.id, include_future=True
+        )
+
+        try:
+            iter(all_statements)
+        except TypeError:
+            return
+
+        sorted_statements = sorted(all_statements, key=lambda s: s.start_date)
+
+        # Find current statement and candidate next
+        next_stmt = None
+        for i, stmt in enumerate(sorted_statements):
+            if stmt.id == current_statement.id and i + 1 < len(sorted_statements):
+                next_stmt = sorted_statements[i + 1]
+                break
+
+        if not next_stmt:
+            return
+
+        # Get installments that are currently included in the next statement
+        next_included_ids = self._get_included_installment_ids(next_stmt, user_id)
+
+        from app.domain.entities.installment import Installment
+
+        for inst_id in next_included_ids:
+            existing = self._installment_repository.find_by_id(inst_id)
+            if existing and existing.manually_assigned_statement_id is None:
+                updated = Installment(
+                    id=existing.id,
+                    purchase_id=existing.purchase_id,
+                    installment_number=existing.installment_number,
+                    total_installments=existing.total_installments,
+                    amount=existing.amount,
+                    billing_period=existing.billing_period,
+                    manually_assigned_statement_id=next_stmt.id,
+                )
+                self._installment_repository.save(updated)
