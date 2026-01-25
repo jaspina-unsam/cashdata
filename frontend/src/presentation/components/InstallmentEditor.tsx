@@ -13,6 +13,12 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
   const statementsQuery = useStatementsByCard(creditCardId, userId);
   const updateMutation = usePurchaseInstallmentsMutation();
 
+  // Debug: log statements data to help diagnose dropdown issues
+  React.useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.debug('statementsQuery data count:', statementsQuery.data?.length, statementsQuery.data);
+  }, [statementsQuery.data]);
+
   const [local, setLocal] = useState<Record<number, { amount: string; statementId?: number | null }>>({});
 
   const prepare = () => {
@@ -109,6 +115,7 @@ export function InstallmentEditor({ purchaseId, userId, creditCardId }: Props) {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <label className="block text-xs text-gray-600">Asignación de resumen</label>
+              <div className="text-xs text-gray-500 mt-1" data-testid="statements-count">Opciones: {statementsQuery.data?.length ?? 0}</div>
               <select
                 data-testid="statement-selector"
                 className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
