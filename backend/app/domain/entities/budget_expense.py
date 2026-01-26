@@ -32,7 +32,7 @@ class BudgetExpense:
     description: Optional[str]
     date: date
     payment_method_name: Optional[str]
-    created_at: date
+    created_at: date # type: ignore
 
     def __post_init__(self):
         """Validate invariants after initialization"""
@@ -44,10 +44,6 @@ class BudgetExpense:
             raise InvalidEntity(
                 "Exactly one of purchase_id or installment_id must be set, but not both"
             )
-
-        # Validate amount is positive
-        if self.amount <= Money(0, self.amount.currency):
-            raise InvalidEntity("Amount must be positive")
 
         # Validate description if provided
         if self.description is not None and not self.description.strip():
